@@ -78,7 +78,7 @@ namespace UnityExplorer
         public TimeScaleController(System.IntPtr ptr) : base(ptr) { }
 #endif
 
-        bool pause;
+        public bool pause;
         bool settingTimeScale;
 
         internal static void Setup()
@@ -96,12 +96,13 @@ namespace UnityExplorer
         public void Update()
         {
             if (InputManager.GetKeyDown(KeyCode.Pause))
+            {
                 pause = !pause;
-            
-            if (pause)
-                SetTimeScale(0f);
-            else
-                SetTimeScale(1f);
+                if (pause)
+                    SetTimeScale(0f);
+                else
+                    SetTimeScale(1f);
+            }
         }
 
         void SetTimeScale(float time)

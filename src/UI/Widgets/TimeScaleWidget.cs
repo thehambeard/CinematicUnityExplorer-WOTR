@@ -28,15 +28,19 @@ namespace UnityExplorer.UI.Widgets
         InputFieldRef timeInput;
         float desiredTime;
         bool settingTimeScale;
+        TimeScaleController timeScaleController = GameObject.Find("TimeScaleController").GetComponent<TimeScaleController>();
 
         public void Update()
         {
-            // Fallback in case Time.timeScale patch failed for whatever reason
-            if (locked)
-                SetTimeScale(desiredTime);
+            //We don't want Unity Explorer's native time scale control to interfere with ours.
+            if (!timeScaleController.pause){
+                // Fallback in case Time.timeScale patch failed for whatever reason
+                if (locked)
+                    SetTimeScale(desiredTime);
 
-            if (!timeInput.Component.isFocused)
-                timeInput.Text = Time.timeScale.ToString("F2");
+                if (!timeInput.Component.isFocused)
+                    timeInput.Text = Time.timeScale.ToString("F2");
+            }
         }
 
         void SetTimeScale(float time)
@@ -107,7 +111,7 @@ namespace UnityExplorer.UI.Widgets
 
         static bool Prefix_Time_set_timeScale()
         {
-            return !Instance.locked || Instance.settingTimeScale;
+            return Instance.timeScaleController.pause || !Instance.locked || Instance.settingTimeScale;
         }
     }
 }
