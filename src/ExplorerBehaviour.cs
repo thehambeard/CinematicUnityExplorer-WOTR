@@ -1,4 +1,5 @@
 ﻿using UnityExplorer.UI;
+using UniverseLib.Input;
 #if CPP
 #if UNHOLLOWER
 using UnhollowerRuntimeLib;
@@ -66,6 +67,48 @@ namespace UnityExplorer
                     Destroy(obj);
             }
             catch { }
+        }
+    }
+
+    public class TimeScaleController : MonoBehaviour
+    {
+        internal static TimeScaleController Instance { get; private set; }
+
+#if CPP
+        public TimeScaleController(System.IntPtr ptr) : base(ptr) { }
+#endif
+
+        bool pause;
+        bool settingTimeScale;
+
+        internal static void Setup()
+        {
+#if CPP
+            ClassInjector.RegisterTypeInIl2Cpp<TimeScaleController>();
+#endif
+
+            GameObject obj = new("TimeScaleController");
+            DontDestroyOnLoad(obj);
+            obj.hideFlags = HideFlags.HideAndDontSave;
+            Instance = obj.AddComponent<TimeScaleController>(); 
+        }
+
+        public void Update()
+        {
+            if (InputManager.GetKeyDown(KeyCode.Pause))
+                pause = !pause;
+            
+            if (pause)
+                SetTimeScale(0f);
+            else
+                SetTimeScale(1f);
+        }
+
+        void SetTimeScale(float time)
+        {
+            settingTimeScale = true;
+            Time.timeScale = time;
+            settingTimeScale = false;
         }
     }
 }

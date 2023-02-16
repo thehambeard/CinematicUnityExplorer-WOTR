@@ -55,6 +55,9 @@ namespace UnityExplorer
             UERuntimeHelper.Init();
             ExplorerBehaviour.Setup();
             UnityCrashPrevention.Init();
+
+            //Extra inits
+            TimeScaleController.Setup();   
         }
 
         // Do a delayed setup so that objects aren't destroyed instantly.
