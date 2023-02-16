@@ -209,8 +209,11 @@ namespace UnityExplorer.UI.Panels
 - WASD / Arrows: Movement
 - Space / PgUp: Move up
 - LeftCtrl / PgDown: Move down
+- Q / E: Tilt 
 - Right Mouse Button: Free look
-- Shift: Super speed";
+- Shift: Super speed
+- Alt: Slow speed
+- Numpad + / Numpad -: Change FoV";
 
             Text instructionsText = UIFactory.CreateLabel(ContentRoot, "Instructions", instructions, TextAnchor.UpperLeft);
             UIFactory.SetLayoutElement(instructionsText.gameObject, flexibleWidth: 9999, flexibleHeight: 9999);
@@ -351,10 +354,13 @@ namespace UnityExplorer.UI.Panels
                 FreeCamPanel.currentUserCameraPosition = transform.position;
                 FreeCamPanel.currentUserCameraRotation = transform.rotation;
 
-                float moveSpeed = FreeCamPanel.desiredMoveSpeed * Time.deltaTime;
+                float moveSpeed = FreeCamPanel.desiredMoveSpeed * 0.01665f; //"0.01665f" (60fps) in place of Time.DeltaTime. DeltaTime causes issues when game is paused.
 
                 if (InputManager.GetKey(KeyCode.LeftShift) || InputManager.GetKey(KeyCode.RightShift))
                     moveSpeed *= 10f;
+
+                if (InputManager.GetKey(KeyCode.LeftAlt))
+                    moveSpeed *= 0.1f;
 
                 if (InputManager.GetKey(KeyCode.LeftArrow) || InputManager.GetKey(KeyCode.A))
                     transform.position += transform.right * -1 * moveSpeed;
@@ -374,13 +380,29 @@ namespace UnityExplorer.UI.Panels
                 if (InputManager.GetKey(KeyCode.LeftControl) || InputManager.GetKey(KeyCode.PageDown))
                     transform.position += transform.up * -1 * moveSpeed;
 
+                if (InputManager.GetKey(KeyCode.Q))
+                    transform.Rotate(0, 0, moveSpeed, Space.Self);
+
+                if (InputManager.GetKey(KeyCode.E))
+                    transform.Rotate(0, 0, - moveSpeed, Space.Self);
+
                 if (InputManager.GetMouseButton(1))
                 {
                     Vector3 mouseDelta = InputManager.MousePosition - FreeCamPanel.previousMousePosition;
 
                     float newRotationX = transform.localEulerAngles.y + mouseDelta.x * 0.3f;
                     float newRotationY = transform.localEulerAngles.x - mouseDelta.y * 0.3f;
-                    transform.localEulerAngles = new Vector3(newRotationY, newRotationX, 0f);
+                    transform.localEulerAngles = new Vector3(newRotationY, newRotationX, transform.localEulerAngles.z);
+                }
+
+                if (InputManager.GetKey(KeyCode.KeypadMinus))
+                {
+                    FreeCamPanel.ourCamera.fieldOfView -= moveSpeed; 
+                }
+
+                if (InputManager.GetKey(KeyCode.KeypadPlus))
+                {
+                    FreeCamPanel.ourCamera.fieldOfView += moveSpeed; 
                 }
 
                 FreeCamPanel.UpdatePositionInput();
