@@ -31,7 +31,7 @@ namespace UnityExplorer.UI.Panels
         internal static Camera lastMainCamera;
         internal static FreeCamBehaviour freeCamScript;
 
-        internal static float desiredMoveSpeed = 10f;
+        internal static float desiredMoveSpeed = 5f;
 
         internal static Vector3 originalCameraPosition;
         internal static Quaternion originalCameraRotation;
