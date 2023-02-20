@@ -10,7 +10,7 @@ using Il2CppInterop.Runtime.Injection;
 
 namespace UnityExplorer.UI.Panels
 {
-    internal class FreeCamPanel : UEPanel
+    public class FreeCamPanel : UEPanel
     {
         public FreeCamPanel(UIBase owner) : base(owner)
         {
@@ -19,7 +19,7 @@ namespace UnityExplorer.UI.Panels
         public override string Name => "Freecam";
         public override UIManager.Panels PanelType => UIManager.Panels.Freecam;
         public override int MinWidth => 400;
-        public override int MinHeight => 320;
+        public override int MinHeight => 600;
         public override Vector2 DefaultAnchorMin => new(0.4f, 0.4f);
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
         public override bool NavButtonWanted => true;
@@ -27,7 +27,7 @@ namespace UnityExplorer.UI.Panels
 
         internal static bool inFreeCamMode;
         internal static bool usingGameCamera;
-        internal static Camera ourCamera;
+        public static Camera ourCamera;
         internal static Camera lastMainCamera;
         internal static FreeCamBehaviour freeCamScript;
 

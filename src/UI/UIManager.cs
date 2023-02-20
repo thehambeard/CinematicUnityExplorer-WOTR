@@ -22,7 +22,8 @@ namespace UnityExplorer.UI
             UIInspectorResults,
             HookManager,
             Clipboard,
-            Freecam
+            Freecam,
+            LightsManager
         }
 
         public enum VerticalAnchor
@@ -90,6 +91,7 @@ namespace UnityExplorer.UI
             UIPanels.Add(Panels.CSConsole, new CSConsolePanel(UiBase));
             UIPanels.Add(Panels.HookManager, new HookManagerPanel(UiBase));
             UIPanels.Add(Panels.Freecam, new FreeCamPanel(UiBase));
+            UIPanels.Add(Panels.LightsManager, new LightsManager(UiBase));
             UIPanels.Add(Panels.Clipboard, new ClipboardPanel(UiBase));
             UIPanels.Add(Panels.ConsoleLog, new LogPanel(UiBase));
             UIPanels.Add(Panels.Options, new OptionsPanel(UiBase));
