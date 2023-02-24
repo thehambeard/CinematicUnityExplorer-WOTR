@@ -72,11 +72,8 @@ namespace UnityExplorer.UI.Panels
         private void ToggleGameLights(bool areLightsActive){
             //Update the list of game lights
             if (!areLightsActive){
-#if MONO
-                var gameLights = GameObject.FindObjectsOfType<Light>();
-#else
-                var gameLights = UnityEngine.Object.FindObjectsOfType(Il2CppType.Of<UnityEngine.Light>());
-#endif
+                var gameLights = RuntimeHelper.FindObjectsOfTypeAll<UnityEngine.Light>();
+
                 //ExplorerCore.LogWarning($"Found ligths: {gameLights.Length}");
 
                 foreach(UnityEngine.Light light in gameLights)
