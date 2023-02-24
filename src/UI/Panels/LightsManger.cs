@@ -107,7 +107,7 @@ namespace UnityExplorer.UI.Panels
         }
 
         private void DrawOptionsLights(GameObject light){
-            GameObject horiGroup = UIFactory.CreateHorizontalGroup(UIRoot, "LightOptions", true, true, true, true, 4,
+            GameObject horiGroup = UIFactory.CreateHorizontalGroup(ContentRoot, "LightOptions", true, false, true, false, 4,
                 default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
             UIFactory.SetLayoutElement(horiGroup, minHeight: 25, flexibleWidth: 9999);
             UIElements.Add(horiGroup);
