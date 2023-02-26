@@ -29,6 +29,8 @@ namespace UnityExplorer
 
         public static HarmonyLib.Harmony Harmony { get; } = new HarmonyLib.Harmony(GUID);
 
+        public static CatmullRom CameraPathsManager = null;
+
         /// <summary>
         /// Initialize UnityExplorer with the provided Loader implementation.
         /// </summary>
@@ -83,6 +85,9 @@ namespace UnityExplorer
             {
                 UIManager.ShowMenu = !UIManager.ShowMenu;
             }
+
+            if(CameraPathsManager != null)
+                CameraPathsManager.MaybeRunPath();
         }
 
 
