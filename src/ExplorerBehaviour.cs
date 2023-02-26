@@ -133,14 +133,29 @@ namespace UnityExplorer
         public struct CatmullRomPoint
         {
             public Vector3 position;
+            public Quaternion rotation;
             public Vector3 tangent;
             public Vector3 normal;
 
-            public CatmullRomPoint(Vector3 position, Vector3 tangent, Vector3 normal)
+            public CatmullRomPoint(Vector3 position, Quaternion rotation, Vector3 tangent, Vector3 normal)
             {
                 this.position = position;
+                this.rotation = rotation;
                 this.tangent = tangent;
                 this.normal = normal;
+            }
+        }
+
+        [System.Serializable]
+        public struct PathControlPoint
+        {
+            public Vector3 position;
+            public Quaternion rotation;
+
+            public PathControlPoint(Vector3 position, Quaternion rotation)
+            {
+                this.position = position;
+                this.rotation = rotation;
             }
         }
 
@@ -149,7 +164,7 @@ namespace UnityExplorer
 
         private CatmullRomPoint[] splinePoints; //Generated spline points
 
-        private Vector3[] controlPoints;
+        private PathControlPoint[] controlPoints;
         public bool playingPath;
         int currentPoint = 0;
 
@@ -172,10 +187,10 @@ namespace UnityExplorer
                 throw new ArgumentException("Catmull Rom Error: Too few control points or resolution too small");
             }
 
-            this.controlPoints = new Vector3[controlPoints.Length];
+            this.controlPoints = new PathControlPoint[controlPoints.Length];
             for(int i = 0; i < controlPoints.Length; i++)
             {
-                this.controlPoints[i] = controlPoints[i].position;             
+                this.controlPoints[i] = new PathControlPoint(controlPoints[i].position, controlPoints[i].rotation);             
             }
 
             this.resolution = resolution;
@@ -192,10 +207,10 @@ namespace UnityExplorer
                 throw new ArgumentException("Invalid control points");
             }
 
-            this.controlPoints = new Vector3[controlPoints.Length];
+            this.controlPoints = new PathControlPoint[controlPoints.Length];
             for(int i = 0; i < controlPoints.Length; i++)
             {
-                this.controlPoints[i] = controlPoints[i].position;             
+                this.controlPoints[i] = new PathControlPoint(controlPoints[i].position, controlPoints[i].rotation);          
             }
 
             GenerateSplinePoints();
@@ -295,6 +310,7 @@ namespace UnityExplorer
             InitializeProperties();
 
             Vector3 p0, p1; //Start point, end point
+            Quaternion r0, r1; //Start rotation, end rotation
             Vector3 m0, m1; //Tangents
 
             // First for loop goes through each individual control point and connects it to the next, so 0-1, 1-2, 2-3 and so on
@@ -303,15 +319,18 @@ namespace UnityExplorer
             {
                 bool closedLoopFinalPoint = (closedLoop && currentPoint == controlPoints.Length - 1);
 
-                p0 = controlPoints[currentPoint];
+                p0 = controlPoints[currentPoint].position;
+                r0 = controlPoints[currentPoint].rotation;
                 
                 if(closedLoopFinalPoint)
                 {
-                    p1 = controlPoints[0];
+                    p1 = controlPoints[0].position;
+                    r1 = controlPoints[0].rotation;
                 }
                 else
                 {
-                    p1 = controlPoints[currentPoint + 1];
+                    p1 = controlPoints[currentPoint + 1].position;
+                    r1 = controlPoints[currentPoint + 1].rotation;
                 }
 
                 // m0
@@ -319,7 +338,7 @@ namespace UnityExplorer
                 {
                     if(closedLoop)
                     {
-                        m0 = p1 - controlPoints[controlPoints.Length - 1];
+                        m0 = p1 - controlPoints[controlPoints.Length - 1].position;
                     }
                     else
                     {
@@ -328,7 +347,7 @@ namespace UnityExplorer
                 }
                 else
                 {
-                    m0 = p1 - controlPoints[currentPoint - 1];
+                    m0 = p1 - controlPoints[currentPoint - 1].position;
                 }
 
                 // m1
@@ -336,22 +355,22 @@ namespace UnityExplorer
                 {
                     if (currentPoint == controlPoints.Length - 1) //Last point case
                     {
-                        m1 = controlPoints[(currentPoint + 2) % controlPoints.Length] - p0;
+                        m1 = controlPoints[(currentPoint + 2) % controlPoints.Length].position - p0;
                     }
                     else if (currentPoint == 0) //First point case
                     {
-                        m1 = controlPoints[currentPoint + 2] - p0;
+                        m1 = controlPoints[currentPoint + 2].position - p0;
                     }
                     else
                     {
-                        m1 = controlPoints[(currentPoint + 2) % controlPoints.Length] - p0;
+                        m1 = controlPoints[(currentPoint + 2) % controlPoints.Length].position - p0;
                     }
                 }
                 else
                 {
                     if (currentPoint < controlPoints.Length - 2)
                     {
-                        m1 = controlPoints[(currentPoint + 2) % controlPoints.Length] - p0;
+                        m1 = controlPoints[(currentPoint + 2) % controlPoints.Length].position - p0;
                     }
                     else
                     {
@@ -374,21 +393,22 @@ namespace UnityExplorer
                 {
                     float t = tesselatedPoint * pointStep;
 
-                    CatmullRomPoint point = Evaluate(p0, p1, m0, m1, t);
+                    CatmullRomPoint point = Evaluate(p0, p1, r0, r1, m0, m1, t);
 
                     splinePoints[currentPoint * resolution + tesselatedPoint] = point;
                 }
             }
         }
 
-        //Evaluates curve at t[0, 1]. Returns point/normal/tan struct. [0, 1] means clamped between 0 and 1.
-        public static CatmullRomPoint Evaluate(Vector3 start, Vector3 end, Vector3 tanPoint1, Vector3 tanPoint2, float t)
+        //Evaluates curve at t[0, 1]. Returns point/rotation/normal/tan struct. [0, 1] means clamped between 0 and 1.
+        public static CatmullRomPoint Evaluate(Vector3 posStart, Vector3 posEnd, Quaternion r0, Quaternion r1, Vector3 tanPoint1, Vector3 tanPoint2, float t)
         {
-            Vector3 position = CalculatePosition(start, end, tanPoint1, tanPoint2, t);
-            Vector3 tangent = CalculateTangent(start, end, tanPoint1, tanPoint2, t);            
+            Vector3 position = CalculatePosition(posStart, posEnd, tanPoint1, tanPoint2, t);
+            Quaternion rotation = Quaternion.Slerp(r0, r1, t);
+            Vector3 tangent = CalculateTangent(posStart, posEnd, tanPoint1, tanPoint2, t);            
             Vector3 normal = NormalFromTangent(tangent);
 
-            return new CatmullRomPoint(position, tangent, normal);
+            return new CatmullRomPoint(position, rotation, tangent, normal);
         }
 
         //Calculates curve position at t[0, 1]
@@ -427,7 +447,7 @@ namespace UnityExplorer
             if(playingPath){
                 if(ExplorerCore.CameraPathsManager != null && currentPoint < ExplorerCore.CameraPathsManager.GetPoints().Length){
                     FreeCamPanel.ourCamera.transform.position = ExplorerCore.CameraPathsManager.GetPoints()[currentPoint].position;
-                    //FreeCamPanel.ourCamera.transform.rotation = ExplorerCore.CameraPathsManager.GetPoints()[currentPoint].rotation;
+                    FreeCamPanel.ourCamera.transform.rotation = ExplorerCore.CameraPathsManager.GetPoints()[currentPoint].rotation;
                     currentPoint++;
                     if(currentPoint >= ExplorerCore.CameraPathsManager.GetPoints().Length)
                         playingPath = false;
@@ -436,6 +456,7 @@ namespace UnityExplorer
         }
 
         public void StartPath(){
+            currentPoint = 0;
             playingPath = true;
         }
     }

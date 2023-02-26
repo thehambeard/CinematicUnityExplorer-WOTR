@@ -67,16 +67,13 @@ namespace UnityExplorer.UI.Panels
                 ExplorerCore.CameraPathsManager.Update(resolution, closedLoop);
             }
             
-            ExplorerCore.Log("Iniciamos path.");
             ExplorerCore.CameraPathsManager.StartPath();
-
-            ExplorerCore.Log("Clicked start path button.");
         }
 
         private Transform NewTransform(Transform original){
             GameObject ob = new GameObject("CamPathNode");
             ob.transform.position = original.position;
-            //ob.transform.rotation = original.rotation;
+            ob.transform.rotation = original.rotation;
             return ob.transform;
         }
 
