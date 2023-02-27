@@ -461,6 +461,20 @@ namespace UnityExplorer
             currentPoint = 0;
             playingPath = true;
         }
+
+        public void Stop(){
+            currentPoint = 0;
+            playingPath = false;
+        }
+
+        public void Pause(){
+            playingPath = false;
+        }
+
+        public void Continue(){
+            if(currentPoint < ExplorerCore.CameraPathsManager.GetPoints().Length)
+                playingPath = true;
+        }
     }
 
     /*
