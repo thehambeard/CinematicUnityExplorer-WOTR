@@ -136,13 +136,15 @@ namespace UnityExplorer
             public Quaternion rotation;
             public Vector3 tangent;
             public Vector3 normal;
+            public float fov;
 
-            public CatmullRomPoint(Vector3 position, Quaternion rotation, Vector3 tangent, Vector3 normal)
+            public CatmullRomPoint(Vector3 position, Quaternion rotation, Vector3 tangent, Vector3 normal, float fov)
             {
                 this.position = position;
                 this.rotation = rotation;
                 this.tangent = tangent;
                 this.normal = normal;
+                this.fov = fov;
             }
         }
 
@@ -151,11 +153,13 @@ namespace UnityExplorer
         {
             public Vector3 position;
             public Quaternion rotation;
+            public float fov;
 
-            public PathControlPoint(Vector3 position, Quaternion rotation)
+            public PathControlPoint(Vector3 position, Quaternion rotation, float fov)
             {
                 this.position = position;
                 this.rotation = rotation;
+                this.fov = fov;
             }
         }
 
@@ -179,7 +183,7 @@ namespace UnityExplorer
             return splinePoints;
         }
 
-        public CatmullRom(Transform[] controlPoints, int resolution, bool closedLoop)
+        public CatmullRom(PathControlPoint[] controlPoints, int resolution, bool closedLoop)
         {
             if(controlPoints == null || controlPoints.Length <= 2 || resolution < 2)
             {
@@ -187,12 +191,7 @@ namespace UnityExplorer
                 throw new ArgumentException("Catmull Rom Error: Too few control points or resolution too small");
             }
 
-            this.controlPoints = new PathControlPoint[controlPoints.Length];
-            for(int i = 0; i < controlPoints.Length; i++)
-            {
-                this.controlPoints[i] = new PathControlPoint(controlPoints[i].position, controlPoints[i].rotation);             
-            }
-
+            this.controlPoints = controlPoints;
             this.resolution = resolution;
             this.closedLoop = closedLoop;
 
@@ -200,18 +199,14 @@ namespace UnityExplorer
         }
 
         //Updates control points
-        public void Update(Transform[] controlPoints)
+        public void Update(PathControlPoint[] controlPoints)
         {
             if(controlPoints.Length <= 0 || controlPoints == null)
             {
                 throw new ArgumentException("Invalid control points");
             }
 
-            this.controlPoints = new PathControlPoint[controlPoints.Length];
-            for(int i = 0; i < controlPoints.Length; i++)
-            {
-                this.controlPoints[i] = new PathControlPoint(controlPoints[i].position, controlPoints[i].rotation);          
-            }
+            this.controlPoints = controlPoints;
 
             GenerateSplinePoints();
         }
@@ -312,6 +307,7 @@ namespace UnityExplorer
             Vector3 p0, p1; //Start point, end point
             Quaternion r0, r1; //Start rotation, end rotation
             Vector3 m0, m1; //Tangents
+            float fov0, fov1;
 
             // First for loop goes through each individual control point and connects it to the next, so 0-1, 1-2, 2-3 and so on
             int closedAdjustment = closedLoop ? 0 : 1;
@@ -321,16 +317,19 @@ namespace UnityExplorer
 
                 p0 = controlPoints[currentPoint].position;
                 r0 = controlPoints[currentPoint].rotation;
+                fov0 = controlPoints[currentPoint].fov;
                 
                 if(closedLoopFinalPoint)
                 {
                     p1 = controlPoints[0].position;
                     r1 = controlPoints[0].rotation;
+                    fov1 = controlPoints[0].fov;
                 }
                 else
                 {
                     p1 = controlPoints[currentPoint + 1].position;
                     r1 = controlPoints[currentPoint + 1].rotation;
+                    fov1 = controlPoints[currentPoint + 1].fov;
                 }
 
                 // m0
@@ -393,7 +392,7 @@ namespace UnityExplorer
                 {
                     float t = tesselatedPoint * pointStep;
 
-                    CatmullRomPoint point = Evaluate(p0, p1, r0, r1, m0, m1, t);
+                    CatmullRomPoint point = Evaluate(p0, p1, r0, r1, m0, m1, fov0, fov1, t);
 
                     splinePoints[currentPoint * resolution + tesselatedPoint] = point;
                 }
@@ -401,14 +400,15 @@ namespace UnityExplorer
         }
 
         //Evaluates curve at t[0, 1]. Returns point/rotation/normal/tan struct. [0, 1] means clamped between 0 and 1.
-        public static CatmullRomPoint Evaluate(Vector3 posStart, Vector3 posEnd, Quaternion r0, Quaternion r1, Vector3 tanPoint1, Vector3 tanPoint2, float t)
+        public static CatmullRomPoint Evaluate(Vector3 posStart, Vector3 posEnd, Quaternion r0, Quaternion r1, Vector3 tanPoint1, Vector3 tanPoint2, float fovStart, float fovEnd, float t)
         {
             Vector3 position = CalculatePosition(posStart, posEnd, tanPoint1, tanPoint2, t);
             Quaternion rotation = Quaternion.Slerp(r0, r1, t);
             Vector3 tangent = CalculateTangent(posStart, posEnd, tanPoint1, tanPoint2, t);            
             Vector3 normal = NormalFromTangent(tangent);
+            float fov = Mathf.SmoothStep(fovStart, fovEnd, t);
 
-            return new CatmullRomPoint(position, rotation, tangent, normal);
+            return new CatmullRomPoint(position, rotation, tangent, normal, fov);
         }
 
         //Calculates curve position at t[0, 1]
@@ -446,8 +446,10 @@ namespace UnityExplorer
         public void MaybeRunPath(){
             if(playingPath){
                 if(ExplorerCore.CameraPathsManager != null && currentPoint < ExplorerCore.CameraPathsManager.GetPoints().Length){
-                    FreeCamPanel.ourCamera.transform.position = ExplorerCore.CameraPathsManager.GetPoints()[currentPoint].position;
-                    FreeCamPanel.ourCamera.transform.rotation = ExplorerCore.CameraPathsManager.GetPoints()[currentPoint].rotation;
+                    CatmullRomPoint point = ExplorerCore.CameraPathsManager.GetPoints()[currentPoint];
+                    FreeCamPanel.ourCamera.transform.position = point.position;
+                    FreeCamPanel.ourCamera.transform.rotation = point.rotation;
+                    FreeCamPanel.ourCamera.fieldOfView = point.fov;
                     currentPoint++;
                     if(currentPoint >= ExplorerCore.CameraPathsManager.GetPoints().Length)
                         playingPath = false;

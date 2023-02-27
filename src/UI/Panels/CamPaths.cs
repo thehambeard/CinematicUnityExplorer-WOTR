@@ -31,7 +31,7 @@ namespace UnityExplorer.UI.Panels
         public override bool ShouldSaveActiveState => true;
 
         static ButtonRef startButton;
-		public List<Transform> controlPoints = new List<Transform>();
+		public List<CatmullRom.PathControlPoint> controlPoints = new List<CatmullRom.PathControlPoint>();
 
         // ~~~~~~~~ UI construction / callbacks ~~~~~~~~
 
@@ -70,16 +70,10 @@ namespace UnityExplorer.UI.Panels
             ExplorerCore.CameraPathsManager.StartPath();
         }
 
-        private Transform NewTransform(Transform original){
-            GameObject ob = new GameObject("CamPathNode");
-            ob.transform.position = original.position;
-            ob.transform.rotation = original.rotation;
-            return ob.transform;
-        }
-
         void AddNode_OnClick(){
             Camera freeCam = FreeCamPanel.ourCamera;
-            controlPoints.Add(NewTransform(freeCam.transform));
+            CatmullRom.PathControlPoint point = new CatmullRom.PathControlPoint(freeCam.transform.position, freeCam.transform.rotation, freeCam.fieldOfView);
+            controlPoints.Add(point);
         }
     }
 }
