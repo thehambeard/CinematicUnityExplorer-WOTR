@@ -29,21 +29,31 @@ namespace UnityExplorer.UI.Panels
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
         public override bool NavButtonWanted => true;
         public override bool ShouldSaveActiveState => true;
-
-        static ButtonRef startButton;
 		public List<CatmullRom.PathControlPoint> controlPoints = new List<CatmullRom.PathControlPoint>();
+        bool closedLoop;
 
         // ~~~~~~~~ UI construction / callbacks ~~~~~~~~
 
         protected override void ConstructPanelContent()
         {   
-            startButton = UIFactory.CreateButton(ContentRoot, "Start", "Start CamPath");
+            ButtonRef startButton = UIFactory.CreateButton(ContentRoot, "Start", "Start CamPath");
             UIFactory.SetLayoutElement(startButton.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
             startButton.OnClick += StartButton_OnClick;
 
-            startButton = UIFactory.CreateButton(ContentRoot, "AddCamNode", "Add Cam node");
-            UIFactory.SetLayoutElement(startButton.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
-            startButton.OnClick += AddNode_OnClick;
+            ButtonRef AddNode = UIFactory.CreateButton(ContentRoot, "AddCamNode", "Add Cam node");
+            UIFactory.SetLayoutElement(AddNode.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
+            AddNode.OnClick += AddNode_OnClick;
+
+            ButtonRef DeletePath = UIFactory.CreateButton(ContentRoot, "DeletePath", "Delete Path");
+            UIFactory.SetLayoutElement(DeletePath.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
+            DeletePath.OnClick += () => {controlPoints.Clear();};
+
+            Toggle closedLoopToggle = new Toggle();
+            GameObject toggleObj = UIFactory.CreateToggle(ContentRoot, "Close path in a loop", out closedLoopToggle, out Text toggleText);
+            UIFactory.SetLayoutElement(toggleObj, minHeight: 25, flexibleWidth: 9999);
+            closedLoopToggle.onValueChanged.AddListener((isClosedLoop) => {closedLoop = isClosedLoop;});
+            closedLoopToggle.isOn = false;
+            toggleText.text = "Close path in a loop";
 
         }
 
@@ -56,7 +66,6 @@ namespace UnityExplorer.UI.Panels
         void StartButton_OnClick()
         {
             int resolution = 500;
-            bool closedLoop = false;
             //float normalExtrusion = 0;
             //float tangentExtrusion = 0;
 
