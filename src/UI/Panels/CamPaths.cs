@@ -76,12 +76,13 @@ namespace UnityExplorer.UI.Panels
                 //UIElements.Remove(comp);
             }
 
-            foreach (var point in controlPoints) {
-                DrawNodeOptions(point);
+            for(int i = 0; i < controlPoints.Count; i++) {
+                CatmullRom.PathControlPoint point = controlPoints[i];
+                DrawNodeOptions(point, i);
             }
         }
 
-        private void DrawNodeOptions(CatmullRom.PathControlPoint point){
+        private void DrawNodeOptions(CatmullRom.PathControlPoint point, int index){
             GameObject horiGroup = UIFactory.CreateHorizontalGroup(ContentRoot, "LightOptions", true, false, true, false, 4,
                 default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
             UIFactory.SetLayoutElement(horiGroup, minHeight: 25, flexibleWidth: 9999);
@@ -100,11 +101,16 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(moveToPointButton.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
             moveToPointButton.OnClick += () => {FreeCamPanel.ourCamera.transform.position = point.position; FreeCamPanel.ourCamera.transform.rotation = point.rotation; FreeCamPanel.ourCamera.fieldOfView = point.fov;};
 
+            //Add node next
+
             ButtonRef destroyButton = UIFactory.CreateButton(horiGroup, "Delete", "Delete");
             UIFactory.SetLayoutElement(destroyButton.GameObject, minWidth: 80, minHeight: 25, flexibleWidth: 9999);
             destroyButton.OnClick += () => {controlPoints.Remove(point); UpdateListNodes();};
 
             //Frames
+            InputFieldRef framesInput = null;
+            AddInputField("Frames", "Length (in frames):", "Default: 500", out framesInput, (frames) => { FramesInput_OnEndEdit(point, index, frames); });
+            framesInput.Text = point.frames.ToString();
 
             //ShowPos and rot?
         }
@@ -125,26 +131,55 @@ namespace UnityExplorer.UI.Panels
             FreeCamPanel.ourCamera.fieldOfView = point.fov;
         }
 
-        void AddSpacer(int height)
+        GameObject AddInputField(string name, string labelText, string placeHolder, out InputFieldRef inputField, Action<string> onInputEndEdit)
         {
-            GameObject obj = UIFactory.CreateUIObject("Spacer", ContentRoot);
-            UIFactory.SetLayoutElement(obj, minHeight: height, flexibleHeight: 0);
+            GameObject row = UIFactory.CreateHorizontalGroup(ContentRoot, "Editor Field",
+            false, false, true, true, 5, default, new Color(1, 1, 1, 0));
+            UINodes.Add(row); //To delete it when we update the node list
+
+            Text posLabel = UIFactory.CreateLabel(row, $"{name}_Label", labelText);
+            UIFactory.SetLayoutElement(posLabel.gameObject, minWidth: 100, minHeight: 25);
+
+            inputField = UIFactory.CreateInputField(row, $"{name}_Input", placeHolder);
+            UIFactory.SetLayoutElement(inputField.GameObject, minWidth: 125, minHeight: 25, flexibleWidth: 9999);
+            inputField.Component.GetOnEndEdit().AddListener(onInputEndEdit);
+
+            return row;
         }
 
         void StartButton_OnClick()
         {
-            int resolution = 500;
             //float normalExtrusion = 0;
             //float tangentExtrusion = 0;
 
             if(ExplorerCore.CameraPathsManager == null)
-                ExplorerCore.CameraPathsManager = new CatmullRom(controlPoints.ToArray(), resolution, closedLoop);
+                ExplorerCore.CameraPathsManager = new CatmullRom(controlPoints.ToArray(), closedLoop);
             else{
                 ExplorerCore.CameraPathsManager.Update(controlPoints.ToArray());
-                ExplorerCore.CameraPathsManager.Update(resolution, closedLoop);
+                ExplorerCore.CameraPathsManager.Update(closedLoop);
             }
-            
+
             ExplorerCore.CameraPathsManager.StartPath();
+        }
+
+        void FramesInput_OnEndEdit(CatmullRom.PathControlPoint point, int index, string input){
+            EventSystemHelper.SetSelectedGameObject(null);
+
+            if (!ParseUtility.TryParse(input, out int parsed, out Exception parseEx))
+            {
+                ExplorerCore.LogWarning($"Could not parse value: {parseEx.ReflectionExToString()}");
+                //ui_input.Text = point.frames.ToString();
+                return;
+            }
+
+            int frames = parsed;
+
+            if(frames > 1){
+                point.frames = frames;
+                controlPoints[index] = point;
+            }
+            else
+                throw new ArgumentException("Catmull Rom Error: Too few frames!");
         }
 
         void AddNode_OnClick(){
