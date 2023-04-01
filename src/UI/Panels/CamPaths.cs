@@ -79,7 +79,7 @@ namespace UnityExplorer.UI.Panels
             toggleConstantSpeedText.text = "Constant speed";
 
             InputFieldRef CompletePathFramesInput = null;
-            AddInputField("Frames", "Complete path duration (in frames):", "Default: 2000", out CompletePathFramesInput, TotalFrames_OnEndEdit, false);
+            AddInputField("Frames", "Constant speed complete path duration (in frames):", "Default: 2000", out CompletePathFramesInput, TotalFrames_OnEndEdit, false);
             CompletePathFramesInput.Text = pathTotalFrames.ToString();
         }
 
@@ -103,13 +103,13 @@ namespace UnityExplorer.UI.Panels
             UINodes.Add(horiGroup);
 
             //Move to Camera
-            ButtonRef moveToCameraButton = UIFactory.CreateButton(horiGroup, "Move Node to Camera", "Move Node to Camera");
+            ButtonRef moveToCameraButton = UIFactory.CreateButton(horiGroup, "Copy Camera pos and rot", "Copy Camera pos and rot");
             UIFactory.SetLayoutElement(moveToCameraButton.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
-            moveToCameraButton.OnClick += () => {point.position = FreeCamPanel.ourCamera.transform.position; point.rotation = FreeCamPanel.ourCamera.transform.rotation;};
+            moveToCameraButton.OnClick += () => {point.position = FreeCamPanel.ourCamera.transform.position; point.rotation = FreeCamPanel.ourCamera.transform.rotation; controlPoints[index] = point;};
 
             ButtonRef copyFovButton = UIFactory.CreateButton(horiGroup, "Copy Camera FoV", "Copy Camera FoV");
             UIFactory.SetLayoutElement(copyFovButton.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
-            copyFovButton.OnClick += () => {point.fov = FreeCamPanel.ourCamera.fieldOfView;};
+            copyFovButton.OnClick += () => {point.fov = FreeCamPanel.ourCamera.fieldOfView; controlPoints[index] = point;};
 
             ButtonRef moveToPointButton = UIFactory.CreateButton(horiGroup, "Move Cam to Node", "Move Cam to Node");
             UIFactory.SetLayoutElement(moveToPointButton.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
@@ -213,21 +213,13 @@ namespace UnityExplorer.UI.Panels
 
         void UpdateNodeFramesConstantspeed(){
             float[] d = ExplorerCore.CameraPathsManager.GenerateSplinePointsByRes(3000);
-
-            ExplorerCore.Log($"d.Length: {d.Length}");
-            
             float dTotal = d.Sum();
-
-            ExplorerCore.Log($"dTotal: {dTotal}");
-
             int closedAdjustment = closedLoop ? 0 : 1;
+
             for(int i = 0; i < controlPoints.Count - closedAdjustment; i++) {
                 CatmullRom.PathControlPoint point = controlPoints[i];
                 point.frames = (int)(pathTotalFrames *(d[i] / dTotal));
                 controlPoints[i] = point;
-
-                ExplorerCore.Log($"d[{i}]: {d[i]}");
-                ExplorerCore.Log(controlPoints[i].frames);
             }
 
             ExplorerCore.CameraPathsManager.Update(controlPoints.ToArray());
