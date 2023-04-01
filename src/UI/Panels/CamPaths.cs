@@ -23,7 +23,7 @@ namespace UnityExplorer.UI.Panels
 
         public override string Name => "CamPaths";
         public override UIManager.Panels PanelType => UIManager.Panels.CamPaths;
-        public override int MinWidth => 700;
+        public override int MinWidth => 1000;
         public override int MinHeight => 600;
         public override Vector2 DefaultAnchorMin => new(0.4f, 0.4f);
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
@@ -32,6 +32,9 @@ namespace UnityExplorer.UI.Panels
 		public List<CatmullRom.PathControlPoint> controlPoints = new List<CatmullRom.PathControlPoint>();
         List<GameObject> UINodes = new List<GameObject>();
         bool closedLoop;
+
+        bool constantSpeed;
+        int pathTotalFrames = 2000;
 
         // ~~~~~~~~ UI construction / callbacks ~~~~~~~~
 
@@ -62,11 +65,22 @@ namespace UnityExplorer.UI.Panels
             DeletePath.OnClick += () => {controlPoints.Clear(); UpdateListNodes();};
 
             Toggle closedLoopToggle = new Toggle();
-            GameObject toggleObj = UIFactory.CreateToggle(horiGroup, "Close path in a loop", out closedLoopToggle, out Text toggleText);
-            UIFactory.SetLayoutElement(toggleObj, minHeight: 25, flexibleWidth: 9999);
+            GameObject toggleClosedLoopObj = UIFactory.CreateToggle(horiGroup, "Close path in a loop", out closedLoopToggle, out Text toggleClosedLoopText);
+            UIFactory.SetLayoutElement(toggleClosedLoopObj, minHeight: 25, flexibleWidth: 9999);
             closedLoopToggle.onValueChanged.AddListener((isClosedLoop) => {closedLoop = isClosedLoop;});
             closedLoopToggle.isOn = false;
-            toggleText.text = "Close path in a loop";
+            toggleClosedLoopText.text = "Close path in a loop";
+
+            Toggle constantspeedToggle = new Toggle();
+            GameObject toggleConstantSpeedObj = UIFactory.CreateToggle(horiGroup, "Constant speed", out constantspeedToggle, out Text toggleConstantSpeedText);
+            UIFactory.SetLayoutElement(toggleConstantSpeedObj, minHeight: 25, flexibleWidth: 9999);
+            constantspeedToggle.onValueChanged.AddListener((isConstantSpeed) => {constantSpeed = isConstantSpeed; UpdateListNodes();});
+            constantspeedToggle.isOn = false;
+            toggleConstantSpeedText.text = "Constant speed";
+
+            InputFieldRef CompletePathFramesInput = null;
+            AddInputField("Frames", "Complete path duration (in frames):", "Default: 2000", out CompletePathFramesInput, TotalFrames_OnEndEdit, false);
+            CompletePathFramesInput.Text = pathTotalFrames.ToString();
         }
 
         private void UpdateListNodes(){
@@ -108,9 +122,11 @@ namespace UnityExplorer.UI.Panels
             destroyButton.OnClick += () => {controlPoints.Remove(point); UpdateListNodes();};
 
             //Frames
-            InputFieldRef framesInput = null;
-            AddInputField("Frames", "Length (in frames):", "Default: 500", out framesInput, (frames) => { FramesInput_OnEndEdit(point, index, frames); });
-            framesInput.Text = point.frames.ToString();
+            if (!constantSpeed){
+                InputFieldRef framesInput = null;
+                AddInputField("Frames", "Length (in frames):", $"Default: {point.frames}", out framesInput, (frames) => { FramesInput_OnEndEdit(point, index, frames); });
+                framesInput.Text = point.frames.ToString();
+            }
 
             //ShowPos and rot?
         }
@@ -131,11 +147,12 @@ namespace UnityExplorer.UI.Panels
             FreeCamPanel.ourCamera.fieldOfView = point.fov;
         }
 
-        GameObject AddInputField(string name, string labelText, string placeHolder, out InputFieldRef inputField, Action<string> onInputEndEdit)
+        GameObject AddInputField(string name, string labelText, string placeHolder, out InputFieldRef inputField, Action<string> onInputEndEdit, bool shouldDeleteOnUpdate = true)
         {
             GameObject row = UIFactory.CreateHorizontalGroup(ContentRoot, "Editor Field",
             false, false, true, true, 5, default, new Color(1, 1, 1, 0));
-            UINodes.Add(row); //To delete it when we update the node list
+            if(shouldDeleteOnUpdate)
+                UINodes.Add(row); //To delete it when we update the node list
 
             Text posLabel = UIFactory.CreateLabel(row, $"{name}_Label", labelText);
             UIFactory.SetLayoutElement(posLabel.gameObject, minWidth: 100, minHeight: 25);
@@ -155,8 +172,12 @@ namespace UnityExplorer.UI.Panels
             if(ExplorerCore.CameraPathsManager == null)
                 ExplorerCore.CameraPathsManager = new CatmullRom(controlPoints.ToArray(), closedLoop);
             else{
-                ExplorerCore.CameraPathsManager.Update(controlPoints.ToArray());
                 ExplorerCore.CameraPathsManager.Update(closedLoop);
+                ExplorerCore.CameraPathsManager.Update(controlPoints.ToArray());
+            }
+
+            if(constantSpeed){
+                UpdateNodeFramesConstantspeed();
             }
 
             ExplorerCore.CameraPathsManager.StartPath();
@@ -188,6 +209,43 @@ namespace UnityExplorer.UI.Panels
             controlPoints.Add(point);
 
             UpdateListNodes();
+        }
+
+        void UpdateNodeFramesConstantspeed(){
+            float[] d = ExplorerCore.CameraPathsManager.GenerateSplinePointsByRes(3000);
+
+            ExplorerCore.Log($"d.Length: {d.Length}");
+            
+            float dTotal = d.Sum();
+
+            ExplorerCore.Log($"dTotal: {dTotal}");
+
+            int closedAdjustment = closedLoop ? 0 : 1;
+            for(int i = 0; i < controlPoints.Count - closedAdjustment; i++) {
+                CatmullRom.PathControlPoint point = controlPoints[i];
+                point.frames = (int)(pathTotalFrames *(d[i] / dTotal));
+                controlPoints[i] = point;
+
+                ExplorerCore.Log($"d[{i}]: {d[i]}");
+                ExplorerCore.Log(controlPoints[i].frames);
+            }
+
+            ExplorerCore.CameraPathsManager.Update(controlPoints.ToArray());
+        }
+        
+
+        void TotalFrames_OnEndEdit(string input)
+        {
+            EventSystemHelper.SetSelectedGameObject(null);
+
+            if (!ParseUtility.TryParse(input, out int parsed, out Exception parseEx))
+            {
+                ExplorerCore.LogWarning($"Could not parse value: {parseEx.ReflectionExToString()}");
+                //pathTotalFrames.Text = pathTotalFrames.ToString();
+                return;
+            }
+
+            pathTotalFrames = parsed;
         }
     }
 }
