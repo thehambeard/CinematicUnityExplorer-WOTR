@@ -1,4 +1,5 @@
 ﻿using UniverseLib.Input;
+using UnityExplorer.Inspectors;
 using UniverseLib.UI;
 using UniverseLib.UI.Models;
 #if UNHOLLOWER
@@ -45,6 +46,7 @@ namespace UnityExplorer.UI.Panels
 
         static ButtonRef startStopButton;
         static Toggle useGameCameraToggle;
+        public static Toggle blockFreecamMovementToggle;
         static InputFieldRef positionInput;
         static InputFieldRef moveSpeedInput;
         static ButtonRef inspectButton;
@@ -184,11 +186,11 @@ namespace UnityExplorer.UI.Panels
 
             AddSpacer(5);
 
-            GameObject toggleObj = UIFactory.CreateToggle(ContentRoot, "UseGameCameraToggle", out useGameCameraToggle, out Text toggleText);
+            GameObject toggleObj = UIFactory.CreateToggle(ContentRoot, "UseGameCameraToggle", out useGameCameraToggle, out Text useGameCameraText);
             UIFactory.SetLayoutElement(toggleObj, minHeight: 25, flexibleWidth: 9999);
             useGameCameraToggle.onValueChanged.AddListener(OnUseGameCameraToggled);
             useGameCameraToggle.isOn = false;
-            toggleText.text = "Use Game Camera?";
+            useGameCameraText.text = "Use Game Camera?";
 
             AddSpacer(5);
 
@@ -204,6 +206,21 @@ namespace UnityExplorer.UI.Panels
             moveSpeedInput.Text = desiredMoveSpeed.ToString();
 
             AddSpacer(5);
+
+            ButtonRef followButton = UIFactory.CreateButton(ContentRoot, "FollowButton", "Make camera Follow Gameobject");
+            UIFactory.SetLayoutElement(followButton.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
+            followButton.OnClick += FollowButton_OnClick;
+
+            AddSpacer(5);
+
+            GameObject blockFreecamMovement = UIFactory.CreateToggle(ContentRoot, "blockFreecamMovement", out blockFreecamMovementToggle, out Text blockFreecamMovementText);
+            UIFactory.SetLayoutElement(blockFreecamMovement, minHeight: 25, flexibleWidth: 9999);
+            blockFreecamMovementToggle.onValueChanged.AddListener(OnUseGameCameraToggled);
+            blockFreecamMovementToggle.isOn = false;
+            blockFreecamMovementText.text = "Block Freecam movement";
+
+            AddSpacer(5);
+
 
             string instructions = @"Controls:
 - WASD / Arrows: Movement
@@ -258,6 +275,19 @@ namespace UnityExplorer.UI.Panels
                 BeginFreecam();
 
             SetToggleButtonState();
+        }
+
+        void temporalAction(GameObject obj){
+            if(!ourCamera){
+                ExplorerCore.LogWarning("Error: Start the freecam at least once before setting a follow object.");
+                return;
+            }
+            ourCamera.transform.SetParent(obj.transform, true);
+        }
+
+        void FollowButton_OnClick()
+        {
+            MouseInspector.Instance.StartInspect(MouseInspectMode.World, temporalAction);
         }
 
         void SetToggleButtonState()
@@ -346,6 +376,10 @@ namespace UnityExplorer.UI.Panels
                 if (!FreeCamPanel.ourCamera)
                 {
                     FreeCamPanel.EndFreecam();
+                    return;
+                }
+
+                if (FreeCamPanel.blockFreecamMovementToggle.isOn){
                     return;
                 }
 
