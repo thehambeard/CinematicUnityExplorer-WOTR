@@ -51,6 +51,7 @@ namespace UnityExplorer.UI.Panels
         static InputFieldRef moveSpeedInput;
         static ButtonRef inspectButton;
 
+        public static GameObject followObject = null;
         internal static void BeginFreecam()
         {
             inFreeCamMode = true;
@@ -207,15 +208,23 @@ namespace UnityExplorer.UI.Panels
 
             AddSpacer(5);
 
-            ButtonRef followButton = UIFactory.CreateButton(ContentRoot, "FollowButton", "Make camera Follow Gameobject");
+            ButtonRef followButton = UIFactory.CreateButton(ContentRoot, "FollowButton", "Make camera Follow GameObject");
             UIFactory.SetLayoutElement(followButton.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
             followButton.OnClick += FollowButton_OnClick;
 
             AddSpacer(5);
 
+            ButtonRef releaseFollowButton = UIFactory.CreateButton(ContentRoot, "ReleaseFollowButton", "Release Follow GameObject");
+            UIFactory.SetLayoutElement(releaseFollowButton.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
+            releaseFollowButton.OnClick += ReleaseFollowButton_OnClick;
+
+            //Text followObjectLabel = UIFactory.CreateLabel(ContentRoot, "CurrentFollowObject", out (followObject ? followObject.name : ""));
+            //UIFactory.SetLayoutElement(followObjectLabel.gameObject, minWidth: 100, minHeight: 25);
+
+            AddSpacer(5);
+
             GameObject blockFreecamMovement = UIFactory.CreateToggle(ContentRoot, "blockFreecamMovement", out blockFreecamMovementToggle, out Text blockFreecamMovementText);
             UIFactory.SetLayoutElement(blockFreecamMovement, minHeight: 25, flexibleWidth: 9999);
-            blockFreecamMovementToggle.onValueChanged.AddListener(OnUseGameCameraToggled);
             blockFreecamMovementToggle.isOn = false;
             blockFreecamMovementText.text = "Block Freecam movement";
 
@@ -277,17 +286,17 @@ namespace UnityExplorer.UI.Panels
             SetToggleButtonState();
         }
 
-        void temporalAction(GameObject obj){
-            if(!ourCamera){
-                ExplorerCore.LogWarning("Error: Start the freecam at least once before setting a follow object.");
-                return;
-            }
-            ourCamera.transform.SetParent(obj.transform, true);
-        }
-
         void FollowButton_OnClick()
         {
-            MouseInspector.Instance.StartInspect(MouseInspectMode.World, temporalAction);
+            MouseInspector.Instance.StartInspect(MouseInspectMode.World, (obj) => followObject = obj);
+        }
+
+        void ReleaseFollowButton_OnClick()
+        {
+            if (followObject && ourCamera.transform.IsChildOf(followObject.transform)){
+                ourCamera.transform.SetParent(null, true);
+                followObject = null;
+            }
         }
 
         void SetToggleButtonState()
@@ -306,6 +315,11 @@ namespace UnityExplorer.UI.Panels
 
         void OnUseGameCameraToggled(bool value)
         {
+            // If the previous camera is following a game object we remove it from tis childs.
+            if (followObject && ourCamera.transform.IsChildOf(followObject.transform)){
+                ourCamera.transform.SetParent(null, true);
+            }
+
             EventSystemHelper.SetSelectedGameObject(null);
 
             if (!inFreeCamMode)
@@ -381,6 +395,10 @@ namespace UnityExplorer.UI.Panels
 
                 if (FreeCamPanel.blockFreecamMovementToggle.isOn){
                     return;
+                }
+
+                if (FreeCamPanel.followObject && !FreeCamPanel.ourCamera.transform.IsChildOf(FreeCamPanel.followObject.transform)){
+                    FreeCamPanel.ourCamera.transform.SetParent(FreeCamPanel.followObject.transform, true);
                 }
 
                 Transform transform = FreeCamPanel.ourCamera.transform;
