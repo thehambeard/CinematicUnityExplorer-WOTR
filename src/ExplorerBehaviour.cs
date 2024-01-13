@@ -76,39 +76,59 @@ namespace UnityExplorer
 
     // Cinematic stuff
 
-    public class PauseListener : MonoBehaviour
+    public class KeypressListener : MonoBehaviour
     {
-        internal static PauseListener Instance { get; private set; }
+        internal static KeypressListener Instance { get; private set; }
 
 #if CPP
-        public PauseListener(System.IntPtr ptr) : base(ptr) { }
+        public KeypressListener(System.IntPtr ptr) : base(ptr) { }
 #endif
-
-        public static TimeScaleWidget timeScaleWidget;
+        bool frameSkip;
 
         internal static void Setup()
         {
 #if CPP
-            ClassInjector.RegisterTypeInIl2Cpp<PauseListener>();
+            ClassInjector.RegisterTypeInIl2Cpp<KeypressListener>();
 #endif
 
-            GameObject obj = new("PauseListener");
+            GameObject obj = new("KeypressListener");
             DontDestroyOnLoad(obj);
             obj.hideFlags = HideFlags.HideAndDontSave;
-            Instance = obj.AddComponent<PauseListener>();
-            timeScaleWidget = UIManager.GetTimeScaleWidget();
+            Instance = obj.AddComponent<KeypressListener>();
         }
 
         public void Update()
         {
+            // Continous checks and actions
+            stopFrameSkip();
+            maybeForcePause();
+
             if (InputManager.GetKeyDown(KeyCode.Pause))
             {
-                timeScaleWidget.PauseToggle();
+                UIManager.GetTimeScaleWidget().PauseToggle();
             }
 
-            // Force pause no matter the game timescale changes.
-            if (timeScaleWidget.IsPaused() && Time.timeScale != 0) {
-                timeScaleWidget.SetTimeScale(0f);
+            // FrameSkip
+            if (InputManager.GetKeyDown(KeyCode.PageDown))
+            {
+                if (UIManager.GetTimeScaleWidget().IsPaused()) {
+                    UIManager.GetTimeScaleWidget().PauseToggle();
+                    frameSkip = true;
+                }
+            }
+        }
+
+        void stopFrameSkip(){
+            if (frameSkip && !UIManager.GetTimeScaleWidget().IsPaused()){
+                frameSkip = false;
+                UIManager.GetTimeScaleWidget().PauseToggle();
+            }
+        }
+
+        void maybeForcePause(){
+            // Force pause no matter the game timescale changes
+            if (UIManager.GetTimeScaleWidget().IsPaused() && Time.timeScale != 0) {
+                UIManager.GetTimeScaleWidget().SetTimeScale(0f);
             }
         }
     }

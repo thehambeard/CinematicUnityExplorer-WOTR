@@ -59,7 +59,7 @@ namespace UnityExplorer
             UnityCrashPrevention.Init();
 
             //Extra inits
-            PauseListener.Setup();   
+            KeypressListener.Setup();   
         }
 
         // Do a delayed setup so that objects aren't destroyed instantly.
