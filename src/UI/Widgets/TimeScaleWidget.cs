@@ -26,7 +26,7 @@ namespace UnityExplorer.UI.Widgets
         ButtonRef lockBtn;
         bool locked;
         InputFieldRef timeInput;
-        float desiredTime;
+        float desiredTime = 1;
         bool settingTimeScale;
         bool pause;
 
@@ -46,7 +46,8 @@ namespace UnityExplorer.UI.Widgets
                 SetTimeScale(1f); //or previous timescale
             }
             locked = pause;
-            desiredTime = pause ? 0 : 1;
+            desiredTime = pause ? 0f : 1f;
+            //slider.Set(pause ? 0f : 1f);
 
             UpdatePauseButton();
         }
@@ -68,8 +69,8 @@ namespace UnityExplorer.UI.Widgets
         {
             if (float.TryParse(val, out float f))
             {
-                SetTimeScale(f);
                 desiredTime = f;
+                //slider.Set(f);
             }
         }
 
@@ -77,11 +78,14 @@ namespace UnityExplorer.UI.Widgets
         {
             if (pause){
                 pause = false;
-                desiredTime = 1;
+                desiredTime = 1f;
+                //slider.Set(1f);
                 SetTimeScale(desiredTime);
             }
             else {
                 OnTimeInputEndEdit(timeInput.Text);
+                // We assume the normal timescale is 1.0, but we will stop setting it on Update() so the game can handle it.
+                SetTimeScale(1.0f);
             }
             
             locked = !locked;
@@ -113,6 +117,13 @@ namespace UnityExplorer.UI.Widgets
             lockBtn = UIFactory.CreateButton(parent, "PauseButton", "Lock", new Color(0.2f, 0.2f, 0.2f));
             UIFactory.SetLayoutElement(lockBtn.Component.gameObject, minHeight: 25, minWidth: 50);
             lockBtn.OnClick += OnPauseButtonClicked;
+
+            GameObject sliderObj = UIFactory.CreateSlider(parent, "Slider_time_scale", out Slider slider);
+            UIFactory.SetLayoutElement(sliderObj, minHeight: 25, minWidth: 75, flexibleWidth: 0);
+            slider.onValueChanged.AddListener((newTimeScale) => desiredTime = newTimeScale);
+            slider.m_FillImage.color = Color.clear;
+            slider.minValue = 0f;
+            slider.maxValue = 2f;
         }
 
         // Only allow Time.timeScale to be set if the user hasn't "locked" it or if we are setting the value internally.
