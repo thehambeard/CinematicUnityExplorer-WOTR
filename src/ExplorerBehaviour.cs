@@ -8,6 +8,7 @@ using Il2CppInterop.Runtime.Injection;
 #endif
 #endif
 using UnityExplorer.UI.Panels;
+using UnityExplorer.UI.Widgets;
 using System;
 
 
@@ -75,46 +76,40 @@ namespace UnityExplorer
 
     // Cinematic stuff
 
-    public class TimeScaleController : MonoBehaviour
+    public class PauseListener : MonoBehaviour
     {
-        internal static TimeScaleController Instance { get; private set; }
+        internal static PauseListener Instance { get; private set; }
 
 #if CPP
-        public TimeScaleController(System.IntPtr ptr) : base(ptr) { }
+        public PauseListener(System.IntPtr ptr) : base(ptr) { }
 #endif
 
-        public bool pause;
-        bool settingTimeScale;
+        public static TimeScaleWidget timeScaleWidget;
 
         internal static void Setup()
         {
 #if CPP
-            ClassInjector.RegisterTypeInIl2Cpp<TimeScaleController>();
+            ClassInjector.RegisterTypeInIl2Cpp<PauseListener>();
 #endif
 
-            GameObject obj = new("TimeScaleController");
+            GameObject obj = new("PauseListener");
             DontDestroyOnLoad(obj);
             obj.hideFlags = HideFlags.HideAndDontSave;
-            Instance = obj.AddComponent<TimeScaleController>(); 
+            Instance = obj.AddComponent<PauseListener>();
+            timeScaleWidget = UIManager.GetTimeScaleWidget();
         }
 
         public void Update()
         {
             if (InputManager.GetKeyDown(KeyCode.Pause))
             {
-                pause = !pause;
-                if (pause)
-                    SetTimeScale(0f);
-                else
-                    SetTimeScale(1f);
+                timeScaleWidget.PauseToggle();
             }
-        }
 
-        void SetTimeScale(float time)
-        {
-            settingTimeScale = true;
-            Time.timeScale = time;
-            settingTimeScale = false;
+            // Force pause no matter the game timescale changes.
+            if (timeScaleWidget.IsPaused() && Time.timeScale != 0) {
+                timeScaleWidget.SetTimeScale(0f);
+            }
         }
     }
 

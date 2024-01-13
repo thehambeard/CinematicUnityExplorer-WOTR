@@ -165,6 +165,8 @@ namespace UnityExplorer.UI
             panel.SetActive(active);
         }
 
+        public static TimeScaleWidget GetTimeScaleWidget() { return timeScaleWidget;}
+
         // navbar
 
         public static void SetNavBarAnchor()

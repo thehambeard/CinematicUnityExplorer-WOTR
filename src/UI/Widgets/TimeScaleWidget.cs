@@ -10,7 +10,7 @@ using IL2CPPUtils = Il2CppInterop.Common.Il2CppInteropUtils;
 
 namespace UnityExplorer.UI.Widgets
 {
-    internal class TimeScaleWidget
+    public class TimeScaleWidget
     {
         public TimeScaleWidget(GameObject parent)
         {
@@ -28,22 +28,34 @@ namespace UnityExplorer.UI.Widgets
         InputFieldRef timeInput;
         float desiredTime;
         bool settingTimeScale;
-        TimeScaleController timeScaleController = GameObject.Find("TimeScaleController").GetComponent<TimeScaleController>();
+        bool pause;
 
         public void Update()
         {
-            //We don't want Unity Explorer's native time scale control to interfere with ours.
-            if (!timeScaleController.pause){
-                // Fallback in case Time.timeScale patch failed for whatever reason
-                if (locked)
-                    SetTimeScale(desiredTime);
+            // Fallback in case Time.timeScale patch failed for whatever reason
+            if (locked)
+                SetTimeScale(desiredTime);
 
-                if (!timeInput.Component.isFocused)
-                    timeInput.Text = Time.timeScale.ToString("F2");
-            }
+            if (!timeInput.Component.isFocused)
+                timeInput.Text = Time.timeScale.ToString("F2");
         }
 
-        void SetTimeScale(float time)
+        public void PauseToggle(){
+            pause = !pause;
+            if (!pause) {
+                SetTimeScale(1f); //or previous timescale
+            }
+            locked = pause;
+            desiredTime = pause ? 0 : 1;
+
+            UpdatePauseButton();
+        }
+
+        public bool IsPaused(){
+            return pause;
+        }
+
+        public void SetTimeScale(float time)
         {
             settingTimeScale = true;
             Time.timeScale = time;
@@ -63,10 +75,22 @@ namespace UnityExplorer.UI.Widgets
 
         void OnPauseButtonClicked()
         {
-            OnTimeInputEndEdit(timeInput.Text);
-
+            if (pause){
+                pause = false;
+                desiredTime = 1;
+                SetTimeScale(desiredTime);
+            }
+            else {
+                OnTimeInputEndEdit(timeInput.Text);
+            }
+            
             locked = !locked;
 
+            UpdatePauseButton();
+        }
+
+        void UpdatePauseButton()
+        {
             Color color = locked ? new Color(0.3f, 0.3f, 0.2f) : new Color(0.2f, 0.2f, 0.2f);
             RuntimeHelper.SetColorBlock(lockBtn.Component, color, color * 1.2f, color * 0.7f);
             lockBtn.ButtonText.text = locked ? "Unlock" : "Lock";
@@ -111,7 +135,7 @@ namespace UnityExplorer.UI.Widgets
 
         static bool Prefix_Time_set_timeScale()
         {
-            return Instance.timeScaleController.pause || !Instance.locked || Instance.settingTimeScale;
+            return !Instance.locked || Instance.settingTimeScale;
         }
     }
 }
