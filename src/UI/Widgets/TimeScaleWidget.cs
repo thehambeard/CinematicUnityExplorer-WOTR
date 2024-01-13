@@ -114,16 +114,16 @@ namespace UnityExplorer.UI.Widgets
             timeInput.Text = string.Empty;
             timeInput.Text = Time.timeScale.ToString();
 
-            lockBtn = UIFactory.CreateButton(parent, "PauseButton", "Lock", new Color(0.2f, 0.2f, 0.2f));
-            UIFactory.SetLayoutElement(lockBtn.Component.gameObject, minHeight: 25, minWidth: 50);
-            lockBtn.OnClick += OnPauseButtonClicked;
-
             GameObject sliderObj = UIFactory.CreateSlider(parent, "Slider_time_scale", out Slider slider);
             UIFactory.SetLayoutElement(sliderObj, minHeight: 25, minWidth: 75, flexibleWidth: 0);
             slider.onValueChanged.AddListener((newTimeScale) => desiredTime = newTimeScale);
             slider.m_FillImage.color = Color.clear;
             slider.minValue = 0f;
             slider.maxValue = 2f;
+
+            lockBtn = UIFactory.CreateButton(parent, "PauseButton", "Lock", new Color(0.2f, 0.2f, 0.2f));
+            UIFactory.SetLayoutElement(lockBtn.Component.gameObject, minHeight: 25, minWidth: 50);
+            lockBtn.OnClick += OnPauseButtonClicked;
         }
 
         // Only allow Time.timeScale to be set if the user hasn't "locked" it or if we are setting the value internally.
