@@ -49,6 +49,7 @@ namespace UnityExplorer.UI.Panels
         public static Toggle blockFreecamMovementToggle;
         static InputFieldRef positionInput;
         static InputFieldRef moveSpeedInput;
+        static Text followObjectLabel;
         static ButtonRef inspectButton;
 
         public static GameObject followObject = null;
@@ -208,6 +209,9 @@ namespace UnityExplorer.UI.Panels
 
             AddSpacer(5);
 
+            followObjectLabel = UIFactory.CreateLabel(ContentRoot, "CurrentFollowObject", "Not following any object.");
+            UIFactory.SetLayoutElement(followObjectLabel.gameObject, minWidth: 100, minHeight: 25);
+
             ButtonRef followButton = UIFactory.CreateButton(ContentRoot, "FollowButton", "Make camera Follow GameObject");
             UIFactory.SetLayoutElement(followButton.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
             followButton.OnClick += FollowButton_OnClick;
@@ -217,9 +221,6 @@ namespace UnityExplorer.UI.Panels
             ButtonRef releaseFollowButton = UIFactory.CreateButton(ContentRoot, "ReleaseFollowButton", "Release Follow GameObject");
             UIFactory.SetLayoutElement(releaseFollowButton.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
             releaseFollowButton.OnClick += ReleaseFollowButton_OnClick;
-
-            //Text followObjectLabel = UIFactory.CreateLabel(ContentRoot, "CurrentFollowObject", out (followObject ? followObject.name : ""));
-            //UIFactory.SetLayoutElement(followObjectLabel.gameObject, minWidth: 100, minHeight: 25);
 
             AddSpacer(5);
 
@@ -286,9 +287,14 @@ namespace UnityExplorer.UI.Panels
             SetToggleButtonState();
         }
 
+        public static void FollowObjectAction(GameObject obj){
+            followObject = obj;
+            followObjectLabel.text = $"Following: {obj.name}";
+        }
+
         void FollowButton_OnClick()
         {
-            MouseInspector.Instance.StartInspect(MouseInspectMode.World, (obj) => followObject = obj);
+            MouseInspector.Instance.StartInspect(MouseInspectMode.World, FollowObjectAction);
         }
 
         void ReleaseFollowButton_OnClick()
@@ -296,6 +302,7 @@ namespace UnityExplorer.UI.Panels
             if (followObject && ourCamera.transform.IsChildOf(followObject.transform)){
                 ourCamera.transform.SetParent(null, true);
                 followObject = null;
+                followObjectLabel.text = "Not following any object";
             }
         }
 
@@ -393,12 +400,16 @@ namespace UnityExplorer.UI.Panels
                     return;
                 }
 
-                if (FreeCamPanel.blockFreecamMovementToggle.isOn){
-                    return;
-                }
-
                 if (FreeCamPanel.followObject && !FreeCamPanel.ourCamera.transform.IsChildOf(FreeCamPanel.followObject.transform)){
                     FreeCamPanel.ourCamera.transform.SetParent(FreeCamPanel.followObject.transform, true);
+                }
+
+
+
+                // ------------- Handle input ----------------
+
+                if (FreeCamPanel.blockFreecamMovementToggle.isOn){
+                    return;
                 }
 
                 Transform transform = FreeCamPanel.ourCamera.transform;

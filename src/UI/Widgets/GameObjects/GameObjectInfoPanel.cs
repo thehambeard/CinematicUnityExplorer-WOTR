@@ -293,7 +293,7 @@ namespace UnityExplorer.UI.Widgets
             FollowObjectButton = UIFactory.CreateButton(firstRow, "FollowObjectButton", "Follow object with Freecam", new Color(0.2f, 0.2f, 0.2f));
             FollowObjectButton.ButtonText.fontSize = 13;
             UIFactory.SetLayoutElement(FollowObjectButton.Component.gameObject, minHeight: 25, minWidth: 100);
-            FollowObjectButton.OnClick += () => FreeCamPanel.followObject = this.Target.gameObject;
+            FollowObjectButton.OnClick += () => FreeCamPanel.FollowObjectAction(this.Target.gameObject);
 
             this.PathInput = UIFactory.CreateInputField(firstRow, "PathInput", "...");
             PathInput.Component.textComponent.color = Color.grey;
