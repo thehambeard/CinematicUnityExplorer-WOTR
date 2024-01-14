@@ -51,6 +51,7 @@ namespace UnityExplorer.UI.Panels
         static InputFieldRef moveSpeedInput;
         static Text followObjectLabel;
         static ButtonRef inspectButton;
+        static bool disabledCinemachine;
 
         public static GameObject followObject = null;
         internal static void BeginFreecam()
@@ -97,6 +98,7 @@ namespace UnityExplorer.UI.Panels
                 {
                     usingGameCamera = true;
                     ourCamera = lastMainCamera;
+                    MaybeToggleCinemachine(false);
                 }
             }
 
@@ -132,6 +134,8 @@ namespace UnityExplorer.UI.Panels
 
             if (usingGameCamera)
             {
+
+                MaybeToggleCinemachine(true);
                 ourCamera = null;
 
                 if (lastMainCamera)
@@ -154,6 +158,28 @@ namespace UnityExplorer.UI.Panels
 
             if (lastMainCamera)
                 lastMainCamera.enabled = true;
+        }
+
+        // Experimental feature to automatically disable cinemachine when turning on the gameplay freecam.
+        // If it causes problems in some games we should consider removing it or making it a toggle.
+        // Also, if there are more generic Unity components that control the camera we should include them here.
+        // Not sure if a cinemachine can be inside another gameobject and not in the maincamera component, but we should take that in mind if this doesn't work in some games.
+        static void MaybeToggleCinemachine(bool enable){
+            // If we want to enable cinemachine but never disabled don't even look for it
+            if(enable && !disabledCinemachine)
+                return;
+            
+            if (ourCamera){
+                IEnumerable<Behaviour> comps = ourCamera.GetComponents<Behaviour>();
+                foreach (Behaviour comp in comps)
+                {
+                    if (comp.GetType().ToString() == "Cinemachine.CinemachineBrain"){
+                        comp.enabled = enable;
+                        disabledCinemachine = !enable;
+                        break;
+                    }
+                }
+            }
         }
 
         static void SetCameraPosition(Vector3 pos)
@@ -212,13 +238,13 @@ namespace UnityExplorer.UI.Panels
             followObjectLabel = UIFactory.CreateLabel(ContentRoot, "CurrentFollowObject", "Not following any object.");
             UIFactory.SetLayoutElement(followObjectLabel.gameObject, minWidth: 100, minHeight: 25);
 
-            ButtonRef followButton = UIFactory.CreateButton(ContentRoot, "FollowButton", "Make camera Follow GameObject");
+            GameObject followObjectRow = UIFactory.CreateHorizontalGroup(ContentRoot, $"FollowObjectRow", false, false, true, true, 3, default, new(1, 1, 1, 0));
+
+            ButtonRef followButton = UIFactory.CreateButton(followObjectRow, "FollowButton", "Follow GameObject");
             UIFactory.SetLayoutElement(followButton.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
             followButton.OnClick += FollowButton_OnClick;
 
-            AddSpacer(5);
-
-            ButtonRef releaseFollowButton = UIFactory.CreateButton(ContentRoot, "ReleaseFollowButton", "Release Follow GameObject");
+            ButtonRef releaseFollowButton = UIFactory.CreateButton(followObjectRow, "ReleaseFollowButton", "Release Follow GameObject");
             UIFactory.SetLayoutElement(releaseFollowButton.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
             releaseFollowButton.OnClick += ReleaseFollowButton_OnClick;
 
