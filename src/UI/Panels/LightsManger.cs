@@ -123,7 +123,10 @@ namespace UnityExplorer.UI.Panels
             //Inspect GameObject
             ButtonRef inspectButton = UIFactory.CreateButton(horiGroup, "InspectButton", "Config");
             UIFactory.SetLayoutElement(inspectButton.GameObject, minWidth: 80, minHeight: 25, flexibleWidth: 9999);
-            inspectButton.OnClick += () => {InspectorManager.Inspect(light.GetComponent<Light>());};
+            inspectButton.OnClick += () => InspectorManager.InspectWithFilters(light.GetComponent<Light>(), "Light",
+                UnityExplorer.Inspectors.MemberFilter.Property |
+                UnityExplorer.Inspectors.MemberFilter.Field
+            );
 
             //Move to Camera
             ButtonRef moveToCameraButton = UIFactory.CreateButton(horiGroup, "MoveToCamera", "Move to Camera");

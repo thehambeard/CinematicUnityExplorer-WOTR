@@ -32,7 +32,7 @@ namespace UnityExplorer.UI.Panels
         static ButtonRef updateEffects;
         List<GameObject> UIElements = new List<GameObject>();
 
-        public struct PPEffect
+        public class PPEffect
         {
             public PPEffect(object obj)
             {
@@ -174,7 +174,10 @@ namespace UnityExplorer.UI.Panels
 
                     ButtonRef openEffect = UIFactory.CreateButton(buttonsGroup, $"Inspect {obj.Object}", $"Obj{i}");
                     UIFactory.SetLayoutElement(openEffect.GameObject, minHeight: 25, minWidth: 40);
-                    openEffect.OnClick += () => InspectorManager.Inspect(obj.Object);
+                    openEffect.OnClick += () => InspectorManager.InspectWithFilters(obj.Object, effect,
+                        UnityExplorer.Inspectors.MemberFilter.Property |
+                        UnityExplorer.Inspectors.MemberFilter.Field
+                    );
                 }
             }
         }
