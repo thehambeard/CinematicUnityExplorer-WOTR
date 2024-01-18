@@ -24,7 +24,8 @@ namespace UnityExplorer.UI
             Clipboard,
             Freecam,
             LightsManager,
-            CamPaths
+            CamPaths,
+            PostProcessingPanel
         }
 
         public enum VerticalAnchor
@@ -46,7 +47,7 @@ namespace UnityExplorer.UI
 
         public static RectTransform NavBarRect;
         public static GameObject NavbarTabButtonHolder;
-        private static readonly Vector2 NAVBAR_DIMENSIONS = new(1300f, 35f);
+        private static readonly Vector2 NAVBAR_DIMENSIONS = new(1400f, 35f);
 
         private static ButtonRef closeBtn;
         private static TimeScaleWidget timeScaleWidget;
@@ -94,6 +95,7 @@ namespace UnityExplorer.UI
             UIPanels.Add(Panels.Freecam, new FreeCamPanel(UiBase));
             UIPanels.Add(Panels.LightsManager, new LightsManager(UiBase));
             UIPanels.Add(Panels.CamPaths, new CamPaths(UiBase));
+            UIPanels.Add(Panels.PostProcessingPanel, new PostProcessingPanel(UiBase));
             UIPanels.Add(Panels.Clipboard, new ClipboardPanel(UiBase));
             UIPanels.Add(Panels.ConsoleLog, new LogPanel(UiBase));
             UIPanels.Add(Panels.Options, new OptionsPanel(UiBase));
