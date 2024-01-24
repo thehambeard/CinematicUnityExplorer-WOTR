@@ -31,6 +31,7 @@ namespace UnityExplorer.UI.Panels
         public static Camera ourCamera;
         internal static Camera lastMainCamera;
         internal static FreeCamBehaviour freeCamScript;
+        internal static CatmullRom.CatmullRomMover cameraPathMover;
 
         internal static float desiredMoveSpeed = 5f;
 
@@ -121,6 +122,9 @@ namespace UnityExplorer.UI.Panels
             if (!freeCamScript)
                 freeCamScript = ourCamera.gameObject.AddComponent<FreeCamBehaviour>();
 
+            if (!cameraPathMover)
+                cameraPathMover = ourCamera.gameObject.AddComponent<CatmullRom.CatmullRomMover>();
+
             ourCamera.transform.position = (Vector3)currentUserCameraPosition;
             ourCamera.transform.rotation = (Quaternion)currentUserCameraRotation;
 
@@ -154,6 +158,12 @@ namespace UnityExplorer.UI.Panels
             {
                 GameObject.Destroy(freeCamScript);
                 freeCamScript = null;
+            }
+
+            if (cameraPathMover)
+            {
+                GameObject.Destroy(cameraPathMover);
+                cameraPathMover = null;
             }
 
             if (lastMainCamera)

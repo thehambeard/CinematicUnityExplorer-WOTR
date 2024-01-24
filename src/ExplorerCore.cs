@@ -7,6 +7,7 @@ global using UnityEngine;
 global using UnityEngine.UI;
 global using UniverseLib;
 global using UniverseLib.Utility;
+using UnityExplorer.CatmullRom;
 using UnityExplorer.Config;
 using UnityExplorer.ObjectExplorer;
 using UnityExplorer.Runtime;
@@ -28,8 +29,6 @@ namespace UnityExplorer
         public const string DEFAULT_EXPLORER_FOLDER_NAME = "sinai-dev-UnityExplorer";
 
         public static HarmonyLib.Harmony Harmony { get; } = new HarmonyLib.Harmony(GUID);
-
-        public static CatmullRom CameraPathsManager = null;
 
         /// <summary>
         /// Initialize UnityExplorer with the provided Loader implementation.
@@ -59,7 +58,7 @@ namespace UnityExplorer
             UnityCrashPrevention.Init();
 
             //Extra inits
-            KeypressListener.Setup();   
+            KeypressListener.Setup();
         }
 
         // Do a delayed setup so that objects aren't destroyed instantly.
@@ -85,9 +84,6 @@ namespace UnityExplorer
             {
                 UIManager.ShowMenu = !UIManager.ShowMenu;
             }
-
-            if(CameraPathsManager != null)
-                CameraPathsManager.MaybeRunPath();
         }
 
 

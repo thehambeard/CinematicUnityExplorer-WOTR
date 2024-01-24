@@ -21,20 +21,18 @@ namespace UnityExplorer.UI.Panels
         {
         }
 
-        public override string Name => "CamPaths";
+        public override string Name => "Cam Paths";
         public override UIManager.Panels PanelType => UIManager.Panels.CamPaths;
-        public override int MinWidth => 1000;
+        public override int MinWidth => 600;
         public override int MinHeight => 600;
         public override Vector2 DefaultAnchorMin => new(0.4f, 0.4f);
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
         public override bool NavButtonWanted => true;
         public override bool ShouldSaveActiveState => true;
-		public List<CatmullRom.PathControlPoint> controlPoints = new List<CatmullRom.PathControlPoint>();
+		public List<CatmullRom.CatmullRomPoint> controlPoints = new List<CatmullRom.CatmullRomPoint>();
         List<GameObject> UINodes = new List<GameObject>();
         bool closedLoop;
-
-        bool constantSpeed;
-        int pathTotalFrames = 2000;
+        float speed = 10;
 
         // ~~~~~~~~ UI construction / callbacks ~~~~~~~~
 
@@ -44,24 +42,27 @@ namespace UnityExplorer.UI.Panels
                 default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
             UIFactory.SetLayoutElement(horiGroup, minHeight: 25, flexibleWidth: 9999);
 
-            ButtonRef startButton = UIFactory.CreateButton(horiGroup, "Start", "Start CamPath");
-            UIFactory.SetLayoutElement(startButton.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
+            ButtonRef startButton = UIFactory.CreateButton(horiGroup, "Start", "▶");
+            UIFactory.SetLayoutElement(startButton.GameObject, minWidth: 50, minHeight: 25);
+            startButton.ButtonText.fontSize = 20;
             startButton.OnClick += StartButton_OnClick;
 
-            ButtonRef pauseContinueButton = UIFactory.CreateButton(horiGroup, "Pause/Continue", "Pause/Continue");
-            UIFactory.SetLayoutElement(pauseContinueButton.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
-            pauseContinueButton.OnClick += PauseContinue_OnClick;
+            ButtonRef pauseContinueButton = UIFactory.CreateButton(horiGroup, "Pause/Continue", "❚❚/▶");
+            UIFactory.SetLayoutElement(pauseContinueButton.GameObject, minWidth: 50, minHeight: 25);
+            pauseContinueButton.ButtonText.fontSize = 20;
+            pauseContinueButton.OnClick += TogglePause_OnClick;
 
-            ButtonRef stopButton = UIFactory.CreateButton(horiGroup, "Stop", "Stop CamPath");
-            UIFactory.SetLayoutElement(stopButton.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
+            ButtonRef stopButton = UIFactory.CreateButton(horiGroup, "Stop", "■");
+            UIFactory.SetLayoutElement(stopButton.GameObject, minWidth: 50, minHeight: 25);
+            stopButton.ButtonText.fontSize = 20;
             stopButton.OnClick += Stop_OnClick;
 
             ButtonRef AddNode = UIFactory.CreateButton(horiGroup, "AddCamNode", "Add Cam node");
-            UIFactory.SetLayoutElement(AddNode.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
+            UIFactory.SetLayoutElement(AddNode.GameObject, minWidth: 150, minHeight: 25);
             AddNode.OnClick += AddNode_OnClick;
 
             ButtonRef DeletePath = UIFactory.CreateButton(horiGroup, "DeletePath", "Delete Path");
-            UIFactory.SetLayoutElement(DeletePath.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
+            UIFactory.SetLayoutElement(DeletePath.GameObject, minWidth: 150, minHeight: 25);
             DeletePath.OnClick += () => {controlPoints.Clear(); UpdateListNodes();};
 
             Toggle closedLoopToggle = new Toggle();
@@ -71,16 +72,9 @@ namespace UnityExplorer.UI.Panels
             closedLoopToggle.isOn = false;
             toggleClosedLoopText.text = "Close path in a loop";
 
-            Toggle constantspeedToggle = new Toggle();
-            GameObject toggleConstantSpeedObj = UIFactory.CreateToggle(horiGroup, "Constant speed", out constantspeedToggle, out Text toggleConstantSpeedText);
-            UIFactory.SetLayoutElement(toggleConstantSpeedObj, minHeight: 25, flexibleWidth: 9999);
-            constantspeedToggle.onValueChanged.AddListener((isConstantSpeed) => {constantSpeed = isConstantSpeed; UpdateListNodes();});
-            constantspeedToggle.isOn = false;
-            toggleConstantSpeedText.text = "Constant speed";
-
-            InputFieldRef CompletePathFramesInput = null;
-            AddInputField("Frames", "Constant speed complete path duration (in frames):", "Default: 2000", out CompletePathFramesInput, TotalFrames_OnEndEdit, false);
-            CompletePathFramesInput.Text = pathTotalFrames.ToString();
+            InputFieldRef SpeedInput = null;
+            AddInputField("Speed", "Path speed:", $"Default: {speed}", out SpeedInput, Speed_OnEndEdit, false);
+            SpeedInput.Text = speed.ToString();
         }
 
         private void UpdateListNodes(){
@@ -91,12 +85,12 @@ namespace UnityExplorer.UI.Panels
             }
 
             for(int i = 0; i < controlPoints.Count; i++) {
-                CatmullRom.PathControlPoint point = controlPoints[i];
+                CatmullRom.CatmullRomPoint point = controlPoints[i];
                 DrawNodeOptions(point, i);
             }
         }
 
-        private void DrawNodeOptions(CatmullRom.PathControlPoint point, int index){
+        private void DrawNodeOptions(CatmullRom.CatmullRomPoint point, int index){
             GameObject horiGroup = UIFactory.CreateHorizontalGroup(ContentRoot, "LightOptions", true, false, true, false, 4,
                 default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
             UIFactory.SetLayoutElement(horiGroup, minHeight: 25, flexibleWidth: 9999);
@@ -121,30 +115,7 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(destroyButton.GameObject, minWidth: 80, minHeight: 25, flexibleWidth: 9999);
             destroyButton.OnClick += () => {controlPoints.Remove(point); UpdateListNodes();};
 
-            //Frames
-            if (!constantSpeed){
-                InputFieldRef framesInput = null;
-                AddInputField("Frames", "Length (in frames):", $"Default: {point.frames}", out framesInput, (frames) => { FramesInput_OnEndEdit(point, index, frames); });
-                framesInput.Text = point.frames.ToString();
-            }
-
             //ShowPos and rot?
-        }
-
-        void PauseContinue_OnClick(){
-            if(ExplorerCore.CameraPathsManager.playingPath)
-                ExplorerCore.CameraPathsManager.Pause();
-            else
-                ExplorerCore.CameraPathsManager.Continue();
-        }
-
-        void Stop_OnClick(){
-            CatmullRom.PathControlPoint point = controlPoints[0];
-            ExplorerCore.CameraPathsManager.Stop();
-
-            FreeCamPanel.ourCamera.transform.position = point.position;
-            FreeCamPanel.ourCamera.transform.rotation = point.rotation;
-            FreeCamPanel.ourCamera.fieldOfView = point.fov;
         }
 
         GameObject AddInputField(string name, string labelText, string placeHolder, out InputFieldRef inputField, Action<string> onInputEndEdit, bool shouldDeleteOnUpdate = true)
@@ -155,10 +126,10 @@ namespace UnityExplorer.UI.Panels
                 UINodes.Add(row); //To delete it when we update the node list
 
             Text posLabel = UIFactory.CreateLabel(row, $"{name}_Label", labelText);
-            UIFactory.SetLayoutElement(posLabel.gameObject, minWidth: 100, minHeight: 25);
+            UIFactory.SetLayoutElement(posLabel.gameObject, minWidth: 80, minHeight: 25);
 
             inputField = UIFactory.CreateInputField(row, $"{name}_Input", placeHolder);
-            UIFactory.SetLayoutElement(inputField.GameObject, minWidth: 125, minHeight: 25, flexibleWidth: 9999);
+            UIFactory.SetLayoutElement(inputField.GameObject, minWidth: 50, minHeight: 25);
             inputField.Component.GetOnEndEdit().AddListener(onInputEndEdit);
 
             return row;
@@ -166,78 +137,52 @@ namespace UnityExplorer.UI.Panels
 
         void StartButton_OnClick()
         {
-            //float normalExtrusion = 0;
-            //float tangentExtrusion = 0;
-
-            if(ExplorerCore.CameraPathsManager == null)
-                ExplorerCore.CameraPathsManager = new CatmullRom(controlPoints.ToArray(), closedLoop);
-            else{
-                ExplorerCore.CameraPathsManager.Update(closedLoop);
-                ExplorerCore.CameraPathsManager.Update(controlPoints.ToArray());
+            if(GetCameraPathsManager()){
+                GetCameraPathsManager().setClosedLoop(closedLoop);
+                GetCameraPathsManager().setSplinePoints(controlPoints.ToArray());
+                GetCameraPathsManager().setSpeed(speed);
+                GetCameraPathsManager().StartPath();
             }
-
-            if(constantSpeed){
-                UpdateNodeFramesConstantspeed();
-            }
-
-            ExplorerCore.CameraPathsManager.StartPath();
         }
 
-        void FramesInput_OnEndEdit(CatmullRom.PathControlPoint point, int index, string input){
-            EventSystemHelper.SetSelectedGameObject(null);
-
-            if (!ParseUtility.TryParse(input, out int parsed, out Exception parseEx))
-            {
-                ExplorerCore.LogWarning($"Could not parse value: {parseEx.ReflectionExToString()}");
-                //ui_input.Text = point.frames.ToString();
-                return;
+        void TogglePause_OnClick(){
+            if(GetCameraPathsManager()){
+                GetCameraPathsManager().TogglePause();
             }
+        }
 
-            int frames = parsed;
-
-            if(frames > 1){
-                point.frames = frames;
-                controlPoints[index] = point;
+        void Stop_OnClick(){
+            if (GetCameraPathsManager()){
+                GetCameraPathsManager().Stop();
             }
-            else
-                throw new ArgumentException("Catmull Rom Error: Too few frames!");
         }
 
         void AddNode_OnClick(){
             Camera freeCam = FreeCamPanel.ourCamera;
-            CatmullRom.PathControlPoint point = new CatmullRom.PathControlPoint(freeCam.transform.position, freeCam.transform.rotation, freeCam.fieldOfView);
+            CatmullRom.CatmullRomPoint point = new CatmullRom.CatmullRomPoint(freeCam.transform.position, freeCam.transform.rotation, freeCam.fieldOfView);
+            ExplorerCore.LogWarning($"Added point: {point.position}");
             controlPoints.Add(point);
-
             UpdateListNodes();
         }
 
-        void UpdateNodeFramesConstantspeed(){
-            float[] d = ExplorerCore.CameraPathsManager.GenerateSplinePointsByRes(3000);
-            float dTotal = d.Sum();
-            int closedAdjustment = closedLoop ? 0 : 1;
-
-            for(int i = 0; i < controlPoints.Count - closedAdjustment; i++) {
-                CatmullRom.PathControlPoint point = controlPoints[i];
-                point.frames = (int)(pathTotalFrames *(d[i] / dTotal));
-                controlPoints[i] = point;
-            }
-
-            ExplorerCore.CameraPathsManager.Update(controlPoints.ToArray());
-        }
-        
-
-        void TotalFrames_OnEndEdit(string input)
+        void Speed_OnEndEdit(string input)
         {
             EventSystemHelper.SetSelectedGameObject(null);
 
             if (!ParseUtility.TryParse(input, out int parsed, out Exception parseEx))
             {
                 ExplorerCore.LogWarning($"Could not parse value: {parseEx.ReflectionExToString()}");
-                //pathTotalFrames.Text = pathTotalFrames.ToString();
                 return;
             }
 
-            pathTotalFrames = parsed;
+            speed = parsed;
+            if(GetCameraPathsManager()){
+                GetCameraPathsManager().setSpeed(speed);
+            }
+        }
+
+        private CatmullRom.CatmullRomMover GetCameraPathsManager(){
+            return FreeCamPanel.cameraPathMover;
         }
     }
 }
