@@ -89,7 +89,7 @@ namespace UnityExplorer.CatmullRom
         public CatmullRomMover(IntPtr ptr) : base(ptr) { }
 #endif
 
-        bool playingPath;
+        public bool playingPath;
         private bool closedLoop;
         private CatmullRomPoint[] splinePoints;
         // The point the camera will be following along the path

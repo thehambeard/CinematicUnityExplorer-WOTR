@@ -99,15 +99,15 @@ namespace UnityExplorer.UI.Panels
             //Move to Camera
             ButtonRef moveToCameraButton = UIFactory.CreateButton(horiGroup, "Copy Camera pos and rot", "Copy Camera pos and rot");
             UIFactory.SetLayoutElement(moveToCameraButton.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
-            moveToCameraButton.OnClick += () => {point.position = FreeCamPanel.ourCamera.transform.position; point.rotation = FreeCamPanel.ourCamera.transform.rotation; controlPoints[index] = point;};
+            moveToCameraButton.OnClick += () => {point.position = FreeCamPanel.ourCamera.transform.position; point.rotation = FreeCamPanel.ourCamera.transform.rotation; controlPoints[index] = point; EventSystemHelper.SetSelectedGameObject(null);};
 
             ButtonRef copyFovButton = UIFactory.CreateButton(horiGroup, "Copy Camera FoV", "Copy Camera FoV");
             UIFactory.SetLayoutElement(copyFovButton.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
-            copyFovButton.OnClick += () => {point.fov = FreeCamPanel.ourCamera.fieldOfView; controlPoints[index] = point;};
+            copyFovButton.OnClick += () => {point.fov = FreeCamPanel.ourCamera.fieldOfView; controlPoints[index] = point; EventSystemHelper.SetSelectedGameObject(null);};
 
             ButtonRef moveToPointButton = UIFactory.CreateButton(horiGroup, "Move Cam to Node", "Move Cam to Node");
             UIFactory.SetLayoutElement(moveToPointButton.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
-            moveToPointButton.OnClick += () => {FreeCamPanel.ourCamera.transform.position = point.position; FreeCamPanel.ourCamera.transform.rotation = point.rotation; FreeCamPanel.ourCamera.fieldOfView = point.fov;};
+            moveToPointButton.OnClick += () => {FreeCamPanel.ourCamera.transform.position = point.position; FreeCamPanel.ourCamera.transform.rotation = point.rotation; FreeCamPanel.ourCamera.fieldOfView = point.fov; EventSystemHelper.SetSelectedGameObject(null);};
 
             //Add node next
 
@@ -143,18 +143,24 @@ namespace UnityExplorer.UI.Panels
                 GetCameraPathsManager().setTime(time);
                 GetCameraPathsManager().StartPath();
             }
+
+            EventSystemHelper.SetSelectedGameObject(null);
         }
 
         void TogglePause_OnClick(){
             if(GetCameraPathsManager()){
                 GetCameraPathsManager().TogglePause();
             }
+
+            EventSystemHelper.SetSelectedGameObject(null);
         }
 
         void Stop_OnClick(){
             if (GetCameraPathsManager()){
                 GetCameraPathsManager().Stop();
             }
+
+            EventSystemHelper.SetSelectedGameObject(null);
         }
 
         void AddNode_OnClick(){
@@ -162,6 +168,8 @@ namespace UnityExplorer.UI.Panels
             CatmullRom.CatmullRomPoint point = new CatmullRom.CatmullRomPoint(freeCam.transform.position, freeCam.transform.rotation, freeCam.fieldOfView);
             controlPoints.Add(point);
             UpdateListNodes();
+
+            EventSystemHelper.SetSelectedGameObject(null);
         }
 
         void Time_OnEndEdit(string input)

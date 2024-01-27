@@ -1,5 +1,6 @@
-﻿using UniverseLib.Input;
+﻿using UnityExplorer.Config;
 using UnityExplorer.Inspectors;
+using UniverseLib.Input;
 using UniverseLib.UI;
 using UniverseLib.UI.Models;
 #if UNHOLLOWER
@@ -444,7 +445,7 @@ namespace UnityExplorer.UI.Panels
 
                 // ------------- Handle input ----------------
 
-                if (FreeCamPanel.blockFreecamMovementToggle.isOn){
+                if (FreeCamPanel.blockFreecamMovementToggle.isOn || FreeCamPanel.cameraPathMover.playingPath){
                     return;
                 }
 
@@ -455,34 +456,34 @@ namespace UnityExplorer.UI.Panels
 
                 float moveSpeed = FreeCamPanel.desiredMoveSpeed * 0.01665f; //"0.01665f" (60fps) in place of Time.DeltaTime. DeltaTime causes issues when game is paused.
 
-                if (InputManager.GetKey(KeyCode.LeftShift) || InputManager.GetKey(KeyCode.RightShift))
+                if (InputManager.GetKey(ConfigManager.Speed_Up_Movement.Value))
                     moveSpeed *= 10f;
 
-                if (InputManager.GetKey(KeyCode.LeftAlt))
+                if (InputManager.GetKey(ConfigManager.Speed_Down_Movement.Value))
                     moveSpeed *= 0.1f;
 
-                if (InputManager.GetKey(KeyCode.LeftArrow) || InputManager.GetKey(KeyCode.A))
+                if (InputManager.GetKey(ConfigManager.Left_1.Value) || InputManager.GetKey(ConfigManager.Left_2.Value))
                     transform.position += transform.right * -1 * moveSpeed;
 
-                if (InputManager.GetKey(KeyCode.RightArrow) || InputManager.GetKey(KeyCode.D))
+                if (InputManager.GetKey(ConfigManager.Right_1.Value) || InputManager.GetKey(ConfigManager.Right_2.Value))
                     transform.position += transform.right * moveSpeed;
 
-                if (InputManager.GetKey(KeyCode.UpArrow) || InputManager.GetKey(KeyCode.W))
+                if (InputManager.GetKey(ConfigManager.Forwards_1.Value) || InputManager.GetKey(ConfigManager.Forwards_2.Value))
                     transform.position += transform.forward * moveSpeed;
 
-                if (InputManager.GetKey(KeyCode.DownArrow) || InputManager.GetKey(KeyCode.S))
+                if (InputManager.GetKey(ConfigManager.Backwards_1.Value) || InputManager.GetKey(ConfigManager.Backwards_2.Value))
                     transform.position += transform.forward * -1 * moveSpeed;
 
-                if (InputManager.GetKey(KeyCode.Space) || InputManager.GetKey(KeyCode.PageUp))
+                if (InputManager.GetKey(ConfigManager.Up.Value))
                     transform.position += transform.up * moveSpeed;
 
-                if (InputManager.GetKey(KeyCode.LeftControl) || InputManager.GetKey(KeyCode.PageDown))
+                if (InputManager.GetKey(ConfigManager.Down.Value))
                     transform.position += transform.up * -1 * moveSpeed;
 
-                if (InputManager.GetKey(KeyCode.Q))
+                if (InputManager.GetKey(ConfigManager.Tilt_Left.Value))
                     transform.Rotate(0, 0, moveSpeed, Space.Self);
 
-                if (InputManager.GetKey(KeyCode.E))
+                if (InputManager.GetKey(ConfigManager.Tilt_Right.Value))
                     transform.Rotate(0, 0, - moveSpeed, Space.Self);
 
                 if (InputManager.GetMouseButton(1))
@@ -494,12 +495,12 @@ namespace UnityExplorer.UI.Panels
                     transform.localEulerAngles = new Vector3(newRotationY, newRotationX, transform.localEulerAngles.z);
                 }
 
-                if (InputManager.GetKey(KeyCode.KeypadMinus))
+                if (InputManager.GetKey(ConfigManager.Decrease_FOV.Value))
                 {
                     FreeCamPanel.ourCamera.fieldOfView -= moveSpeed; 
                 }
 
-                if (InputManager.GetKey(KeyCode.KeypadPlus))
+                if (InputManager.GetKey(ConfigManager.Increase_FOV.Value))
                 {
                     FreeCamPanel.ourCamera.fieldOfView += moveSpeed; 
                 }

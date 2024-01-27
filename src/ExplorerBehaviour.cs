@@ -1,4 +1,7 @@
-﻿using UnityExplorer.UI;
+﻿using UnityExplorer.Config;
+using UnityExplorer.UI;
+using UnityExplorer.UI.Panels;
+using UnityExplorer.UI.Widgets;
 using UniverseLib.Input;
 #if CPP
 #if UNHOLLOWER
@@ -7,8 +10,6 @@ using UnhollowerRuntimeLib;
 using Il2CppInterop.Runtime.Injection;
 #endif
 #endif
-using UnityExplorer.UI.Panels;
-using UnityExplorer.UI.Widgets;
 using System;
 
 
@@ -104,13 +105,13 @@ namespace UnityExplorer
             maybeForcePause();
             UIManager.GetPanel<UnityExplorer.UI.Panels.Misc>(UIManager.Panels.Misc).MaybeTakeScreenshot();
 
-            if (InputManager.GetKeyDown(KeyCode.Pause))
+            if (InputManager.GetKeyDown(ConfigManager.Pause.Value))
             {
                 UIManager.GetTimeScaleWidget().PauseToggle();
             }
 
             // FrameSkip
-            if (InputManager.GetKeyDown(KeyCode.PageDown))
+            if (InputManager.GetKeyDown(ConfigManager.Frameskip.Value))
             {
                 if (UIManager.GetTimeScaleWidget().IsPaused()) {
                     UIManager.GetTimeScaleWidget().PauseToggle();
@@ -118,22 +119,22 @@ namespace UnityExplorer
                 }
             }
 
-            if (InputManager.GetKeyDown(KeyCode.F12))
+            if (InputManager.GetKeyDown(ConfigManager.Screenshot.Value))
             {
                 UIManager.GetPanel<UnityExplorer.UI.Panels.Misc>(UIManager.Panels.Misc).screenshotStatus = UnityExplorer.UI.Panels.Misc.ScreenshotState.TurnOffUI;
             }
 
-            if (InputManager.GetKeyDown(KeyCode.Delete))
+            if (InputManager.GetKeyDown(ConfigManager.HUD_Toggle.Value))
             {
                 UIManager.GetPanel<UnityExplorer.UI.Panels.Misc>(UIManager.Panels.Misc).ToggleHUDElements();
             }
 
-            if (InputManager.GetKeyDown(KeyCode.Insert))
+            if (InputManager.GetKeyDown(ConfigManager.Freecam_Toggle.Value))
             {
                 FreeCamPanel.StartStopButton_OnClick();
             }
 
-            if (InputManager.GetKeyDown(KeyCode.Home))
+            if (InputManager.GetKeyDown(ConfigManager.Block_Freecam_Movement.Value))
             {
                 FreeCamPanel.blockFreecamMovementToggle.isOn = !FreeCamPanel.blockFreecamMovementToggle.isOn;
             }
