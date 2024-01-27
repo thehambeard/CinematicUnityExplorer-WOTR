@@ -228,12 +228,13 @@ namespace UnityExplorer.CatmullRom
             
             bool closedLoopFinalPoint = (closedLoop && currentPoint == splinePoints.Length - 1);
 
-            //Had tu add "splinePoints.Length" because C# mod doesnt work well with negative values
+            // Had tu add "splinePoints.Length" because C# mod doesnt work well with negative values
             int previousPoint = closedLoop ? (currentPoint + splinePoints.Length - 1)%(splinePoints.Length) : System.Math.Max(currentPoint - 1, 0);
             int endSegmentPoint = closedLoop ? (currentPoint + 1)%(splinePoints.Length) : System.Math.Min(currentPoint + 1, splinePoints.Length - 1);
             int nextPoint = closedLoop ? (currentPoint + 2)%(splinePoints.Length) : System.Math.Min(currentPoint + 2, splinePoints.Length - 1);
 
-            if (d >= 1) return closedLoop ? splinePoints[0] : splinePoints[splinePoints.Length - 1]; //Ideally we should really loop over tho, maybe d % 1.
+            // Ideally we should really loop over tho.
+            if (d >= 1) return closedLoop ? splinePoints[0] : splinePoints[splinePoints.Length - 1];
 
             p0 = splinePoints[previousPoint].position;
             r0 = CatmullRomPoint.QuaternionToVector4(splinePoints[previousPoint].rotation);
@@ -247,7 +248,7 @@ namespace UnityExplorer.CatmullRom
             p3 = splinePoints[nextPoint].position;
             r3 = CatmullRomPoint.QuaternionToVector4(splinePoints[nextPoint].rotation);
 
-            //Check if we are using the shortest path on the rotation. If not, change each rotation to represent that shortest path.
+            // Check if we are using the shortest path on the rotation. If not, change each rotation to represent that shortest path.
             if (Vector4.Dot(r0, r1) < 0)
                 r1 = - r1;
 
@@ -277,7 +278,7 @@ namespace UnityExplorer.CatmullRom
             return new CatmullRomPoint(position, rotation, fov);
         }
 
-        //Implementation from: https://qroph.github.io/2018/07/30/smooth-paths-using-catmull-rom-splines.html
+        // Implementation from: https://qroph.github.io/2018/07/30/smooth-paths-using-catmull-rom-splines.html
         private Vector3 CatmullRomInterpolation(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t){
             float tension = 0;
             float alpha = 0.5f;

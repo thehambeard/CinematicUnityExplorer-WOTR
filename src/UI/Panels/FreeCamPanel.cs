@@ -311,7 +311,7 @@ namespace UnityExplorer.UI.Panels
             return row;
         }
 
-        void StartStopButton_OnClick()
+        public static void StartStopButton_OnClick()
         {
             EventSystemHelper.SetSelectedGameObject(null);
 
@@ -342,7 +342,7 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        void SetToggleButtonState()
+        static void SetToggleButtonState()
         {
             if (inFreeCamMode)
             {

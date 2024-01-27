@@ -102,6 +102,7 @@ namespace UnityExplorer
             // Continous checks and actions
             stopFrameSkip();
             maybeForcePause();
+            UIManager.GetPanel<UnityExplorer.UI.Panels.Misc>(UIManager.Panels.Misc).MaybeTakeScreenshot();
 
             if (InputManager.GetKeyDown(KeyCode.Pause))
             {
@@ -115,6 +116,26 @@ namespace UnityExplorer
                     UIManager.GetTimeScaleWidget().PauseToggle();
                     frameSkip = true;
                 }
+            }
+
+            if (InputManager.GetKeyDown(KeyCode.F12))
+            {
+                UIManager.GetPanel<UnityExplorer.UI.Panels.Misc>(UIManager.Panels.Misc).screenshotStatus = UnityExplorer.UI.Panels.Misc.ScreenshotState.TurnOffUI;
+            }
+
+            if (InputManager.GetKeyDown(KeyCode.Delete))
+            {
+                UIManager.GetPanel<UnityExplorer.UI.Panels.Misc>(UIManager.Panels.Misc).ToggleHUDElements();
+            }
+
+            if (InputManager.GetKeyDown(KeyCode.Insert))
+            {
+                FreeCamPanel.StartStopButton_OnClick();
+            }
+
+            if (InputManager.GetKeyDown(KeyCode.Home))
+            {
+                FreeCamPanel.blockFreecamMovementToggle.isOn = !FreeCamPanel.blockFreecamMovementToggle.isOn;
             }
         }
 
