@@ -93,18 +93,18 @@ namespace UnityExplorer.CatmullRom
         private bool closedLoop;
         private CatmullRomPoint[] splinePoints;
         // The point the camera will be following along the path
+        private List<CatmullRomPoint> lookaheadPoints;
         private CatmullRomPoint lookahead;
         // How smooth the path is (beware of not making too many calculations per update tho)
         float lookaheadDelta;
+        float time;
         float speed;
         // Current position in the path, from 0 to 1
         float delta;
 
         public CatmullRomMover(){
             splinePoints = new CatmullRomPoint[] { };
-            speed = 10;
-            lookaheadDelta = 0.01f;
-            delta = lookaheadDelta;
+            lookaheadPoints = new List<CatmullRomPoint>();
         }
 
         public void StartPath(){
@@ -115,8 +115,10 @@ namespace UnityExplorer.CatmullRom
             }
             else {
                 playingPath = true;
+                delta = lookaheadDelta;
                 MoveCameraToPoint(splinePoints[0]);
-                lookahead = GetPointFromPath(delta);
+                CalculateLookahead();
+                lookahead = lookaheadPoints[(int)(lookaheadPoints.Count * lookaheadDelta)];
             }
         }
 
@@ -133,97 +135,78 @@ namespace UnityExplorer.CatmullRom
 
         public void setClosedLoop(bool newClosedLoop){
             closedLoop = newClosedLoop;
-            ExplorerCore.LogWarning("Update closedLoop!");
         }
 
         public void setSplinePoints(CatmullRomPoint[] newSplinePoints){
             splinePoints = newSplinePoints;
-            ExplorerCore.LogWarning("Update spline points!");
         }
 
-        public void setSpeed(float newSpeed){
-            speed = newSpeed;
-            lookaheadDelta = newSpeed / 1000;
+        public void setTime(float newTime){
+            time = newTime;
         }
 
-        public void Update(){
-            if (delta >= 1 && FreeCamPanel.ourCamera != null){
-                playingPath = false;
-                delta = lookaheadDelta;
-            }
-            if (playingPath) AdvanceMover(Time.deltaTime);
+        // We use FixedUpdate here to have a constant velocity no matter the time dilation the game is currently using,
+        // although the game should still run at a capped 60fps.
+        void FixedUpdate(){
+            if (playingPath) AdvanceMover(Time.fixedDeltaTime);
         }
-
-        /*
-        private CatmullRomPoint GetPointFromPath(float d){
-            //ExplorerCore.LogWarning(splinePoints.Length);
-            int currentSegment = (int)(splinePoints.Length * d); // have to do + 1 if closed loop
-            //ExplorerCore.LogWarning(currentSegment);
-            CatmullRomPoint lastPointInPath = splinePoints[Math.Min(currentSegment, splinePoints.Length - 1)];
-            CatmullRomPoint nextPointInPath = splinePoints[Math.Min(currentSegment + 1, splinePoints.Length - 1)];
-
-            float interpolationBetweenPaths = (d - (float)currentSegment / (float)splinePoints.Length) * (float)splinePoints.Length;
-            // Dumb Lerp to test things. Should use proper CatmullRom instead.
-            return lastPointInPath * (1 - interpolationBetweenPaths) + nextPointInPath * interpolationBetweenPaths;
-        }
-        */
 
         private CatmullRomPoint GetCurrentPoint(){
             return new CatmullRomPoint(FreeCamPanel.ourCamera.transform.position, FreeCamPanel.ourCamera.transform.rotation, FreeCamPanel.ourCamera.fieldOfView);
         }
 
         private void AdvanceMover(float dt){
-            // We use 0.01665f (60fps) in place of Time.DeltaTime so the camera moves at fullspeed even in slow motion.
-            float move = 0.01665f * speed; // units to move
+            // Units to move
+            float move = dt * speed;
             while (move > 0.0) {
                 CatmullRomPoint currentPoint = GetCurrentPoint();
-                // distance between target and current position
+                // Distance between target and current position
                 float room = Vector3.Distance(lookahead.position, currentPoint.position); 
 
-                // how much we're actually moving this iteration
-                // move the whole distance to the lookahead, or would the move cut us short
+                // How much we're actually moving this iteration
+                // Move the whole distance to the lookahead, or would the move variable cut us short
                 float actual = Math.Min(move, room);
 
                 MoveCameraStep(currentPoint, actual, room);
 
-                // update move to be the remaining amount we need to move
+                // Update move to be the remaining amount we need to move this frame
                 move -= actual;
-                //ExplorerCore.LogWarning($"move: {move}, actual: {actual}, room: {room}, delta:{delta}");
-                currentPoint = GetCurrentPoint();
-                if(delta > 1) break;
-                //ExplorerCore.LogWarning($"currentPoint.position: {currentPoint.position}, currentPoint.rotation: {currentPoint.rotation}");
 
-                // update room to check if we need a new lookahead
+                currentPoint = GetCurrentPoint();
+
+                // Update room to check if we need a new lookahead
                 room = Vector3.Distance(lookahead.position, currentPoint.position); 
-                // while ends, need another lookaheadDelta for the next Update
-                if (room <= 0) {
-                    delta += lookaheadDelta;
-                    lookahead = GetPointFromPath(delta);
+                // While ends, need another lookaheadDelta for the next Update
+                // It will do, at most, 2 iterations
+                while (room <= 0) {
+                    // If the camera reached the last lookAhead we stop it
+                    if (delta >= 1){
+                        playingPath = false;
+                        delta = 0;
+                    }
+                    delta = Math.Min(delta + lookaheadDelta, 1);
+
+                    // May not be as good as calculating GetPointFromPath(delta) itself, but since its a lookahead and not the actual cam position
+                    // the movement will still be smooth.
+                    int lookaheadIndex = (int)((lookaheadPoints.Count - 1) * delta);
+                    lookahead = lookaheadPoints[lookaheadIndex];
+                    room = Vector3.Distance(lookahead.position, currentPoint.position); 
                 }
             }
         }
 
         public void MoveCameraStep(CatmullRomPoint currentPoint, float actual, float room){
-            // move my position accordingly
-            //CatmullRomPoint direction = ((lookahead - currentPoint) / room)*actual;
-
             CatmullRomPoint direction = (lookahead - currentPoint).Normalize() * actual;
-            //float rotationDiff = Vector4.Distance(CatmullRomPoint.QuaternionToVector4(lookahead.rotation), CatmullRomPoint.QuaternionToVector4(currentPoint.rotation));
-            //ExplorerCore.LogWarning($"direction.rotation: {direction.rotation}, rotation diff: {rotationDiff}");
-
             Vector4 ra = CatmullRomPoint.QuaternionToVector4(currentPoint.rotation);
-            Vector4 rb = CatmullRomPoint.QuaternionToVector4(direction.rotation) * actual / room;
+            Vector4 rb = CatmullRomPoint.QuaternionToVector4(direction.rotation);
+            rb = rb * actual / room;
 
-            if (Vector4.Dot(ra, rb) < 0)
-            {
-                //ExplorerCore.LogWarning($"tengo que arreglar quaternion");
-                rb = - rb;
-            }
+            Vector4 newRot = ra + rb;
+            newRot.Normalize();
+
             FreeCamPanel.ourCamera.transform.position += direction.position;
-            FreeCamPanel.ourCamera.transform.rotation = CatmullRomPoint.Vector4ToQuaternion(ra + rb);
-            //FreeCamPanel.ourCamera.transform.rotation = lookahead.rotation;
+            FreeCamPanel.ourCamera.transform.rotation = CatmullRomPoint.Vector4ToQuaternion(newRot);
             FreeCamPanel.ourCamera.fieldOfView += direction.fov * actual / room;
-            //ExplorerCore.LogWarning($"current cam pos: {FreeCamPanel.ourCamera.transform.position} at d: {delta}");
         }
 
         public void MoveCameraToPoint(CatmullRomPoint newPoint){
@@ -232,30 +215,16 @@ namespace UnityExplorer.CatmullRom
             FreeCamPanel.ourCamera.fieldOfView = newPoint.fov;
         }
 
-        /*test*/
         private CatmullRomPoint GetPointFromPath(float d)
         {
-            Vector3 p0, p1, p2, p3; //Previous position, Start position, end position, Next position
-            Vector4 r0, r1, r2, r3; //Previous rotation, Start rotation, end rotation, Next rotation
+            Vector3 p0, p1, p2, p3; //Previous position, start position, end position, next position
+            Vector4 r0, r1, r2, r3; //Previous rotation, start rotation, end rotation, next rotation
             float fov0, fov1;
 
-            //Fix rotation
-            /*
-            for(int i = 0; i < splinePoints.Length; i++){
-                if(i>0 && Dot(splinePoints[i - 1].rotation, splinePoints[i].rotation) < 0){
-                    Quaternion q = splinePoints[i].rotation;
-                    splinePoints[i].rotation = new Quaternion(- q.x, - q.y, - q.z, - q.w);
-                    ExplorerCore.Log($"cambio orientacion n° {i}");
-                }
-            }
-            */
-            
             // First for loop goes through each individual control point and connects it to the next, so 0-1, 1-2, 2-3 and so on
             int closedAdjustment = closedLoop ? 0 : 1;
 
-            int currentPoint = (int)((splinePoints.Length - closedAdjustment) * d); // have to do + 1 if closed loop
-
-            //ExplorerCore.LogWarning($"currentPoint: {currentPoint}, d: {d}");
+            int currentPoint = (int)((splinePoints.Length - closedAdjustment) * d);
             
             bool closedLoopFinalPoint = (closedLoop && currentPoint == splinePoints.Length - 1);
 
@@ -264,7 +233,7 @@ namespace UnityExplorer.CatmullRom
             int endSegmentPoint = closedLoop ? (currentPoint + 1)%(splinePoints.Length) : System.Math.Min(currentPoint + 1, splinePoints.Length - 1);
             int nextPoint = closedLoop ? (currentPoint + 2)%(splinePoints.Length) : System.Math.Min(currentPoint + 2, splinePoints.Length - 1);
 
-            ExplorerCore.LogWarning($"p0: {previousPoint}, p1: {currentPoint}, p2: {endSegmentPoint}, p3: {nextPoint},");
+            if (d >= 1) return closedLoop ? splinePoints[0] : splinePoints[splinePoints.Length - 1]; //Ideally we should really loop over tho, maybe d % 1.
 
             p0 = splinePoints[previousPoint].position;
             r0 = CatmullRomPoint.QuaternionToVector4(splinePoints[previousPoint].rotation);
@@ -278,9 +247,7 @@ namespace UnityExplorer.CatmullRom
             p3 = splinePoints[nextPoint].position;
             r3 = CatmullRomPoint.QuaternionToVector4(splinePoints[nextPoint].rotation);
 
-            if (d >= 1) return splinePoints[currentPoint];
-
-            //Check if we are using the shortest path on the rotation. If not, change r1 to represent that shortest path.
+            //Check if we are using the shortest path on the rotation. If not, change each rotation to represent that shortest path.
             if (Vector4.Dot(r0, r1) < 0)
                 r1 = - r1;
 
@@ -293,14 +260,9 @@ namespace UnityExplorer.CatmullRom
             fov0 = splinePoints[currentPoint].fov;
             fov1 = splinePoints[endSegmentPoint].fov;
 
-            //float t = (d - (float)currentPoint / (float)(splinePoints.Length + closedAdjustment)) * (float)(splinePoints.Length + closedAdjustment);
             float t = ((splinePoints.Length - closedAdjustment) * d) % 1;
 
-            //ExplorerCore.LogWarning($"t: {t}, d: {d}");
-
             CatmullRomPoint newPoint = Evaluate(p0, p1, p2, p3, r0, r1, r2, r3, fov0, fov1, t);
-
-            //ExplorerCore.LogWarning($"p1.pos: {p1}, p2.pos: {p2}, t: {t}, dist-p1: {Vector3.Distance(GetCurrentPoint().position, p1)}, dist-p2: {Vector3.Distance(GetCurrentPoint().position, p2)}");
 
             return newPoint;
         }
@@ -358,8 +320,33 @@ namespace UnityExplorer.CatmullRom
             Vector4 d = r1;
 
             return a * t * t * t + b * t * t + c * t + d;
-            //return Vector4.Lerp(r1, r2, t);
         }
-    }
-    
+
+        void CalculateLookahead() {
+            // Physics engine executed FixedUpdate 50 times every second.
+            float frames = time * 50;
+            float pathLength = 0;
+            if (lookaheadPoints.Count > 0) lookaheadPoints.Clear();
+
+            for (int i = 0; i <= frames; i++){
+                CatmullRomPoint newPoint = GetPointFromPath(i / frames);
+                if (i != 0 && Vector4.Dot(CatmullRomPoint.QuaternionToVector4(lookaheadPoints[i - 1].rotation), CatmullRomPoint.QuaternionToVector4(newPoint.rotation)) < 0){
+                    newPoint.rotation = CatmullRomPoint.Vector4ToQuaternion(- CatmullRomPoint.QuaternionToVector4(newPoint.rotation));
+                }
+                lookaheadPoints.Add(newPoint);
+
+                if (i != 0){
+                    pathLength += Vector3.Distance(lookaheadPoints[i - 1].position, lookaheadPoints[i].position);
+                }
+            }
+
+            speed = pathLength / time;
+            lookaheadDelta = speed / 1000;
+
+            //ExplorerCore.LogWarning($"Calculating speed {speed}");
+            //ExplorerCore.LogWarning($"for time {time}");
+            //ExplorerCore.LogWarning($"on path length {pathLength}");
+            //ExplorerCore.LogWarning($"lookaheadDelta {lookaheadDelta}");
+        }
+    } 
 }

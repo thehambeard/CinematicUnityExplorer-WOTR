@@ -32,7 +32,7 @@ namespace UnityExplorer.UI.Panels
 		public List<CatmullRom.CatmullRomPoint> controlPoints = new List<CatmullRom.CatmullRomPoint>();
         List<GameObject> UINodes = new List<GameObject>();
         bool closedLoop;
-        float speed = 10;
+        float time = 10;
 
         // ~~~~~~~~ UI construction / callbacks ~~~~~~~~
 
@@ -57,8 +57,8 @@ namespace UnityExplorer.UI.Panels
             stopButton.ButtonText.fontSize = 20;
             stopButton.OnClick += Stop_OnClick;
 
-            ButtonRef AddNode = UIFactory.CreateButton(horiGroup, "AddCamNode", "Add Cam node");
-            UIFactory.SetLayoutElement(AddNode.GameObject, minWidth: 150, minHeight: 25);
+            ButtonRef AddNode = UIFactory.CreateButton(horiGroup, "AddCamNode", "+");
+            UIFactory.SetLayoutElement(AddNode.GameObject, minWidth: 50, minHeight: 25);
             AddNode.OnClick += AddNode_OnClick;
 
             ButtonRef DeletePath = UIFactory.CreateButton(horiGroup, "DeletePath", "Delete Path");
@@ -72,9 +72,9 @@ namespace UnityExplorer.UI.Panels
             closedLoopToggle.isOn = false;
             toggleClosedLoopText.text = "Close path in a loop";
 
-            InputFieldRef SpeedInput = null;
-            AddInputField("Speed", "Path speed:", $"Default: {speed}", out SpeedInput, Speed_OnEndEdit, false);
-            SpeedInput.Text = speed.ToString();
+            InputFieldRef TimeInput = null;
+            AddInputField("Time", "Path time (in seconds at 60fps):", $"Default: {time}", out TimeInput, Time_OnEndEdit, false);
+            TimeInput.Text = time.ToString();
         }
 
         private void UpdateListNodes(){
@@ -140,7 +140,7 @@ namespace UnityExplorer.UI.Panels
             if(GetCameraPathsManager()){
                 GetCameraPathsManager().setClosedLoop(closedLoop);
                 GetCameraPathsManager().setSplinePoints(controlPoints.ToArray());
-                GetCameraPathsManager().setSpeed(speed);
+                GetCameraPathsManager().setTime(time);
                 GetCameraPathsManager().StartPath();
             }
         }
@@ -160,12 +160,11 @@ namespace UnityExplorer.UI.Panels
         void AddNode_OnClick(){
             Camera freeCam = FreeCamPanel.ourCamera;
             CatmullRom.CatmullRomPoint point = new CatmullRom.CatmullRomPoint(freeCam.transform.position, freeCam.transform.rotation, freeCam.fieldOfView);
-            ExplorerCore.LogWarning($"Added point: {point.position}");
             controlPoints.Add(point);
             UpdateListNodes();
         }
 
-        void Speed_OnEndEdit(string input)
+        void Time_OnEndEdit(string input)
         {
             EventSystemHelper.SetSelectedGameObject(null);
 
@@ -175,9 +174,9 @@ namespace UnityExplorer.UI.Panels
                 return;
             }
 
-            speed = parsed;
+            time = parsed;
             if(GetCameraPathsManager()){
-                GetCameraPathsManager().setSpeed(speed);
+                GetCameraPathsManager().setTime(time);
             }
         }
 
