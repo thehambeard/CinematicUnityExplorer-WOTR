@@ -455,8 +455,6 @@ namespace UnityExplorer.UI.Panels
                     FreeCamPanel.ourCamera.transform.SetParent(FreeCamPanel.followObject.transform, true);
                 }
 
-
-
                 // ------------- Handle input ----------------
 
                 if (FreeCamPanel.blockFreecamMovementToggle.isOn || FreeCamPanel.cameraPathMover.playingPath){
@@ -521,7 +519,7 @@ namespace UnityExplorer.UI.Panels
                         float dirAngle = Mathf.Atan2(mouseDelta.y, mouseDelta.x);
                         dirAngle *= 180 / PI;
                         float newAngle = (dirAngle + tiltAngle) * PI / 180;
-                        Vector2 newMouseCoords = new Vector2(Mathf.Cos(newAngle), Mathf.Sin(newAngle) ).normalized * 2f * (speedModifier == 10 ? 3 : speedModifier);
+                        Vector2 newMouseCoords = new Vector2(Mathf.Cos(newAngle), Mathf.Sin(newAngle) ).normalized * mouseDelta.magnitude;
 
                         float newRotationX = transform.localEulerAngles.y + newMouseCoords.x;
                         float newRotationY = transform.localEulerAngles.x - newMouseCoords.y;

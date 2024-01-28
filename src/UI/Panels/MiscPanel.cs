@@ -160,7 +160,6 @@ namespace UnityExplorer.UI.Panels
             ReflectionInspector inspector = Pool<ReflectionInspector>.Borrow();
             List<CacheMember> members = CacheMemberFactory.GetCacheMembers(objType, inspector);
             foreach (CacheMember member in members){
-                ExplorerCore.LogWarning(member.NameForFiltering);
                 if (member is CacheProperty propertyMember && propertyMember.NameForFiltering == "QualitySettings.lodBias"){
                     lodBias = propertyMember;
                     break;
