@@ -29,6 +29,7 @@ namespace UnityExplorer.UI.Widgets
         float desiredTime = 1;
         bool settingTimeScale;
         bool pause;
+        Slider slider;
 
         public void Update()
         {
@@ -47,7 +48,7 @@ namespace UnityExplorer.UI.Widgets
             }
             locked = pause;
             desiredTime = pause ? 0f : 1f;
-            //slider.Set(pause ? 0f : 1f);
+            slider.value = desiredTime;
 
             UpdatePauseButton();
         }
@@ -70,7 +71,7 @@ namespace UnityExplorer.UI.Widgets
             if (float.TryParse(val, out float f))
             {
                 desiredTime = f;
-                //slider.Set(f);
+                slider.value = f;
             }
         }
 
@@ -79,7 +80,7 @@ namespace UnityExplorer.UI.Widgets
             if (pause){
                 pause = false;
                 desiredTime = 1f;
-                //slider.Set(1f);
+                slider.value = desiredTime;
                 SetTimeScale(desiredTime);
             }
             else {
@@ -114,10 +115,11 @@ namespace UnityExplorer.UI.Widgets
             timeInput.Text = string.Empty;
             timeInput.Text = Time.timeScale.ToString();
 
-            GameObject sliderObj = UIFactory.CreateSlider(parent, "Slider_time_scale", out Slider slider);
+            GameObject sliderObj = UIFactory.CreateSlider(parent, "Slider_time_scale", out slider);
             UIFactory.SetLayoutElement(sliderObj, minHeight: 25, minWidth: 75, flexibleWidth: 0);
             slider.onValueChanged.AddListener((newTimeScale) => desiredTime = newTimeScale);
             slider.m_FillImage.color = Color.clear;
+            slider.value = 1;
             slider.minValue = 0f;
             slider.maxValue = 2f;
 

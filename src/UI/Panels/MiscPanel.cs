@@ -69,7 +69,7 @@ namespace UnityExplorer.UI.Panels
         public override string Name => "Misc";
         public override UIManager.Panels PanelType => UIManager.Panels.Misc;
         public override int MinWidth => 275;
-        public override int MinHeight => 100;
+        public override int MinHeight => 150;
         public override Vector2 DefaultAnchorMin => new(0.4f, 0.4f);
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
         public override bool NavButtonWanted => true;

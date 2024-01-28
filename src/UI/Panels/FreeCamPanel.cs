@@ -21,7 +21,7 @@ namespace UnityExplorer.UI.Panels
         public override string Name => "Freecam";
         public override UIManager.Panels PanelType => UIManager.Panels.Freecam;
         public override int MinWidth => 450;
-        public override int MinHeight => 650;
+        public override int MinHeight => 700;
         public override Vector2 DefaultAnchorMin => new(0.4f, 0.4f);
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
         public override bool NavButtonWanted => true;
@@ -56,6 +56,14 @@ namespace UnityExplorer.UI.Panels
         static ButtonRef inspectButton;
         static bool disabledCinemachine;
 
+        static InputFieldRef nearClipPlaneInput;
+        static Slider nearClipPlaneSlider;
+        static float nearClipPlaneValue;
+
+        static InputFieldRef farClipPlaneInput;
+        static Slider farClipPlaneSlider;
+        static float farClipPlaneValue;
+
         public static GameObject followObject = null;
         internal static void BeginFreecam()
         {
@@ -67,6 +75,8 @@ namespace UnityExplorer.UI.Panels
             SetupFreeCamera();
 
             inspectButton.GameObject.SetActive(true);
+
+            UpdateClippingPlanes();
         }
 
         static void CacheMainCamera()
@@ -217,6 +227,13 @@ namespace UnityExplorer.UI.Panels
             positionInput.Text = ParseUtility.ToStringForInput<Vector3>(lastSetCameraPosition);
         }
 
+        internal static void UpdateClippingPlanes(){
+            if (ourCamera) {
+                ourCamera.nearClipPlane = nearClipPlaneValue;
+                ourCamera.farClipPlane = farClipPlaneValue;
+            }
+        }
+
         // ~~~~~~~~ UI construction / callbacks ~~~~~~~~
 
         protected override void ConstructPanelContent()
@@ -248,6 +265,47 @@ namespace UnityExplorer.UI.Panels
             moveSpeedInput.Text = desiredMoveSpeed.ToString();
 
             AddSpacer(5);
+
+            GameObject nearCameraClipGroup = AddInputField("NearClipPlane", "Near clip plane:", "0", out nearClipPlaneInput, NearClipInput_OnEndEdit);
+            moveSpeedInput.Text = nearClipPlaneValue.ToString();
+
+            GameObject nearClipObj = UIFactory.CreateSlider(nearCameraClipGroup, "Camera near plane clip", out nearClipPlaneSlider);
+            UIFactory.SetLayoutElement(nearClipObj, minHeight: 25, minWidth: 250, flexibleWidth: 0);
+            nearClipPlaneSlider.onValueChanged.AddListener((newNearPlaneClip) => {
+                nearClipPlaneValue = newNearPlaneClip;
+                nearClipPlaneInput.Text = nearClipPlaneValue.ToString();
+
+                UpdateClippingPlanes();
+            });
+            // Default value
+            nearClipPlaneValue = 0.001f;
+            nearClipPlaneSlider.m_FillImage.color = Color.clear;
+            nearClipPlaneSlider.minValue = 0.001f;
+            nearClipPlaneSlider.maxValue = 100;
+            nearClipPlaneSlider.value = nearClipPlaneValue;
+
+            AddSpacer(5);
+
+            GameObject farCameraClipGroup = AddInputField("FearClipPlane", "Far clip plane:", "0", out farClipPlaneInput, FarClipInput_OnEndEdit);
+            moveSpeedInput.Text = farClipPlaneValue.ToString();
+
+            GameObject farClipObj = UIFactory.CreateSlider(farCameraClipGroup, "Camera far plane clip", out farClipPlaneSlider);
+            UIFactory.SetLayoutElement(farClipObj, minHeight: 25, minWidth: 250, flexibleWidth: 0);
+            farClipPlaneSlider.onValueChanged.AddListener((newFarPlaneClip) => {
+                farClipPlaneValue = newFarPlaneClip;
+                farClipPlaneInput.Text = farClipPlaneValue.ToString();
+
+                UpdateClippingPlanes();
+            });
+            // Default value
+            farClipPlaneValue = 1000;
+            farClipPlaneSlider.m_FillImage.color = Color.clear;
+            farClipPlaneSlider.minValue = 100;
+            farClipPlaneSlider.maxValue = 2000;
+            farClipPlaneSlider.value = 1000; // doesn't take farClipPlaneValue for some reason??
+
+            AddSpacer(5);
+
 
             followObjectLabel = UIFactory.CreateLabel(ContentRoot, "CurrentFollowObject", "Not following any object.");
             UIFactory.SetLayoutElement(followObjectLabel.gameObject, minWidth: 100, minHeight: 25);
@@ -319,7 +377,7 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(posLabel.gameObject, minWidth: 100, minHeight: 25);
 
             inputField = UIFactory.CreateInputField(row, $"{name}_Input", placeHolder);
-            UIFactory.SetLayoutElement(inputField.GameObject, minWidth: 125, minHeight: 25, flexibleWidth: 9999);
+            UIFactory.SetLayoutElement(inputField.GameObject, minWidth: 50, minHeight: 25, flexibleWidth: 9999);
             inputField.Component.GetOnEndEdit().AddListener(onInputEndEdit);
 
             return row;
@@ -427,6 +485,40 @@ namespace UnityExplorer.UI.Panels
             }
 
             desiredMoveSpeed = parsed;
+        }
+
+        void NearClipInput_OnEndEdit(string input)
+        {
+            EventSystemHelper.SetSelectedGameObject(null);
+
+            if (!ParseUtility.TryParse(input, out float parsed, out Exception parseEx))
+            {
+                ExplorerCore.LogWarning($"Could not parse value: {parseEx.ReflectionExToString()}");
+                nearClipPlaneInput.Text = nearClipPlaneValue.ToString();
+                return;
+            }
+
+            nearClipPlaneValue = parsed;
+            nearClipPlaneSlider.value = nearClipPlaneValue;
+
+            UpdateClippingPlanes();
+        }
+
+        void FarClipInput_OnEndEdit(string input)
+        {
+            EventSystemHelper.SetSelectedGameObject(null);
+
+            if (!ParseUtility.TryParse(input, out float parsed, out Exception parseEx))
+            {
+                ExplorerCore.LogWarning($"Could not parse value: {parseEx.ReflectionExToString()}");
+                farClipPlaneInput.Text = farClipPlaneValue.ToString();
+                return;
+            }
+
+            farClipPlaneValue = parsed;
+            farClipPlaneSlider.value = farClipPlaneValue;
+
+            UpdateClippingPlanes();
         }
     }
 
