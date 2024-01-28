@@ -147,7 +147,7 @@ namespace UnityExplorer.CatmullRom
 
         // We use FixedUpdate here to have a constant velocity no matter the time dilation the game is currently using,
         // although the game should still run at a capped 60fps.
-        void FixedUpdate(){
+        void Update(){
             if (playingPath) AdvanceMover(Time.fixedDeltaTime);
         }
 
@@ -156,8 +156,9 @@ namespace UnityExplorer.CatmullRom
         }
 
         private void AdvanceMover(float dt){
+            // We use 0.01665f (60fps) in place of Time.DeltaTime so the camera moves at fullspeed even in slow motion.
             // Units to move
-            float move = dt * speed;
+            float move = 0.01666666666f * speed;
             while (move > 0.0) {
                 CatmullRomPoint currentPoint = GetCurrentPoint();
                 // Distance between target and current position
@@ -324,8 +325,8 @@ namespace UnityExplorer.CatmullRom
         }
 
         void CalculateLookahead() {
-            // Physics engine executed FixedUpdate 50 times every second.
-            float frames = time * 50;
+            // We assume 60 locked fps.
+            float frames = time * 60;
             float pathLength = 0;
             if (lookaheadPoints.Count > 0) lookaheadPoints.Clear();
 

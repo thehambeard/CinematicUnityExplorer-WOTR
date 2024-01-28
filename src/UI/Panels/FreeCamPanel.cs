@@ -469,12 +469,14 @@ namespace UnityExplorer.UI.Panels
                 FreeCamPanel.currentUserCameraRotation = transform.rotation;
 
                 float moveSpeed = FreeCamPanel.desiredMoveSpeed * 0.01665f; //"0.01665f" (60fps) in place of Time.DeltaTime. DeltaTime causes issues when game is paused.
-
+                float speedModifier = 1;
                 if (InputManager.GetKey(ConfigManager.Speed_Up_Movement.Value))
-                    moveSpeed *= 10f;
+                    speedModifier = 10f;
 
                 if (InputManager.GetKey(ConfigManager.Speed_Down_Movement.Value))
-                    moveSpeed *= 0.1f;
+                    speedModifier = 0.1f;
+
+                moveSpeed *= speedModifier;
 
                 if (InputManager.GetKey(ConfigManager.Left_1.Value) || InputManager.GetKey(ConfigManager.Left_2.Value))
                     transform.position += transform.right * -1 * moveSpeed;
@@ -512,10 +514,21 @@ namespace UnityExplorer.UI.Panels
                 if (InputManager.GetMouseButton(1))
                 {
                     Vector3 mouseDelta = InputManager.MousePosition - FreeCamPanel.previousMousePosition;
+                    if (mouseDelta.x != 0 || mouseDelta.y != 0){
+                        // Calculate the mouse movement vector depending on the current camera tilt.
+                        float tiltAngle = transform.eulerAngles.z;
+                        const float PI = 3.141592f;
+                        float dirAngle = Mathf.Atan2(mouseDelta.y, mouseDelta.x);
+                        dirAngle *= 180 / PI;
+                        float newAngle = (dirAngle + tiltAngle) * PI / 180;
+                        Vector2 newMouseCoords = new Vector2(Mathf.Cos(newAngle), Mathf.Sin(newAngle) ).normalized * 2f * (speedModifier == 10 ? 3 : speedModifier);
 
-                    float newRotationX = transform.localEulerAngles.y + mouseDelta.x * 0.3f;
-                    float newRotationY = transform.localEulerAngles.x - mouseDelta.y * 0.3f;
-                    transform.localEulerAngles = new Vector3(newRotationY, newRotationX, transform.localEulerAngles.z);
+                        float newRotationX = transform.localEulerAngles.y + newMouseCoords.x;
+                        float newRotationY = transform.localEulerAngles.x - newMouseCoords.y;
+                        transform.localEulerAngles = new Vector3(newRotationY, newRotationX, transform.localEulerAngles.z);
+                    }
+
+                    FreeCamPanel.previousMousePosition = InputManager.MousePosition;
                 }
 
                 if (InputManager.GetKey(ConfigManager.Decrease_FOV.Value))
