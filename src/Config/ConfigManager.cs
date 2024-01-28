@@ -49,8 +49,10 @@ namespace UnityExplorer.Config
         public static ConfigElement<KeyCode> Down;
         public static ConfigElement<KeyCode> Tilt_Left;
         public static ConfigElement<KeyCode> Tilt_Right;
+        public static ConfigElement<KeyCode> Tilt_Reset;
         public static ConfigElement<KeyCode> Increase_FOV;
         public static ConfigElement<KeyCode> Decrease_FOV;
+        public static ConfigElement<KeyCode> Reset_FOV;
 
         // internal configs
         internal static InternalConfigHandler InternalHandler { get; private set; }
@@ -250,6 +252,10 @@ namespace UnityExplorer.Config
                 "Tilt the camera to the left.",
                 KeyCode.E);
 
+            Tilt_Reset = new("Tilt reset",
+                "Resets the tilt the camera.",
+                KeyCode.KeypadPeriod);
+
             Increase_FOV = new("Increase FOV",
                 "Increase the field of view of the current freecam.",
                 KeyCode.KeypadPlus);
@@ -257,6 +263,10 @@ namespace UnityExplorer.Config
             Decrease_FOV = new("Decrease FOV",
                 "Decrease the field of view of the current freecam.",
                 KeyCode.KeypadMinus);
+
+            Reset_FOV = new("Reset FOV",
+                "Resets the field of view of the current freecam to the original one.",
+                KeyCode.KeypadMultiply);
         }
     }
 }

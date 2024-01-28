@@ -20,8 +20,8 @@ namespace UnityExplorer.UI.Panels
 
         public override string Name => "Freecam";
         public override UIManager.Panels PanelType => UIManager.Panels.Freecam;
-        public override int MinWidth => 400;
-        public override int MinHeight => 600;
+        public override int MinWidth => 450;
+        public override int MinHeight => 650;
         public override Vector2 DefaultAnchorMin => new(0.4f, 0.4f);
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
         public override bool NavButtonWanted => true;
@@ -30,7 +30,7 @@ namespace UnityExplorer.UI.Panels
         internal static bool inFreeCamMode;
         internal static bool usingGameCamera;
         public static Camera ourCamera;
-        internal static Camera lastMainCamera;
+        public static Camera lastMainCamera;
         internal static FreeCamBehaviour freeCamScript;
         internal static CatmullRom.CatmullRomMover cameraPathMover;
 
@@ -38,6 +38,7 @@ namespace UnityExplorer.UI.Panels
 
         internal static Vector3 originalCameraPosition;
         internal static Quaternion originalCameraRotation;
+        internal static float originalCameraFOV;
 
         internal static Vector3? currentUserCameraPosition;
         internal static Quaternion? currentUserCameraRotation;
@@ -47,7 +48,7 @@ namespace UnityExplorer.UI.Panels
         internal static Vector3 lastSetCameraPosition;
 
         static ButtonRef startStopButton;
-        static Toggle useGameCameraToggle;
+        public static Toggle useGameCameraToggle;
         public static Toggle blockFreecamMovementToggle;
         static InputFieldRef positionInput;
         static InputFieldRef moveSpeedInput;
@@ -76,6 +77,7 @@ namespace UnityExplorer.UI.Panels
                 lastMainCamera = currentMain;
                 originalCameraPosition = currentMain.transform.position;
                 originalCameraRotation = currentMain.transform.rotation;
+                originalCameraFOV = currentMain.fieldOfView;
 
                 if (currentUserCameraPosition == null)
                 {
@@ -147,6 +149,7 @@ namespace UnityExplorer.UI.Panels
                 {
                     lastMainCamera.transform.position = originalCameraPosition;
                     lastMainCamera.transform.rotation = originalCameraRotation;
+                    lastMainCamera.fieldOfView = originalCameraFOV;
                 }
             }
 
@@ -269,15 +272,25 @@ namespace UnityExplorer.UI.Panels
             AddSpacer(5);
 
 
-            string instructions = @"Controls:
-- WASD / Arrows: Movement
-- Space / PgUp: Move up
-- LeftCtrl / PgDown: Move down
-- Q / E: Tilt 
-- Right Mouse Button: Free look
-- Shift: Super speed
-- Alt: Slow speed
-- Numpad + / Numpad -: Change FoV";
+            string instructions = "Controls:\n" +
+            $"- {ConfigManager.Forwards_1.Value},{ConfigManager.Backwards_1.Value},{ConfigManager.Left_1.Value},{ConfigManager.Right_1.Value} / {ConfigManager.Forwards_2.Value},{ConfigManager.Backwards_2.Value},{ConfigManager.Left_2.Value},{ConfigManager.Right_2.Value}: Movement\n" +
+            $"- {ConfigManager.Up.Value}: Move up\n" +
+            $"- {ConfigManager.Down.Value}: Move down\n" +
+            $"- {ConfigManager.Tilt_Left.Value} / {ConfigManager.Tilt_Right.Value}: Tilt \n" +
+            $"- Right Mouse Button: Free look\n" +
+            $"- {ConfigManager.Speed_Up_Movement.Value}: Super speed\n" +
+            $"- {ConfigManager.Speed_Down_Movement.Value}: Slow speed\n" +
+            $"- {ConfigManager.Increase_FOV.Value} / {ConfigManager.Decrease_FOV.Value}: Change FOV\n" +
+            $"- {ConfigManager.Tilt_Reset.Value}: Reset tilt\n" +
+            $"- {ConfigManager.Reset_FOV.Value}: Reset FOV\n\n" +
+            "Extra:\n" +
+            $"- {ConfigManager.Freecam_Toggle.Value}: Freecam toggle\n" +
+            $"- {ConfigManager.Block_Freecam_Movement.Value}: Block freecam movement\n" +
+            $"- {ConfigManager.HUD_Toggle.Value}: HUD toggle\n" +
+            $"- {ConfigManager.Pause.Value}: Pause\n" +
+            $"- {ConfigManager.Frameskip.Value}: Frameskip\n";
+
+            if (ConfigManager.Frameskip.Value != KeyCode.None) instructions = instructions + $"- {ConfigManager.Screenshot.Value}: Screenshot\n";
 
             Text instructionsText = UIFactory.CreateLabel(ContentRoot, "Instructions", instructions, TextAnchor.UpperLeft);
             UIFactory.SetLayoutElement(instructionsText.gameObject, flexibleWidth: 9999, flexibleHeight: 9999);
@@ -382,6 +395,7 @@ namespace UnityExplorer.UI.Panels
             {
                 ourCamera.transform.position = (Vector3)currentUserCameraPosition;
                 ourCamera.transform.rotation = (Quaternion)currentUserCameraRotation;
+                ourCamera.fieldOfView = originalCameraFOV;
             }
 
             positionInput.Text = ParseUtility.ToStringForInput<Vector3>(originalCameraPosition);
@@ -486,6 +500,15 @@ namespace UnityExplorer.UI.Panels
                 if (InputManager.GetKey(ConfigManager.Tilt_Right.Value))
                     transform.Rotate(0, 0, - moveSpeed, Space.Self);
 
+                if (InputManager.GetKey(ConfigManager.Tilt_Reset.Value)){
+                    // Extract the forward direction of the original quaternion
+                    Vector3 forwardDirection = transform.rotation * Vector3.forward;
+                    // Reset the tilt by creating a new quaternion with no tilt
+                    Quaternion newRotation = Quaternion.LookRotation(forwardDirection, Vector3.up);
+
+                    transform.rotation = newRotation;
+                }
+
                 if (InputManager.GetMouseButton(1))
                 {
                     Vector3 mouseDelta = InputManager.MousePosition - FreeCamPanel.previousMousePosition;
@@ -503,6 +526,10 @@ namespace UnityExplorer.UI.Panels
                 if (InputManager.GetKey(ConfigManager.Increase_FOV.Value))
                 {
                     FreeCamPanel.ourCamera.fieldOfView += moveSpeed; 
+                }
+
+                if (InputManager.GetKey(ConfigManager.Reset_FOV.Value)){
+                    FreeCamPanel.ourCamera.fieldOfView = FreeCamPanel.usingGameCamera ? FreeCamPanel.originalCameraFOV : 60;
                 }
 
                 FreeCamPanel.UpdatePositionInput();

@@ -47,8 +47,10 @@ namespace UnityExplorer.Loader.Standalone
         public KeyCode Down;
         public KeyCode Tilt_Left;
         public KeyCode Tilt_Right;
+        public KeyCode Tilt_Reset;
         public KeyCode Increase_FOV;
         public KeyCode Decrease_FOV;
+        public KeyCode Reset_FOV;
 
         internal void Awake()
         {
@@ -97,8 +99,10 @@ namespace UnityExplorer.Loader.Standalone
             ConfigManager.Down.Value = this.Down;
             ConfigManager.Tilt_Left.Value = this.Tilt_Left;
             ConfigManager.Tilt_Right.Value = this.Tilt_Right;
+            ConfigManager.Tilt_Reset.Value = this.Tilt_Reset;
             ConfigManager.Increase_FOV.Value = this.Increase_FOV;
             ConfigManager.Decrease_FOV.Value = this.Decrease_FOV;
+            ConfigManager.Reset_FOV.Value = this.Reset_FOV;
         }
     }
 }
