@@ -82,6 +82,10 @@ namespace UnityExplorer.UI.Panels
         int superSizeValue;
         public ScreenshotState screenshotStatus;
 
+        Toggle HighLodToggle;
+        object qualitySettings = null;
+        CacheProperty lodBias = null;
+
         private void LoadHUDElements(){
             List<object> currentResults = SearchProvider.UnityObjectSearch("", "UnityEngine.Canvas", ChildFilter.Any, SceneFilter.Any);
             if (hud.Count > 0){
@@ -144,6 +148,33 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
+        private void FindQualitySettings(){
+            List<object> results = SearchProvider.ClassSearch("UnityEngine.QualitySettings");
+            // We assume it's the first for now. Come back if we need to do something else to get it.
+            object obj = results[0];
+            qualitySettings = obj;
+        }
+
+        private void FindLodBias(){
+            Type objType = qualitySettings is Type type ? type : qualitySettings.GetActualType();
+            ReflectionInspector inspector = Pool<ReflectionInspector>.Borrow();
+            List<CacheMember> members = CacheMemberFactory.GetCacheMembers(objType, inspector);
+            foreach (CacheMember member in members){
+                ExplorerCore.LogWarning(member.NameForFiltering);
+                if (member is CacheProperty propertyMember && propertyMember.NameForFiltering == "QualitySettings.lodBias"){
+                    lodBias = propertyMember;
+                    break;
+                }
+            }
+        }
+
+        private void ToogleHighLods(bool areHighLodsOn){
+            if (qualitySettings == null) FindQualitySettings();
+            if (lodBias == null) FindLodBias();
+
+            lodBias.TrySetUserValue(areHighLodsOn ? 1000 : 1);
+        }
+
         // We use an enum to walk a series of steps in each frame, so we can take the screenshot without UnityExplorer UI.
         public void MaybeTakeScreenshot(){
             switch (screenshotStatus){
@@ -179,11 +210,18 @@ namespace UnityExplorer.UI.Panels
             loadHUDElements.OnClick += LoadHUDElements;
 
             HUDToggle = new Toggle();
-            GameObject HUDToggleObj = UIFactory.CreateToggle(HUDhoriGroup, "Toggle HUD", out HUDToggle, out Text toggleText);
+            GameObject HUDToggleObj = UIFactory.CreateToggle(HUDhoriGroup, "Toggle HUD", out HUDToggle, out Text HUDToggleText);
             UIFactory.SetLayoutElement(HUDToggleObj, minHeight: 25);
             HUDToggle.onValueChanged.AddListener(SetValueHUDElements);
-            HUDToggle.isOn = true; // we picked up only the active effects
-            toggleText.text = "Toggle HUD";
+            HUDToggle.isOn = true; // we picked up only the active UI elements
+            HUDToggleText.text = "Toggle HUD";
+
+            HighLodToggle = new Toggle();
+            GameObject HighLodToggleObj = UIFactory.CreateToggle(ContentRoot, "HighLOD", out HighLodToggle, out Text HighLodToggleText);
+            UIFactory.SetLayoutElement(HighLodToggleObj, minHeight: 25);
+            HighLodToggle.onValueChanged.AddListener(ToogleHighLods);
+            HighLodToggle.isOn = false;
+            HighLodToggleText.text = "High LODs Toggle";
 
             // Screenshot function
             GameObject TakeScreenshotHoriGroup = UIFactory.CreateHorizontalGroup(ContentRoot, "Take screenshot", false, false, true, true, 3,
