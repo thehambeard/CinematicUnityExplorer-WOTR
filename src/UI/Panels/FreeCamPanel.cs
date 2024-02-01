@@ -398,6 +398,8 @@ namespace UnityExplorer.UI.Panels
         public static void FollowObjectAction(GameObject obj){
             followObject = obj;
             followObjectLabel.text = $"Following: {obj.name}";
+            CamPaths CamPathsPanel = UIManager.GetPanel<CamPaths>(UIManager.Panels.CamPaths);
+            CamPathsPanel.UpdatedFollowObject(obj);
         }
 
         void FollowButton_OnClick()
@@ -412,6 +414,8 @@ namespace UnityExplorer.UI.Panels
                 followObject = null;
                 followObjectLabel.text = "Not following any object";
             }
+            CamPaths CamPathsPanel = UIManager.GetPanel<CamPaths>(UIManager.Panels.CamPaths);
+            CamPathsPanel.UpdatedFollowObject(null);
         }
 
         static void SetToggleButtonState()

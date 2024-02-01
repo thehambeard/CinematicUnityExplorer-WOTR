@@ -34,6 +34,8 @@ namespace UnityExplorer.UI.Panels
         bool closedLoop;
         float time = 10;
 
+        GameObject followObject = null;
+
         // ~~~~~~~~ UI construction / callbacks ~~~~~~~~
 
         protected override void ConstructPanelContent()
@@ -73,7 +75,7 @@ namespace UnityExplorer.UI.Panels
             toggleClosedLoopText.text = "Close path in a loop";
 
             InputFieldRef TimeInput = null;
-            AddInputField("Time", "Path time (in seconds at 60fps):", $"Default: {time}", out TimeInput, Time_OnEndEdit, false);
+            GameObject secondRow = AddInputField("Time", "Path time (in seconds at 60fps):", $"Default: {time}", out TimeInput, Time_OnEndEdit, false);
             TimeInput.Text = time.ToString();
         }
 
@@ -99,7 +101,13 @@ namespace UnityExplorer.UI.Panels
             //Move to Camera
             ButtonRef moveToCameraButton = UIFactory.CreateButton(horiGroup, "Copy Camera pos and rot", "Copy Camera pos and rot");
             UIFactory.SetLayoutElement(moveToCameraButton.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
-            moveToCameraButton.OnClick += () => {point.position = FreeCamPanel.ourCamera.transform.position; point.rotation = FreeCamPanel.ourCamera.transform.rotation; controlPoints[index] = point; EventSystemHelper.SetSelectedGameObject(null);};
+            moveToCameraButton.OnClick += () => {
+                point.position = followObject != null ? FreeCamPanel.ourCamera.transform.localPosition : FreeCamPanel.ourCamera.transform.position;
+                point.rotation = followObject != null ? FreeCamPanel.ourCamera.transform.localRotation : FreeCamPanel.ourCamera.transform.rotation;
+                controlPoints[index] = point;
+
+                EventSystemHelper.SetSelectedGameObject(null);
+            };
 
             ButtonRef copyFovButton = UIFactory.CreateButton(horiGroup, "Copy Camera FoV", "Copy Camera FoV");
             UIFactory.SetLayoutElement(copyFovButton.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
@@ -107,7 +115,18 @@ namespace UnityExplorer.UI.Panels
 
             ButtonRef moveToPointButton = UIFactory.CreateButton(horiGroup, "Move Cam to Node", "Move Cam to Node");
             UIFactory.SetLayoutElement(moveToPointButton.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
-            moveToPointButton.OnClick += () => {FreeCamPanel.ourCamera.transform.position = point.position; FreeCamPanel.ourCamera.transform.rotation = point.rotation; FreeCamPanel.ourCamera.fieldOfView = point.fov; EventSystemHelper.SetSelectedGameObject(null);};
+            moveToPointButton.OnClick += () => {
+                if (followObject != null){
+                    FreeCamPanel.ourCamera.transform.localPosition = point.position;
+                    FreeCamPanel.ourCamera.transform.localRotation = point.rotation;
+                } else {
+                    FreeCamPanel.ourCamera.transform.position = point.position;
+                    FreeCamPanel.ourCamera.transform.rotation = point.rotation;
+                }
+                FreeCamPanel.ourCamera.fieldOfView = point.fov;
+
+                EventSystemHelper.SetSelectedGameObject(null);
+            };
 
             //Add node next
 
@@ -139,9 +158,11 @@ namespace UnityExplorer.UI.Panels
         {
             if(GetCameraPathsManager()){
                 GetCameraPathsManager().setClosedLoop(closedLoop);
+                GetCameraPathsManager().setLocalPoints(followObject != null);
                 GetCameraPathsManager().setSplinePoints(controlPoints.ToArray());
                 GetCameraPathsManager().setTime(time);
                 GetCameraPathsManager().StartPath();
+                UIManager.ShowMenu = false;
             }
 
             EventSystemHelper.SetSelectedGameObject(null);
@@ -165,7 +186,12 @@ namespace UnityExplorer.UI.Panels
 
         void AddNode_OnClick(){
             Camera freeCam = FreeCamPanel.ourCamera;
-            CatmullRom.CatmullRomPoint point = new CatmullRom.CatmullRomPoint(freeCam.transform.position, freeCam.transform.rotation, freeCam.fieldOfView);
+            CatmullRom.CatmullRomPoint point = new CatmullRom.CatmullRomPoint(
+                followObject != null ? freeCam.transform.localPosition : freeCam.transform.position,
+                followObject != null ? freeCam.transform.localRotation : freeCam.transform.rotation,
+                freeCam.fieldOfView
+            );
+
             controlPoints.Add(point);
             UpdateListNodes();
 
@@ -190,6 +216,41 @@ namespace UnityExplorer.UI.Panels
 
         private CatmullRom.CatmullRomMover GetCameraPathsManager(){
             return FreeCamPanel.cameraPathMover;
+        }
+
+        public void UpdatedFollowObject(GameObject obj){
+            if(followObject != null) TranslatePointsToGlobal();
+            followObject = obj;
+            if (obj != null){
+                TranslatePointsToLocal();
+            }
+            UpdateListNodes();
+        }
+
+        void TranslatePointsToGlobal() {
+            List<CatmullRom.CatmullRomPoint> newControlPoints = new List<CatmullRom.CatmullRomPoint>();
+            foreach(CatmullRom.CatmullRomPoint point in controlPoints){
+                Vector3 newPos = followObject.transform.TransformPoint(point.position);
+                Quaternion newRot = followObject.transform.rotation * point.rotation;
+                CatmullRom.CatmullRomPoint newPoint = new CatmullRom.CatmullRomPoint(newPos, newRot, point.fov);
+
+                newControlPoints.Add(newPoint);
+            }
+
+            controlPoints = newControlPoints;
+        }
+
+        void TranslatePointsToLocal() {
+            List<CatmullRom.CatmullRomPoint> newControlPoints = new List<CatmullRom.CatmullRomPoint>();
+            foreach(CatmullRom.CatmullRomPoint point in controlPoints){
+                Vector3 newPos = followObject.transform.InverseTransformPoint(point.position);
+                Quaternion newRot = Quaternion.Inverse(followObject.transform.rotation) * point.rotation;
+                CatmullRom.CatmullRomPoint newPoint = new CatmullRom.CatmullRomPoint(newPos, newRot, point.fov);
+
+                newControlPoints.Add(newPoint);
+            }
+
+            controlPoints = newControlPoints;
         }
     }
 }

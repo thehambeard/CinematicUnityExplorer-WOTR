@@ -102,6 +102,8 @@ namespace UnityExplorer.CatmullRom
         // Current position in the path, from 0 to 1
         float delta;
 
+        bool arePointsLocal;
+
         public CatmullRomMover(){
             splinePoints = new CatmullRomPoint[] { };
             lookaheadPoints = new List<CatmullRomPoint>();
@@ -137,6 +139,10 @@ namespace UnityExplorer.CatmullRom
             closedLoop = newClosedLoop;
         }
 
+        public void setLocalPoints(bool newArePointsLocal){
+            arePointsLocal = newArePointsLocal;
+        }
+
         public void setSplinePoints(CatmullRomPoint[] newSplinePoints){
             splinePoints = newSplinePoints;
         }
@@ -145,14 +151,15 @@ namespace UnityExplorer.CatmullRom
             time = newTime;
         }
 
-        // We use FixedUpdate here to have a constant velocity no matter the time dilation the game is currently using,
-        // although the game should still run at a capped 60fps.
         void Update(){
             if (playingPath) AdvanceMover(Time.fixedDeltaTime);
         }
 
         private CatmullRomPoint GetCurrentPoint(){
-            return new CatmullRomPoint(FreeCamPanel.ourCamera.transform.position, FreeCamPanel.ourCamera.transform.rotation, FreeCamPanel.ourCamera.fieldOfView);
+            Vector3 camPos = arePointsLocal ? FreeCamPanel.ourCamera.transform.localPosition : FreeCamPanel.ourCamera.transform.position;
+            Quaternion camRot = arePointsLocal ? FreeCamPanel.ourCamera.transform.localRotation : FreeCamPanel.ourCamera.transform.rotation;
+
+            return new CatmullRomPoint(camPos, camRot, FreeCamPanel.ourCamera.fieldOfView);
         }
 
         private void AdvanceMover(float dt){
@@ -179,7 +186,8 @@ namespace UnityExplorer.CatmullRom
                 room = Vector3.Distance(lookahead.position, currentPoint.position); 
                 // While ends, need another lookaheadDelta for the next Update
                 // It will do, at most, 2 iterations
-                while (room <= 0) {
+                // We check a very small number instead of zero because if not it can get stuck in an infinite loop
+                while (room <= 0.0001f) {
                     // If the camera reached the last lookAhead we stop it
                     if (delta >= 1){
                         playingPath = false;
@@ -205,14 +213,26 @@ namespace UnityExplorer.CatmullRom
             Vector4 newRot = ra + rb;
             newRot.Normalize();
 
-            FreeCamPanel.ourCamera.transform.position += direction.position;
-            FreeCamPanel.ourCamera.transform.rotation = CatmullRomPoint.Vector4ToQuaternion(newRot);
+            if (arePointsLocal){
+                FreeCamPanel.ourCamera.transform.localPosition += direction.position;
+                FreeCamPanel.ourCamera.transform.localRotation = CatmullRomPoint.Vector4ToQuaternion(newRot);
+            } else {
+                FreeCamPanel.ourCamera.transform.position += direction.position;
+                FreeCamPanel.ourCamera.transform.rotation = CatmullRomPoint.Vector4ToQuaternion(newRot);
+            }
+
             FreeCamPanel.ourCamera.fieldOfView += direction.fov * actual / room;
         }
 
         public void MoveCameraToPoint(CatmullRomPoint newPoint){
-            FreeCamPanel.ourCamera.transform.position = newPoint.position;
-            FreeCamPanel.ourCamera.transform.rotation = newPoint.rotation;
+            if (arePointsLocal){
+                FreeCamPanel.ourCamera.transform.localPosition = newPoint.position;
+                FreeCamPanel.ourCamera.transform.localRotation = newPoint.rotation;
+            } else {
+                FreeCamPanel.ourCamera.transform.position = newPoint.position;
+                FreeCamPanel.ourCamera.transform.rotation = newPoint.rotation;
+            }
+
             FreeCamPanel.ourCamera.fieldOfView = newPoint.fov;
         }
 
