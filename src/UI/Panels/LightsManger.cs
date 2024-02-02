@@ -23,7 +23,7 @@ namespace UnityExplorer.UI.Panels
 
         public override string Name => "Lights Manager";
         public override UIManager.Panels PanelType => UIManager.Panels.LightsManager;
-        public override int MinWidth => 500;
+        public override int MinWidth => 600;
         public override int MinHeight => 500;
         public override Vector2 DefaultAnchorMin => new(0.4f, 0.4f);
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
@@ -120,6 +120,11 @@ namespace UnityExplorer.UI.Panels
             useGameCameraToggle.isOn = true;
             toggleText.text = light.name;
 
+            //Toggle visualizer
+            ButtonRef toggleVisualizerButton = UIFactory.CreateButton(horiGroup, "ToggleVisualizer", "Toggle Visualizer");
+            UIFactory.SetLayoutElement(toggleVisualizerButton.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
+            toggleVisualizerButton.OnClick += () => {ToggleVisualizer(light);};
+
             //Inspect GameObject
             ButtonRef inspectButton = UIFactory.CreateButton(horiGroup, "InspectButton", "Config");
             UIFactory.SetLayoutElement(inspectButton.GameObject, minWidth: 80, minHeight: 25, flexibleWidth: 9999);
@@ -159,9 +164,15 @@ namespace UnityExplorer.UI.Panels
                 case LightType.Spot:
                     obj.GetComponent<Light>().intensity = 200;
                     obj.GetComponent<Light>().range = 1000;
+                    GameObject arrow = ArrowGenerator.CreateArrow(Vector3.zero, Quaternion.identity);
+                    arrow.SetActive(false);
+                    arrow.transform.SetParent(obj.transform, true);
                     break;
                 case LightType.Point:
                     obj.GetComponent<Light>().intensity = 10;
+                    GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    sphere.SetActive(false);
+                    sphere.transform.SetParent(obj.transform, true);
                     break;
             }
 
@@ -171,6 +182,11 @@ namespace UnityExplorer.UI.Panels
             ListCreatedLights();
 
             lightCounter++;
+        }
+
+        private void ToggleVisualizer(GameObject light){
+            GameObject visualizer = light.transform.GetChild(0).gameObject;
+            visualizer.SetActive(!visualizer.activeSelf);
         }
 
         private void CopyLight(GameObject light){
