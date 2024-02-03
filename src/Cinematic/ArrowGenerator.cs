@@ -7,10 +7,12 @@ namespace UnityExplorer
     {
         public static GameObject CreateArrow(Vector3 arrowPosition, Quaternion arrowRotation){
             GameObject cylinder = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            cylinder.GetComponent<Collider>().enabled = false;
             cylinder.GetComponent<MeshFilter>().mesh = CreateCylinderMesh(0.01f, 20, 2);
             cylinder.transform.rotation = Quaternion.LookRotation(Vector3.down, Vector3.up);
 
             GameObject cone = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            cone.GetComponent<Collider>().enabled = false;
             cone.GetComponent<MeshFilter>().mesh = CreateConeMesh(10, 0.05f, 0.1f);
             cone.transform.SetParent(cylinder.transform, true);
 

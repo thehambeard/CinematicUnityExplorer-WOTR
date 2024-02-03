@@ -10,6 +10,8 @@ using UnhollowerRuntimeLib;
 using Il2CppInterop.Runtime.Injection;
 #endif
 
+using UnityExplorer.UI;
+
 namespace UnityExplorer.CatmullRom
 {
     // Struct to keep position, rotation and fov of a spline point
@@ -128,6 +130,10 @@ namespace UnityExplorer.CatmullRom
             playingPath = !playingPath;
         }
 
+        public bool IsPaused(){
+            return playingPath;
+        }
+
         public void Stop(){
             playingPath = false;
             delta = lookaheadDelta;
@@ -190,8 +196,7 @@ namespace UnityExplorer.CatmullRom
                 while (room <= 0.0001f) {
                     // If the camera reached the last lookAhead we stop it
                     if (delta >= 1){
-                        playingPath = false;
-                        delta = 0;
+                        PathFinished();
                     }
                     delta = Math.Min(delta + lookaheadDelta, 1);
 
@@ -344,7 +349,7 @@ namespace UnityExplorer.CatmullRom
             return a * t * t * t + b * t * t + c * t + d;
         }
 
-        void CalculateLookahead() {
+        public void CalculateLookahead() {
             // We assume 60 locked fps.
             float frames = time * 60;
             float pathLength = 0;
@@ -369,6 +374,16 @@ namespace UnityExplorer.CatmullRom
             //ExplorerCore.LogWarning($"for time {time}");
             //ExplorerCore.LogWarning($"on path length {pathLength}");
             //ExplorerCore.LogWarning($"lookaheadDelta {lookaheadDelta}");
+        }
+
+        public List<CatmullRomPoint> GetLookaheadPoints(){
+            return lookaheadPoints;
+        }
+
+        void PathFinished(){
+            playingPath = false;
+            delta = 0;
+            UIManager.GetPanel<UnityExplorer.UI.Panels.CamPaths>(UIManager.Panels.CamPaths).pathVisualizer.SetActive(true);
         }
     } 
 }

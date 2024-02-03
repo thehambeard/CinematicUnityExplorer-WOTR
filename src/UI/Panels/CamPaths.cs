@@ -36,6 +36,9 @@ namespace UnityExplorer.UI.Panels
 
         GameObject followObject = null;
 
+        Toggle visualizePathToggle;
+        public GameObject pathVisualizer = new GameObject("PathVisualizer");
+
         // ~~~~~~~~ UI construction / callbacks ~~~~~~~~
 
         protected override void ConstructPanelContent()
@@ -70,13 +73,19 @@ namespace UnityExplorer.UI.Panels
             Toggle closedLoopToggle = new Toggle();
             GameObject toggleClosedLoopObj = UIFactory.CreateToggle(horiGroup, "Close path in a loop", out closedLoopToggle, out Text toggleClosedLoopText);
             UIFactory.SetLayoutElement(toggleClosedLoopObj, minHeight: 25, flexibleWidth: 9999);
-            closedLoopToggle.onValueChanged.AddListener((isClosedLoop) => {closedLoop = isClosedLoop;});
             closedLoopToggle.isOn = false;
+            closedLoopToggle.onValueChanged.AddListener((isClosedLoop) => {closedLoop = isClosedLoop; MaybeRedrawPath();});
             toggleClosedLoopText.text = "Close path in a loop";
 
             InputFieldRef TimeInput = null;
             GameObject secondRow = AddInputField("Time", "Path time (in seconds at 60fps):", $"Default: {time}", out TimeInput, Time_OnEndEdit, false);
             TimeInput.Text = time.ToString();
+
+            GameObject visualizePathObj = UIFactory.CreateToggle(secondRow, "Visualize Path", out visualizePathToggle, out Text visualizePathText);
+            UIFactory.SetLayoutElement(visualizePathObj, minHeight: 25, flexibleWidth: 9999);
+            visualizePathToggle.isOn = false;
+            visualizePathToggle.onValueChanged.AddListener(ToggleVisualizePath);
+            visualizePathText.text = "Visualize path";
         }
 
         private void UpdateListNodes(){
@@ -89,6 +98,43 @@ namespace UnityExplorer.UI.Panels
             for(int i = 0; i < controlPoints.Count; i++) {
                 CatmullRom.CatmullRomPoint point = controlPoints[i];
                 DrawNodeOptions(point, i);
+            }
+        }
+
+        private void ToggleVisualizePath(bool enable){
+            if (enable){
+                if (controlPoints.Count > 2){
+                    UpdateCatmullRomMoverData();
+                    
+                    List<CatmullRom.CatmullRomPoint> lookaheadPoints = GetCameraPathsManager().GetLookaheadPoints();
+                    int skip_points = 5; // How many points do we have to skip before drawing another arrow (otherwise they look very cluttered)
+                    int n = 0;
+                    for (int i=0; i < lookaheadPoints.Count; i++){
+                        // We also want to draw an arrow on the last point in case its skipped.
+                        if (n < skip_points && i != lookaheadPoints.Count - 1){ 
+                            n++;
+                            continue;
+                        }
+
+                        GameObject arrow = ArrowGenerator.CreateArrow(lookaheadPoints[i].position, lookaheadPoints[i].rotation);
+                        arrow.transform.SetParent(pathVisualizer.transform, true);
+                        n = 0;
+                    }
+                }
+
+            }
+            else {
+                foreach (Transform transform in pathVisualizer.transform)
+                {
+                    UnityEngine.Object.Destroy(transform.gameObject);
+                }
+            }
+        }
+
+        private void MaybeRedrawPath(){
+            if (visualizePathToggle.isOn){
+                ToggleVisualizePath(false);
+                ToggleVisualizePath(true);
             }
         }
 
@@ -105,6 +151,8 @@ namespace UnityExplorer.UI.Panels
                 point.position = followObject != null ? FreeCamPanel.ourCamera.transform.localPosition : FreeCamPanel.ourCamera.transform.position;
                 point.rotation = followObject != null ? FreeCamPanel.ourCamera.transform.localRotation : FreeCamPanel.ourCamera.transform.rotation;
                 controlPoints[index] = point;
+
+                MaybeRedrawPath();
 
                 EventSystemHelper.SetSelectedGameObject(null);
             };
@@ -132,7 +180,7 @@ namespace UnityExplorer.UI.Panels
 
             ButtonRef destroyButton = UIFactory.CreateButton(horiGroup, "Delete", "Delete");
             UIFactory.SetLayoutElement(destroyButton.GameObject, minWidth: 80, minHeight: 25, flexibleWidth: 9999);
-            destroyButton.OnClick += () => {controlPoints.Remove(point); UpdateListNodes();};
+            destroyButton.OnClick += () => {controlPoints.Remove(point); UpdateListNodes(); MaybeRedrawPath();};
 
             //ShowPos and rot?
         }
@@ -157,12 +205,10 @@ namespace UnityExplorer.UI.Panels
         void StartButton_OnClick()
         {
             if(GetCameraPathsManager()){
-                GetCameraPathsManager().setClosedLoop(closedLoop);
-                GetCameraPathsManager().setLocalPoints(followObject != null);
-                GetCameraPathsManager().setSplinePoints(controlPoints.ToArray());
-                GetCameraPathsManager().setTime(time);
+                UpdateCatmullRomMoverData();
                 GetCameraPathsManager().StartPath();
                 UIManager.ShowMenu = false;
+                pathVisualizer.SetActive(false);
             }
 
             EventSystemHelper.SetSelectedGameObject(null);
@@ -171,6 +217,7 @@ namespace UnityExplorer.UI.Panels
         void TogglePause_OnClick(){
             if(GetCameraPathsManager()){
                 GetCameraPathsManager().TogglePause();
+                pathVisualizer.SetActive(!GetCameraPathsManager().IsPaused());
             }
 
             EventSystemHelper.SetSelectedGameObject(null);
@@ -179,6 +226,7 @@ namespace UnityExplorer.UI.Panels
         void Stop_OnClick(){
             if (GetCameraPathsManager()){
                 GetCameraPathsManager().Stop();
+                pathVisualizer.SetActive(true);
             }
 
             EventSystemHelper.SetSelectedGameObject(null);
@@ -194,6 +242,7 @@ namespace UnityExplorer.UI.Panels
 
             controlPoints.Add(point);
             UpdateListNodes();
+            MaybeRedrawPath();
 
             EventSystemHelper.SetSelectedGameObject(null);
         }
@@ -219,10 +268,16 @@ namespace UnityExplorer.UI.Panels
         }
 
         public void UpdatedFollowObject(GameObject obj){
-            if(followObject != null) TranslatePointsToGlobal();
+            // Had to include this check because the pathVisualizer was null for some reason
+            if (pathVisualizer == null) pathVisualizer = new GameObject("PathVisualizer");
+            if (followObject != null){
+                TranslatePointsToGlobal();
+                pathVisualizer.transform.SetParent(null, true);
+            }
             followObject = obj;
             if (obj != null){
                 TranslatePointsToLocal();
+                pathVisualizer.transform.SetParent(obj.transform, true);
             }
             UpdateListNodes();
         }
@@ -251,6 +306,15 @@ namespace UnityExplorer.UI.Panels
             }
 
             controlPoints = newControlPoints;
+        }
+
+        void UpdateCatmullRomMoverData(){
+            GetCameraPathsManager().setClosedLoop(closedLoop);
+            GetCameraPathsManager().setLocalPoints(followObject != null);
+            GetCameraPathsManager().setSplinePoints(controlPoints.ToArray());
+            GetCameraPathsManager().setTime(time);
+
+            GetCameraPathsManager().CalculateLookahead();
         }
     }
 }
