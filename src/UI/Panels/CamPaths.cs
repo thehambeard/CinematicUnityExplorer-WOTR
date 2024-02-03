@@ -19,6 +19,16 @@ namespace UnityExplorer.UI.Panels
     {
         public CamPaths(UIBase owner) : base(owner)
         {
+            controlPoints = new List<CatmullRom.CatmullRomPoint>();
+            followObject = null;
+            UINodes = new List<GameObject>();
+            pathVisualizer = new GameObject("PathVisualizer");
+            time = 10;
+
+            // Timer setup
+            startTimer = new System.Timers.Timer(3000);
+            startTimer.Elapsed += (source, e) => StartPath();
+            startTimer.AutoReset = false;
         }
 
         public override string Name => "Cam Paths";
@@ -29,15 +39,19 @@ namespace UnityExplorer.UI.Panels
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
         public override bool NavButtonWanted => true;
         public override bool ShouldSaveActiveState => true;
-		public List<CatmullRom.CatmullRomPoint> controlPoints = new List<CatmullRom.CatmullRomPoint>();
-        List<GameObject> UINodes = new List<GameObject>();
+		public List<CatmullRom.CatmullRomPoint> controlPoints;
+        List<GameObject> UINodes;
         bool closedLoop;
-        float time = 10;
+        float time;
 
-        GameObject followObject = null;
+        GameObject followObject;
 
         Toggle visualizePathToggle;
-        public GameObject pathVisualizer = new GameObject("PathVisualizer");
+        public GameObject pathVisualizer;
+
+        bool unpauseOnPlay;
+        bool waitBeforePlay;
+        private System.Timers.Timer startTimer;
 
         // ~~~~~~~~ UI construction / callbacks ~~~~~~~~
 
@@ -68,13 +82,13 @@ namespace UnityExplorer.UI.Panels
 
             ButtonRef DeletePath = UIFactory.CreateButton(horiGroup, "DeletePath", "Delete Path");
             UIFactory.SetLayoutElement(DeletePath.GameObject, minWidth: 150, minHeight: 25);
-            DeletePath.OnClick += () => {controlPoints.Clear(); UpdateListNodes();};
+            DeletePath.OnClick += () => {controlPoints.Clear(); UpdateListNodes(); ToggleVisualizePath(false);};
 
             Toggle closedLoopToggle = new Toggle();
             GameObject toggleClosedLoopObj = UIFactory.CreateToggle(horiGroup, "Close path in a loop", out closedLoopToggle, out Text toggleClosedLoopText);
             UIFactory.SetLayoutElement(toggleClosedLoopObj, minHeight: 25, flexibleWidth: 9999);
             closedLoopToggle.isOn = false;
-            closedLoopToggle.onValueChanged.AddListener((isClosedLoop) => {closedLoop = isClosedLoop; MaybeRedrawPath();});
+            closedLoopToggle.onValueChanged.AddListener((isClosedLoop) => {closedLoop = isClosedLoop; MaybeRedrawPath(); EventSystemHelper.SetSelectedGameObject(null);});
             toggleClosedLoopText.text = "Close path in a loop";
 
             InputFieldRef TimeInput = null;
@@ -86,6 +100,18 @@ namespace UnityExplorer.UI.Panels
             visualizePathToggle.isOn = false;
             visualizePathToggle.onValueChanged.AddListener(ToggleVisualizePath);
             visualizePathText.text = "Visualize path";
+
+            GameObject unpauseOnPlayObj = UIFactory.CreateToggle(secondRow, "Unpause on play", out Toggle unpauseOnPlayToggle, out Text unpauseOnPlayText);
+            UIFactory.SetLayoutElement(unpauseOnPlayObj, minHeight: 25, flexibleWidth: 9999);
+            unpauseOnPlayToggle.isOn = false;
+            unpauseOnPlayToggle.onValueChanged.AddListener((value) => unpauseOnPlay = value);
+            unpauseOnPlayText.text = "Unpause on play";
+
+            GameObject waitBeforePlayObj = UIFactory.CreateToggle(secondRow, "Wait before play", out Toggle waitBeforePlayToggle, out Text waitBeforePlayText);
+            UIFactory.SetLayoutElement(waitBeforePlayObj, minHeight: 25, flexibleWidth: 9999);
+            waitBeforePlayToggle.isOn = false;
+            waitBeforePlayToggle.onValueChanged.AddListener((value) => waitBeforePlay = value);
+            waitBeforePlayText.text = "Wait 3 seconds before start";
         }
 
         private void UpdateListNodes(){
@@ -204,14 +230,30 @@ namespace UnityExplorer.UI.Panels
 
         void StartButton_OnClick()
         {
-            if(GetCameraPathsManager()){
+            if (waitBeforePlay) {
+                if (startTimer.Enabled){
+                    startTimer.Stop();
+                }
+
+                startTimer.Enabled = true;
+            } else {
+                StartPath();
+            }
+
+            EventSystemHelper.SetSelectedGameObject(null);
+        }
+
+        void StartPath(){
+            if (GetCameraPathsManager()){
                 UpdateCatmullRomMoverData();
                 GetCameraPathsManager().StartPath();
                 UIManager.ShowMenu = false;
                 pathVisualizer.SetActive(false);
             }
 
-            EventSystemHelper.SetSelectedGameObject(null);
+            if (unpauseOnPlay && UIManager.GetTimeScaleWidget().IsPaused()){
+                    UIManager.GetTimeScaleWidget().PauseToggle();
+            }
         }
 
         void TogglePause_OnClick(){
