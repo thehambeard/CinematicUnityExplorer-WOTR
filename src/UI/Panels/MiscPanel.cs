@@ -1,4 +1,5 @@
-﻿using UnityExplorer.CacheObject;
+﻿using UnityEngine;
+using UnityExplorer.CacheObject;
 using UnityExplorer.Inspectors;
 using UnityExplorer.ObjectExplorer;
 using UniverseLib.UI;
@@ -23,45 +24,12 @@ namespace UnityExplorer.UI.Panels
             TurnOnUI,
         }
 
-        public class UIElement
-        {
-            public UIElement(object obj)
-            {
-                Object = obj;
-
-                ReflectionInspector inspector = Pool<ReflectionInspector>.Borrow();
-                inspector.Target = obj.TryCast();
-                Type objType = obj is Type type ? type : obj.GetActualType();
-                List<CacheMember> members = CacheMemberFactory.GetCacheMembers(objType, inspector);
-
-                foreach (CacheMember member in members){
-                    if (member.NameForFiltering.EndsWith(".enabled")){
-                        member.Evaluate();
-                        Enabled = member;
-                    }
-
-                    if (member.NameForFiltering.EndsWith(".name")){
-                        member.Evaluate();
-                        Name = member;
-                    }
-
-                    if (Enabled != null && Name != null) break;
-                }
-            }
-
-            public object Object { get; }
-            public CacheMember Enabled { get; }
-            public CacheMember Name { get; }
-
-            public override string ToString() => $"{Object}";
-        }
-
         public Misc(UIBase owner) : base(owner)
         {
             captureScreenshotFunction = null;
             FindCaptureScreenshotFunction();
             superSizeValue = 2;
-            hud = new List<UIElement>();
+            disabledCanvases = new List<Canvas>();
 
             screenshotStatus = ScreenshotState.DoNothing;
         }
@@ -75,7 +43,7 @@ namespace UnityExplorer.UI.Panels
         public override bool NavButtonWanted => true;
         public override bool ShouldSaveActiveState => true;
 
-        List<UIElement> hud;
+        List<Canvas> disabledCanvases;
         Toggle HUDToggle;
 
         CacheMethod captureScreenshotFunction;
@@ -86,37 +54,34 @@ namespace UnityExplorer.UI.Panels
         object qualitySettings = null;
         CacheProperty lodBias = null;
 
-        private void LoadHUDElements(){
-            List<object> currentResults = SearchProvider.UnityObjectSearch("", "UnityEngine.Canvas", ChildFilter.Any, SceneFilter.Any);
-            if (hud.Count > 0){
-                SetValueHUDElements(true);
-                HUDToggle.isOn = true;
-                hud.Clear();
+        // Based on https://github.com/TollyH/Unity-FreeCam
+        private void SetValueHUDElements(bool value){
+            if (value){
+                foreach (Canvas canvas in disabledCanvases)
+                {
+                    if (canvas == null)
+                    {
+                        continue;
+                    }
+                    canvas.enabled = true;
+                }
             }
-
-            foreach (object obj in currentResults){
-                UIElement entry = new UIElement(obj);
-                // Ignore non-enabled objects and objects without a name, since those tend to be irrelevant
-                if ((bool) entry.Enabled.Value && entry.Name.Value.ToString() != ""){
-                    hud.Add(entry);
+            else {
+                disabledCanvases = GameObject.FindObjectsOfType<Canvas>().Where(c => c.isActiveAndEnabled).ToList();
+                foreach (Canvas canvas in disabledCanvases)
+                {
+                    if (canvas == null)
+                    {
+                        continue;
+                    }
+                    canvas.enabled = false;
                 }
             }
         }
 
-        private void SetValueHUDElements(bool value){
-            // If its the first time changing the HUD, we look up for UI elements.
-            if (hud.Count == 0){
-                LoadHUDElements();
-            }
-
-            foreach (UIElement elem in hud){
-                elem.Enabled.TrySetUserValue(value);
-            }
-        }
-
         public void ToggleHUDElements(){
+            // SetValueHUDElements will be triggered automatically
             HUDToggle.isOn = !HUDToggle.isOn;
-            SetValueHUDElements(HUDToggle.isOn);
         }
 
         private void TakeScreenshot(){
@@ -203,10 +168,6 @@ namespace UnityExplorer.UI.Panels
             GameObject HUDhoriGroup = UIFactory.CreateHorizontalGroup(ContentRoot, "HUDhoriGroup", false, false, true, true, 3,
             default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
             UIFactory.SetLayoutElement(HUDhoriGroup, minHeight: 25, flexibleWidth: 9999);
-
-            ButtonRef loadHUDElements = UIFactory.CreateButton(HUDhoriGroup, "HideUI", "Load HUD elements");
-            UIFactory.SetLayoutElement(loadHUDElements.GameObject, minWidth: 150, minHeight: 25);
-            loadHUDElements.OnClick += LoadHUDElements;
 
             HUDToggle = new Toggle();
             GameObject HUDToggleObj = UIFactory.CreateToggle(HUDhoriGroup, "Toggle HUD", out HUDToggle, out Text HUDToggleText);
