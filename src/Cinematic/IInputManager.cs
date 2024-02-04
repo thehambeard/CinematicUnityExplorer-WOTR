@@ -5,6 +5,12 @@ using UnityEngine;
 using UnityExplorer.UI;
 using UnityExplorer.UI.Panels;
 using UniverseLib.Input;
+#if UNHOLLOWER
+using IL2CPPUtils = UnhollowerBaseLib.UnhollowerUtils;
+#endif
+#if INTEROP
+using IL2CPPUtils = Il2CppInterop.Common.Il2CppInteropUtils;
+#endif
 
 namespace UnityExplorer
 {
@@ -21,9 +27,15 @@ namespace UnityExplorer
         public static Vector3 MousePosition => InputManager.MousePosition;
 
         public static void Setup(){
+#if MONO
+            Type inputClass = typeof(Input);
+#endif
+#if CPP
+            Type inputClass = typeof(InputManager);
+#endif
             try
             {
-                MethodInfo getKeyTarget = typeof(Input).GetMethod("GetKey", new Type[] {typeof(string)});
+                MethodInfo getKeyTarget = inputClass.GetMethod("GetKey", new Type[] {typeof(string)});
 #if CPP
                 if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getKeyTarget) == null)
                     return;
@@ -31,11 +43,12 @@ namespace UnityExplorer
                 ExplorerCore.Harmony.Patch(getKeyTarget,
                     postfix: new(AccessTools.Method(typeof(IInputManager), nameof(OverrideKeyString))));
             }
-            catch {  }
+            catch { }
 
             try
             {
-                MethodInfo getKeyTarget = typeof(Input).GetMethod("GetKey", new Type[] {typeof(KeyCode)});
+                MethodInfo getKeyTarget = inputClass.GetMethod("GetKey", new Type[] {typeof(KeyCode)});
+                //ExplorerCore.LogWarning(getKeyTarget);
 #if CPP
                 if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getKeyTarget) == null)
                     return;
@@ -47,7 +60,8 @@ namespace UnityExplorer
 
             try
             {
-                MethodInfo getKeyDownTarget = typeof(Input).GetMethod("GetKeyDown", new Type[] {typeof(string)});
+                MethodInfo getKeyDownTarget = inputClass.GetMethod("GetKeyDown", new Type[] {typeof(string)});
+                //ExplorerCore.LogWarning(getKeyDownTarget);
 #if CPP
                 if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getKeyDownTarget) == null)
                     return;
@@ -59,7 +73,8 @@ namespace UnityExplorer
 
             try
             {
-                MethodInfo getKeyDownTarget = typeof(Input).GetMethod("GetKeyDown", new Type[] {typeof(KeyCode)});
+                MethodInfo getKeyDownTarget = inputClass.GetMethod("GetKeyDown", new Type[] {typeof(KeyCode)});
+                //ExplorerCore.LogWarning(getKeyDownTarget);
 #if CPP
                 if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getKeyDownTarget) == null)
                     return;
@@ -71,7 +86,8 @@ namespace UnityExplorer
 
             try
             {
-                MethodInfo getKeyUpTarget = typeof(Input).GetMethod("GetKeyUp", new Type[] {typeof(string)});
+                MethodInfo getKeyUpTarget = inputClass.GetMethod("GetKeyUp", new Type[] {typeof(string)});
+                //ExplorerCore.LogWarning(getKeyUpTarget);
 #if CPP
                 if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getKeyUpTarget) == null)
                     return;
@@ -83,7 +99,8 @@ namespace UnityExplorer
 
             try
             {
-                MethodInfo getKeyUpTarget = typeof(Input).GetMethod("GetKeyUp", new Type[] {typeof(KeyCode)});
+                MethodInfo getKeyUpTarget = inputClass.GetMethod("GetKeyUp", new Type[] {typeof(KeyCode)});
+                //ExplorerCore.LogWarning(getKeyUpTarget);
 #if CPP
                 if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getKeyUpTarget) == null)
                     return;
@@ -95,7 +112,8 @@ namespace UnityExplorer
 
             try
             {
-                MethodInfo getMouseButtonTarget = typeof(Input).GetMethod("GetMouseButton", new Type[] {typeof(int)});
+                MethodInfo getMouseButtonTarget = inputClass.GetMethod("GetMouseButton", new Type[] {typeof(int)});
+                //ExplorerCore.LogWarning(getMouseButtonTarget);
 #if CPP
                 if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getMouseButtonTarget) == null)
                     return;
@@ -107,7 +125,8 @@ namespace UnityExplorer
 
             try
             {
-                MethodInfo getMouseButtonDownTarget = typeof(Input).GetMethod("GetMouseButtonDown", new Type[] {typeof(int)});
+                MethodInfo getMouseButtonDownTarget = inputClass.GetMethod("GetMouseButtonDown", new Type[] {typeof(int)});
+                //ExplorerCore.LogWarning(getMouseButtonDownTarget);
 #if CPP
                 if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getMouseButtonDownTarget) == null)
                     return;
