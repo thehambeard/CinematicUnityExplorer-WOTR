@@ -59,6 +59,7 @@ namespace UnityExplorer
 
             //Extra inits
             KeypressListener.Setup();
+            IInputManager.Setup();
         }
 
         // Do a delayed setup so that objects aren't destroyed instantly.
@@ -80,7 +81,7 @@ namespace UnityExplorer
         internal static void Update()
         {
             // check master toggle
-            if (InputManager.GetKeyDown(ConfigManager.Master_Toggle.Value))
+            if (IInputManager.GetKeyDown(ConfigManager.Master_Toggle.Value))
             {
                 UIManager.ShowMenu = !UIManager.ShowMenu;
             }

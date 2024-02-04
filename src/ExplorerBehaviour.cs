@@ -105,13 +105,13 @@ namespace UnityExplorer
             maybeForcePause();
             UIManager.GetPanel<UnityExplorer.UI.Panels.Misc>(UIManager.Panels.Misc).MaybeTakeScreenshot();
 
-            if (InputManager.GetKeyDown(ConfigManager.Pause.Value))
+            if (IInputManager.GetKeyDown(ConfigManager.Pause.Value))
             {
                 UIManager.GetTimeScaleWidget().PauseToggle();
             }
 
             // FrameSkip
-            if (InputManager.GetKeyDown(ConfigManager.Frameskip.Value))
+            if (IInputManager.GetKeyDown(ConfigManager.Frameskip.Value))
             {
                 if (UIManager.GetTimeScaleWidget().IsPaused()) {
                     UIManager.GetTimeScaleWidget().PauseToggle();
@@ -119,22 +119,22 @@ namespace UnityExplorer
                 }
             }
 
-            if (InputManager.GetKeyDown(ConfigManager.Screenshot.Value))
+            if (IInputManager.GetKeyDown(ConfigManager.Screenshot.Value))
             {
                 UIManager.GetPanel<UnityExplorer.UI.Panels.Misc>(UIManager.Panels.Misc).screenshotStatus = UnityExplorer.UI.Panels.Misc.ScreenshotState.TurnOffUI;
             }
 
-            if (InputManager.GetKeyDown(ConfigManager.HUD_Toggle.Value))
+            if (IInputManager.GetKeyDown(ConfigManager.HUD_Toggle.Value))
             {
                 UIManager.GetPanel<UnityExplorer.UI.Panels.Misc>(UIManager.Panels.Misc).ToggleHUDElements();
             }
 
-            if (InputManager.GetKeyDown(ConfigManager.Freecam_Toggle.Value))
+            if (IInputManager.GetKeyDown(ConfigManager.Freecam_Toggle.Value))
             {
                 FreeCamPanel.StartStopButton_OnClick();
             }
 
-            if (InputManager.GetKeyDown(ConfigManager.Block_Freecam_Movement.Value))
+            if (IInputManager.GetKeyDown(ConfigManager.Block_Freecam_Movement.Value))
             {
                 FreeCamPanel.blockFreecamMovementToggle.isOn = !FreeCamPanel.blockFreecamMovementToggle.isOn;
             }

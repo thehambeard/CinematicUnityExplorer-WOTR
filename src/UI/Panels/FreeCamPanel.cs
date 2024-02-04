@@ -69,7 +69,7 @@ namespace UnityExplorer.UI.Panels
         {
             inFreeCamMode = true;
 
-            previousMousePosition = InputManager.MousePosition;
+            previousMousePosition = IInputManager.MousePosition;
 
             CacheMainCamera();
             SetupFreeCamera();
@@ -524,6 +524,10 @@ namespace UnityExplorer.UI.Panels
 
             UpdateClippingPlanes();
         }
+
+        public static bool ShouldOverrideInput(){
+            return inFreeCamMode;
+        }
     }
 
     internal class FreeCamBehaviour : MonoBehaviour
@@ -564,39 +568,39 @@ namespace UnityExplorer.UI.Panels
 
                 float moveSpeed = FreeCamPanel.desiredMoveSpeed * 0.01665f; //"0.01665f" (60fps) in place of Time.DeltaTime. DeltaTime causes issues when game is paused.
                 float speedModifier = 1;
-                if (InputManager.GetKey(ConfigManager.Speed_Up_Movement.Value))
+                if (IInputManager.GetKey(ConfigManager.Speed_Up_Movement.Value))
                     speedModifier = 10f;
 
-                if (InputManager.GetKey(ConfigManager.Speed_Down_Movement.Value))
+                if (IInputManager.GetKey(ConfigManager.Speed_Down_Movement.Value))
                     speedModifier = 0.1f;
 
                 moveSpeed *= speedModifier;
 
-                if (InputManager.GetKey(ConfigManager.Left_1.Value) || InputManager.GetKey(ConfigManager.Left_2.Value))
+                if (IInputManager.GetKey(ConfigManager.Left_1.Value) || IInputManager.GetKey(ConfigManager.Left_2.Value))
                     transform.position += transform.right * -1 * moveSpeed;
 
-                if (InputManager.GetKey(ConfigManager.Right_1.Value) || InputManager.GetKey(ConfigManager.Right_2.Value))
+                if (IInputManager.GetKey(ConfigManager.Right_1.Value) || IInputManager.GetKey(ConfigManager.Right_2.Value))
                     transform.position += transform.right * moveSpeed;
 
-                if (InputManager.GetKey(ConfigManager.Forwards_1.Value) || InputManager.GetKey(ConfigManager.Forwards_2.Value))
+                if (IInputManager.GetKey(ConfigManager.Forwards_1.Value) || IInputManager.GetKey(ConfigManager.Forwards_2.Value))
                     transform.position += transform.forward * moveSpeed;
 
-                if (InputManager.GetKey(ConfigManager.Backwards_1.Value) || InputManager.GetKey(ConfigManager.Backwards_2.Value))
+                if (IInputManager.GetKey(ConfigManager.Backwards_1.Value) || IInputManager.GetKey(ConfigManager.Backwards_2.Value))
                     transform.position += transform.forward * -1 * moveSpeed;
 
-                if (InputManager.GetKey(ConfigManager.Up.Value))
+                if (IInputManager.GetKey(ConfigManager.Up.Value))
                     transform.position += transform.up * moveSpeed;
 
-                if (InputManager.GetKey(ConfigManager.Down.Value))
+                if (IInputManager.GetKey(ConfigManager.Down.Value))
                     transform.position += transform.up * -1 * moveSpeed;
 
-                if (InputManager.GetKey(ConfigManager.Tilt_Left.Value))
+                if (IInputManager.GetKey(ConfigManager.Tilt_Left.Value))
                     transform.Rotate(0, 0, moveSpeed, Space.Self);
 
-                if (InputManager.GetKey(ConfigManager.Tilt_Right.Value))
+                if (IInputManager.GetKey(ConfigManager.Tilt_Right.Value))
                     transform.Rotate(0, 0, - moveSpeed, Space.Self);
 
-                if (InputManager.GetKey(ConfigManager.Tilt_Reset.Value)){
+                if (IInputManager.GetKey(ConfigManager.Tilt_Reset.Value)){
                     // Extract the forward direction of the original quaternion
                     Vector3 forwardDirection = transform.rotation * Vector3.forward;
                     // Reset the tilt by creating a new quaternion with no tilt
@@ -605,9 +609,9 @@ namespace UnityExplorer.UI.Panels
                     transform.rotation = newRotation;
                 }
 
-                if (InputManager.GetMouseButton(1))
+                if (IInputManager.GetMouseButton(1))
                 {
-                    Vector3 mouseDelta = InputManager.MousePosition - FreeCamPanel.previousMousePosition;
+                    Vector3 mouseDelta = IInputManager.MousePosition - FreeCamPanel.previousMousePosition;
                     if (mouseDelta.x != 0 || mouseDelta.y != 0){
                         // Calculate the mouse movement vector depending on the current camera tilt.
                         float tiltAngle = transform.eulerAngles.z;
@@ -622,26 +626,26 @@ namespace UnityExplorer.UI.Panels
                         transform.localEulerAngles = new Vector3(newRotationY, newRotationX, transform.localEulerAngles.z);
                     }
 
-                    FreeCamPanel.previousMousePosition = InputManager.MousePosition;
+                    FreeCamPanel.previousMousePosition = IInputManager.MousePosition;
                 }
 
-                if (InputManager.GetKey(ConfigManager.Decrease_FOV.Value))
+                if (IInputManager.GetKey(ConfigManager.Decrease_FOV.Value))
                 {
                     FreeCamPanel.ourCamera.fieldOfView -= moveSpeed; 
                 }
 
-                if (InputManager.GetKey(ConfigManager.Increase_FOV.Value))
+                if (IInputManager.GetKey(ConfigManager.Increase_FOV.Value))
                 {
                     FreeCamPanel.ourCamera.fieldOfView += moveSpeed; 
                 }
 
-                if (InputManager.GetKey(ConfigManager.Reset_FOV.Value)){
+                if (IInputManager.GetKey(ConfigManager.Reset_FOV.Value)){
                     FreeCamPanel.ourCamera.fieldOfView = FreeCamPanel.usingGameCamera ? FreeCamPanel.originalCameraFOV : 60;
                 }
 
                 FreeCamPanel.UpdatePositionInput();
 
-                FreeCamPanel.previousMousePosition = InputManager.MousePosition;
+                FreeCamPanel.previousMousePosition = IInputManager.MousePosition;
             }
         }
     }

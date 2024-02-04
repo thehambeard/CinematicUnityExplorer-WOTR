@@ -135,7 +135,7 @@ namespace UnityExplorer.UI
             Notification.Update();
 
             // Check forceUnlockMouse toggle
-            if (InputManager.GetKeyDown(ConfigManager.Force_Unlock_Toggle.Value))
+            if (IInputManager.GetKeyDown(ConfigManager.Force_Unlock_Toggle.Value))
                 UniverseLib.Config.ConfigManager.Force_Unlock_Mouse = !UniverseLib.Config.ConfigManager.Force_Unlock_Mouse;
 
             // update the timescale value

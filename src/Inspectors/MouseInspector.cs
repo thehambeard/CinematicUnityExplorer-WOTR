@@ -113,10 +113,10 @@ namespace UnityExplorer.Inspectors
 
         public bool TryUpdate()
         {
-            if (InputManager.GetKeyDown(ConfigManager.World_MouseInspect_Keybind.Value))
+            if (IInputManager.GetKeyDown(ConfigManager.World_MouseInspect_Keybind.Value))
                 Instance.StartInspect(MouseInspectMode.World, inspectorAction);
 
-            if (InputManager.GetKeyDown(ConfigManager.UI_MouseInspect_Keybind.Value))
+            if (IInputManager.GetKeyDown(ConfigManager.UI_MouseInspect_Keybind.Value))
                 Instance.StartInspect(MouseInspectMode.UI, inspectorAction);
 
             if (Inspecting)
@@ -127,20 +127,20 @@ namespace UnityExplorer.Inspectors
 
         public void UpdateInspect()
         {
-            if (InputManager.GetKeyDown(KeyCode.Escape))
+            if (IInputManager.GetKeyDown(KeyCode.Escape))
             {
                 StopInspect();
                 return;
             }
 
-            if (InputManager.GetMouseButtonDown(0))
+            if (IInputManager.GetMouseButtonDown(0))
             {
                 CurrentInspector.OnSelectMouseInspect(inspectorAction);
                 StopInspect();
                 return;
             }
 
-            Vector3 mousePos = InputManager.MousePosition;
+            Vector3 mousePos = IInputManager.MousePosition;
             if (mousePos != lastMousePos)
                 UpdatePosition(mousePos);
 
