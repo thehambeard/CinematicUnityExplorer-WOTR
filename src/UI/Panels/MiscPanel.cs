@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using UnityExplorer.CacheObject;
+﻿using UnityExplorer.CacheObject;
 using UnityExplorer.Inspectors;
 using UnityExplorer.ObjectExplorer;
 using UniverseLib.UI;
@@ -67,7 +66,11 @@ namespace UnityExplorer.UI.Panels
                 }
             }
             else {
-                disabledCanvases = GameObject.FindObjectsOfType<Canvas>().Where(c => c.isActiveAndEnabled).ToList();
+                disabledCanvases = RuntimeHelper.FindObjectsOfTypeAll(typeof(Canvas))
+                .Select(obj => obj.TryCast<Canvas>())
+                .Where(c => !c.name.Contains("unityexplorer") && c.isActiveAndEnabled)
+                .ToList();
+
                 foreach (Canvas canvas in disabledCanvases)
                 {
                     if (canvas == null)
