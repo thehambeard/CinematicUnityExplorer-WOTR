@@ -33,6 +33,7 @@ namespace UnityExplorer.Loader.Standalone
         public KeyCode HUD_Toggle;
         public KeyCode Freecam_Toggle;
         public KeyCode Block_Freecam_Movement;
+        public KeyCode Toggle_Block_Games_Input;
         public KeyCode Speed_Up_Movement;
         public KeyCode Speed_Down_Movement;
         public KeyCode Forwards_1;
@@ -85,6 +86,7 @@ namespace UnityExplorer.Loader.Standalone
             ConfigManager.HUD_Toggle.Value = this.HUD_Toggle;
             ConfigManager.Freecam_Toggle.Value = this.Freecam_Toggle;
             ConfigManager.Block_Freecam_Movement.Value = this.Block_Freecam_Movement;
+            ConfigManager.Toggle_Block_Games_Input.Value = this.Toggle_Block_Games_Input;
             ConfigManager.Speed_Up_Movement.Value = this.Speed_Up_Movement;
             ConfigManager.Speed_Down_Movement.Value = this.Speed_Down_Movement;
             ConfigManager.Forwards_1.Value = this.Forwards_1;

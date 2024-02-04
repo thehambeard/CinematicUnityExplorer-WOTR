@@ -50,6 +50,7 @@ namespace UnityExplorer.UI.Panels
         static ButtonRef startStopButton;
         public static Toggle useGameCameraToggle;
         public static Toggle blockFreecamMovementToggle;
+        public static Toggle blockGamesInputOnFreecamToggle;
         static InputFieldRef positionInput;
         static InputFieldRef moveSpeedInput;
         static Text followObjectLabel;
@@ -322,10 +323,17 @@ namespace UnityExplorer.UI.Panels
 
             AddSpacer(5);
 
-            GameObject blockFreecamMovement = UIFactory.CreateToggle(ContentRoot, "blockFreecamMovement", out blockFreecamMovementToggle, out Text blockFreecamMovementText);
+            GameObject togglesRow = UIFactory.CreateHorizontalGroup(ContentRoot, "TogglesRow", false, false, true, true, 3, default, new(1, 1, 1, 0));
+
+            GameObject blockFreecamMovement = UIFactory.CreateToggle(togglesRow, "blockFreecamMovement", out blockFreecamMovementToggle, out Text blockFreecamMovementText);
             UIFactory.SetLayoutElement(blockFreecamMovement, minHeight: 25, flexibleWidth: 9999);
             blockFreecamMovementToggle.isOn = false;
             blockFreecamMovementText.text = "Block Freecam movement";
+
+            GameObject blockGamesInputOnFreecam = UIFactory.CreateToggle(togglesRow, "blockGamesInputOnFreecam", out blockGamesInputOnFreecamToggle, out Text blockGamesInputOnFreecamText);
+            UIFactory.SetLayoutElement(blockGamesInputOnFreecam, minHeight: 25, flexibleWidth: 9999);
+            blockGamesInputOnFreecamToggle.isOn = true;
+            blockGamesInputOnFreecamText.text = "Block games input on Freecam";
 
             AddSpacer(5);
 
@@ -343,7 +351,8 @@ namespace UnityExplorer.UI.Panels
             $"- {ConfigManager.Reset_FOV.Value}: Reset FOV\n\n" +
             "Extra:\n" +
             $"- {ConfigManager.Freecam_Toggle.Value}: Freecam toggle\n" +
-            $"- {ConfigManager.Block_Freecam_Movement.Value}: Block freecam movement\n" +
+            $"- {ConfigManager.Block_Freecam_Movement.Value}: Toggle block Freecam\n" +
+            $"- {ConfigManager.Toggle_Block_Games_Input.Value}: Toggle games input on Freecam\n" +
             $"- {ConfigManager.HUD_Toggle.Value}: HUD toggle\n" +
             $"- {ConfigManager.Pause.Value}: Pause\n" +
             $"- {ConfigManager.Frameskip.Value}: Frameskip\n";
@@ -526,7 +535,7 @@ namespace UnityExplorer.UI.Panels
         }
 
         public static bool ShouldOverrideInput(){
-            return inFreeCamMode;
+            return inFreeCamMode && blockGamesInputOnFreecamToggle.isOn;
         }
     }
 

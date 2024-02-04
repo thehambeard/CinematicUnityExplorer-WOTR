@@ -35,6 +35,7 @@ namespace UnityExplorer.Config
         public static ConfigElement<KeyCode> HUD_Toggle;
         public static ConfigElement<KeyCode> Freecam_Toggle;
         public static ConfigElement<KeyCode> Block_Freecam_Movement;
+        public static ConfigElement<KeyCode> Toggle_Block_Games_Input;
         public static ConfigElement<KeyCode> Speed_Up_Movement;
         public static ConfigElement<KeyCode> Speed_Down_Movement;
         public static ConfigElement<KeyCode> Forwards_1;
@@ -192,9 +193,13 @@ namespace UnityExplorer.Config
                 "Toggles freecamera mode.",
                 KeyCode.Insert);
 
-            Block_Freecam_Movement = new("Block Freecam movement",
+            Block_Freecam_Movement = new("Toggle block Freecam movement",
                 "Blocks the freecam from moving when pressing the freecam-related hotkeys.",
                 KeyCode.Home);
+
+            Toggle_Block_Games_Input = new("Toggle block games input",
+                "Blocks the games input when the the freecam is on.",
+                KeyCode.KeypadPeriod);
 
             Speed_Up_Movement = new("Speed up movement",
                 "Maintain this key pressed while moving the camera around to increase the freecam movement speed.",
@@ -246,15 +251,15 @@ namespace UnityExplorer.Config
 
             Tilt_Left = new("Tilt left",
                 "Tilt the camera to the left.",
-                KeyCode.Q);
+                KeyCode.Keypad1);
 
             Tilt_Right = new("Tilt right",
                 "Tilt the camera to the left.",
-                KeyCode.E);
+                KeyCode.Keypad3);
 
             Tilt_Reset = new("Tilt reset",
                 "Resets the tilt the camera.",
-                KeyCode.KeypadPeriod);
+                KeyCode.Keypad2);
 
             Increase_FOV = new("Increase FOV",
                 "Increase the field of view of the current freecam.",
