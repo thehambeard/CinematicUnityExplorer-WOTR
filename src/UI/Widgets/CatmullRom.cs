@@ -106,6 +106,9 @@ namespace UnityExplorer.CatmullRom
 
         bool arePointsLocal;
 
+        float tension = 0;
+        float alpha = 0.5f;
+
         public CatmullRomMover(){
             splinePoints = new CatmullRomPoint[] { };
             lookaheadPoints = new List<CatmullRomPoint>();
@@ -155,6 +158,11 @@ namespace UnityExplorer.CatmullRom
 
         public void setTime(float newTime){
             time = newTime;
+        }
+
+        public void setCatmullRomVariables(float newAlpha, float newTension){
+            alpha = newAlpha;
+            tension = newTension;
         }
 
         void Update(){
@@ -306,9 +314,6 @@ namespace UnityExplorer.CatmullRom
 
         // Implementation from: https://qroph.github.io/2018/07/30/smooth-paths-using-catmull-rom-splines.html
         private Vector3 CatmullRomInterpolation(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t){
-            float tension = 0;
-            float alpha = 0.5f;
-
             float t01 = (float) System.Math.Pow((double) Vector3.Distance(p0, p1), (double) alpha);
             float t12 = (float) System.Math.Pow((double) Vector3.Distance(p1, p2), (double) alpha);
             float t23 = (float) System.Math.Pow((double) Vector3.Distance(p2, p3), (double) alpha);
@@ -328,9 +333,6 @@ namespace UnityExplorer.CatmullRom
         }
 
         private Vector4 CatmullRomInterpolation(Vector4 r0, Vector4 r1, Vector4 r2, Vector4 r3, float t){
-            float tension = 0;
-            float alpha = 0.5f;
-
             float t01 = (float) System.Math.Pow((double) Vector4.Distance(r0, r1), (double) alpha);
             float t12 = (float) System.Math.Pow((double) Vector4.Distance(r1, r2), (double) alpha);
             float t23 = (float) System.Math.Pow((double) Vector4.Distance(r2, r3), (double) alpha);

@@ -29,6 +29,10 @@ namespace UnityExplorer.UI.Panels
             startTimer = new System.Timers.Timer(3000);
             startTimer.Elapsed += (source, e) => StartPath();
             startTimer.AutoReset = false;
+
+            // CatmullRom Constants
+            alphaCatmullRomSlider = new Slider();
+            tensionCatmullRomSlider = new Slider();
         }
 
         public override string Name => "Cam Paths";
@@ -42,7 +46,7 @@ namespace UnityExplorer.UI.Panels
 		public List<CatmullRom.CatmullRomPoint> controlPoints;
         List<GameObject> UINodes;
         bool closedLoop;
-        float time;
+        float time = 10;
 
         GameObject followObject;
 
@@ -52,6 +56,14 @@ namespace UnityExplorer.UI.Panels
         bool unpauseOnPlay;
         bool waitBeforePlay;
         private System.Timers.Timer startTimer;
+
+        InputFieldRef alphaCatmullRomInput;
+        Slider alphaCatmullRomSlider;
+        float alphaCatmullRomValue = 0.5f;
+
+        InputFieldRef tensionCatmullRomInput;
+        Slider tensionCatmullRomSlider;
+        float tensionCatmullRomValue = 0;
 
         // ~~~~~~~~ UI construction / callbacks ~~~~~~~~
 
@@ -91,8 +103,42 @@ namespace UnityExplorer.UI.Panels
             closedLoopToggle.onValueChanged.AddListener((isClosedLoop) => {closedLoop = isClosedLoop; MaybeRedrawPath(); EventSystemHelper.SetSelectedGameObject(null);});
             toggleClosedLoopText.text = "Close path in a loop";
 
+            // CatmullRom alpha value
+            GameObject catmullRomVariablesGroup = AddInputField("alphaCatmullRom", "Alpha:", "0.5", out alphaCatmullRomInput, AlphaCatmullRom_OnEndEdit, 100, false);
+            alphaCatmullRomInput.Text = alphaCatmullRomValue.ToString();
+
+            GameObject alphaCatmullRomObj = UIFactory.CreateSlider(catmullRomVariablesGroup, "Alpha CatmullRom Slider", out alphaCatmullRomSlider);
+            UIFactory.SetLayoutElement(alphaCatmullRomObj, minHeight: 25, minWidth: 50, flexibleWidth: 0);
+            alphaCatmullRomSlider.m_FillImage.color = Color.clear;
+            alphaCatmullRomSlider.minValue = 0;
+            alphaCatmullRomSlider.maxValue = 1;
+            alphaCatmullRomSlider.value = alphaCatmullRomValue;
+            alphaCatmullRomSlider.onValueChanged.AddListener((newAlpha) => {
+                alphaCatmullRomValue = newAlpha;
+                alphaCatmullRomInput.Text = alphaCatmullRomValue.ToString();
+
+                MaybeRedrawPath();
+            });
+
+            // CatmullRom tension value
+            AddInputField("tensionCatmullRomO", "Tension:", "0", out tensionCatmullRomInput, TensionCatmullRom_OnEndEdit, 100, false, catmullRomVariablesGroup);
+            tensionCatmullRomInput.Text = tensionCatmullRomValue.ToString();
+
+            GameObject tensionCatmullRomObj = UIFactory.CreateSlider(catmullRomVariablesGroup, "Tension CatmullRom Slider", out tensionCatmullRomSlider);
+            UIFactory.SetLayoutElement(tensionCatmullRomObj, minHeight: 25, minWidth: 50, flexibleWidth: 0);
+            tensionCatmullRomSlider.m_FillImage.color = Color.clear;
+            tensionCatmullRomSlider.minValue = 0;
+            tensionCatmullRomSlider.maxValue = 1;
+            tensionCatmullRomSlider.value = tensionCatmullRomValue;
+            tensionCatmullRomSlider.onValueChanged.AddListener((newTension) => {
+                tensionCatmullRomValue = newTension;
+                tensionCatmullRomInput.Text = tensionCatmullRomValue.ToString();
+
+                MaybeRedrawPath();
+            });
+
             InputFieldRef TimeInput = null;
-            GameObject secondRow = AddInputField("Time", "Path time (in seconds at 60fps):", $"Default: {time}", out TimeInput, Time_OnEndEdit, false);
+            GameObject secondRow = AddInputField("Time", "Path time (in seconds at 60fps):", $"Default: {time}", out TimeInput, Time_OnEndEdit, 50, false);
             TimeInput.Text = time.ToString();
 
             GameObject visualizePathObj = UIFactory.CreateToggle(secondRow, "Visualize Path", out visualizePathToggle, out Text visualizePathText);
@@ -114,6 +160,40 @@ namespace UnityExplorer.UI.Panels
             waitBeforePlayText.text = "Wait 3 seconds before start";
         }
 
+        void AlphaCatmullRom_OnEndEdit(string input)
+        {
+            EventSystemHelper.SetSelectedGameObject(null);
+
+            if (!ParseUtility.TryParse(input, out float parsed, out Exception parseEx))
+            {
+                ExplorerCore.LogWarning($"Could not parse value: {parseEx.ReflectionExToString()}");
+                alphaCatmullRomInput.Text = alphaCatmullRomValue.ToString();
+                return;
+            }
+
+            alphaCatmullRomValue = parsed;
+            alphaCatmullRomSlider.value = alphaCatmullRomValue;
+
+            MaybeRedrawPath();
+        }
+
+        void TensionCatmullRom_OnEndEdit(string input)
+        {
+            EventSystemHelper.SetSelectedGameObject(null);
+
+            if (!ParseUtility.TryParse(input, out float parsed, out Exception parseEx))
+            {
+                ExplorerCore.LogWarning($"Could not parse value: {parseEx.ReflectionExToString()}");
+                tensionCatmullRomInput.Text = tensionCatmullRomValue.ToString();
+                return;
+            }
+
+            tensionCatmullRomValue = parsed;
+            tensionCatmullRomSlider.value = tensionCatmullRomValue;
+
+            MaybeRedrawPath();
+        }
+
         private void UpdateListNodes(){
             //Refresh list
             foreach (var comp in UINodes){
@@ -128,6 +208,8 @@ namespace UnityExplorer.UI.Panels
         }
 
         private void ToggleVisualizePath(bool enable){
+            // Had to include this check because the pathVisualizer was null for some reason
+            if (pathVisualizer == null) pathVisualizer = new GameObject("PathVisualizer");
             if (enable){
                 if (controlPoints.Count > 2){
                     UpdateCatmullRomMoverData();
@@ -211,18 +293,18 @@ namespace UnityExplorer.UI.Panels
             //ShowPos and rot?
         }
 
-        GameObject AddInputField(string name, string labelText, string placeHolder, out InputFieldRef inputField, Action<string> onInputEndEdit, bool shouldDeleteOnUpdate = true)
+        GameObject AddInputField(string name, string labelText, string placeHolder, out InputFieldRef inputField, Action<string> onInputEndEdit, int inputMinWidth = 50, bool shouldDeleteOnUpdate = true, GameObject existingRow = null)
         {
-            GameObject row = UIFactory.CreateHorizontalGroup(ContentRoot, "Editor Field",
+            GameObject row = existingRow != null ? existingRow : UIFactory.CreateHorizontalGroup(ContentRoot, "Editor Field",
             false, false, true, true, 5, default, new Color(1, 1, 1, 0));
             if(shouldDeleteOnUpdate)
                 UINodes.Add(row); //To delete it when we update the node list
 
             Text posLabel = UIFactory.CreateLabel(row, $"{name}_Label", labelText);
-            UIFactory.SetLayoutElement(posLabel.gameObject, minWidth: 80, minHeight: 25);
+            UIFactory.SetLayoutElement(posLabel.gameObject, minWidth: 40, minHeight: 25);
 
             inputField = UIFactory.CreateInputField(row, $"{name}_Input", placeHolder);
-            UIFactory.SetLayoutElement(inputField.GameObject, minWidth: 50, minHeight: 25);
+            UIFactory.SetLayoutElement(inputField.GameObject, minWidth: inputMinWidth, minHeight: 25);
             inputField.Component.GetOnEndEdit().AddListener(onInputEndEdit);
 
             return row;
@@ -275,6 +357,8 @@ namespace UnityExplorer.UI.Panels
         }
 
         void AddNode_OnClick(){
+            EventSystemHelper.SetSelectedGameObject(null);
+
             Camera freeCam = FreeCamPanel.ourCamera;
             CatmullRom.CatmullRomPoint point = new CatmullRom.CatmullRomPoint(
                 followObject != null ? freeCam.transform.localPosition : freeCam.transform.position,
@@ -285,8 +369,6 @@ namespace UnityExplorer.UI.Panels
             controlPoints.Add(point);
             UpdateListNodes();
             MaybeRedrawPath();
-
-            EventSystemHelper.SetSelectedGameObject(null);
         }
 
         void Time_OnEndEdit(string input)
@@ -355,6 +437,7 @@ namespace UnityExplorer.UI.Panels
             GetCameraPathsManager().setLocalPoints(followObject != null);
             GetCameraPathsManager().setSplinePoints(controlPoints.ToArray());
             GetCameraPathsManager().setTime(time);
+            GetCameraPathsManager().setCatmullRomVariables(alphaCatmullRomValue, tensionCatmullRomValue);
 
             GetCameraPathsManager().CalculateLookahead();
         }
