@@ -156,21 +156,27 @@ namespace UnityExplorer.UI.Panels
             GameObject obj = new($"UE - Light {lightCounter}");
             //DontDestroyOnLoad(obj);
             obj.hideFlags = HideFlags.HideAndDontSave;
-            obj.AddComponent<UnityEngine.Light>();
-
-            obj.GetComponent<Light>().type = requestedType;
+            Light lightComponent = obj.AddComponent<UnityEngine.Light>();
+            lightComponent.type = requestedType;
 
             switch(requestedType){
                 case LightType.Spot:
-                    obj.GetComponent<Light>().intensity = 200;
-                    obj.GetComponent<Light>().range = 1000;
-                    GameObject arrow = ArrowGenerator.CreateArrow(Vector3.zero, Quaternion.identity);
+                    lightComponent.intensity = 200;
+                    lightComponent.range = 1000;
+                    GameObject arrow = ArrowGenerator.CreateArrow(Vector3.zero, Quaternion.identity, lightComponent.color);
                     arrow.SetActive(false);
                     arrow.transform.SetParent(obj.transform, true);
                     break;
                 case LightType.Point:
-                    obj.GetComponent<Light>().intensity = 10;
+                    lightComponent.intensity = 10;
                     GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    sphere.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+
+                    // Assign material and color to sphere
+                    Renderer renderer = sphere.GetComponent<Renderer>();
+                    renderer.material = new Material(Shader.Find("Sprites/Default"));
+                    renderer.material.color = lightComponent.color;
+
                     sphere.SetActive(false);
                     sphere.transform.SetParent(obj.transform, true);
                     break;

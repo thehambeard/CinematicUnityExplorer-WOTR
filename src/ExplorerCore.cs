@@ -60,6 +60,7 @@ namespace UnityExplorer
             //Extra inits
             KeypressListener.Setup();
             IInputManager.Setup();
+            ArrowGenerator.PatchLights();
         }
 
         // Do a delayed setup so that objects aren't destroyed instantly.

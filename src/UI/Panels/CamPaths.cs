@@ -224,7 +224,7 @@ namespace UnityExplorer.UI.Panels
                             continue;
                         }
 
-                        GameObject arrow = ArrowGenerator.CreateArrow(lookaheadPoints[i].position, lookaheadPoints[i].rotation);
+                        GameObject arrow = ArrowGenerator.CreateArrow(lookaheadPoints[i].position, lookaheadPoints[i].rotation, Color.green);
                         arrow.transform.SetParent(pathVisualizer.transform, true);
                         n = 0;
                     }

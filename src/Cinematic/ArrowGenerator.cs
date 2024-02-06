@@ -1,3 +1,4 @@
+using HarmonyLib;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -5,16 +6,22 @@ namespace UnityExplorer
 {
     public class ArrowGenerator
     {
-        public static GameObject CreateArrow(Vector3 arrowPosition, Quaternion arrowRotation){
+        public static GameObject CreateArrow(Vector3 arrowPosition, Quaternion arrowRotation, Color color){
             GameObject cylinder = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             cylinder.GetComponent<Collider>().enabled = false;
             cylinder.GetComponent<MeshFilter>().mesh = CreateCylinderMesh(0.01f, 20, 2);
             cylinder.transform.rotation = Quaternion.LookRotation(Vector3.down, Vector3.up);
+            Renderer rendCylinder = cylinder.GetComponent<Renderer> ();
+            rendCylinder.material = new Material(Shader.Find("Sprites/Default"));
+            rendCylinder.material.color = color;
 
             GameObject cone = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             cone.GetComponent<Collider>().enabled = false;
             cone.GetComponent<MeshFilter>().mesh = CreateConeMesh(10, 0.05f, 0.1f);
             cone.transform.SetParent(cylinder.transform, true);
+            Renderer rendCone = cone.GetComponent<Renderer>();
+            rendCone.material = new Material(Shader.Find("Sprites/Default"));
+            rendCone.material.color = color;
 
             cylinder.transform.rotation = Quaternion.LookRotation(Vector3.back, Vector3.up);
 
@@ -25,6 +32,33 @@ namespace UnityExplorer
             arrow.transform.position += 0.5f * arrow.transform.forward; // Move the arrow forward so the cylinder starts on the wanted position
 
             return arrow;
+        }
+      
+        // Patch the light class so we can color the meshes we use to visualize them the same color.
+        public static void PatchLights(){
+            try
+            {
+                PropertyInfo lightColorProperty = typeof(Light).GetProperty("color");
+                MethodInfo setLightColorMethod = lightColorProperty.GetSetMethod();
+#if CPP
+                if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(setLightColorMethod) == null)
+                    return;
+#endif
+                ExplorerCore.Harmony.Patch(setLightColorMethod,
+                    prefix: new(AccessTools.Method(typeof(ArrowGenerator), nameof(ChangeArrowColor))));
+            }
+            catch { }
+        }
+
+        private static void ChangeArrowColor(Light __instance, Color __0){
+            if (!__instance.name.Contains("UE - Light"))
+                return;
+
+            Renderer[] renderers = __instance.GetComponentsInChildren<Renderer>();
+            foreach (Renderer renderer in renderers)
+            {
+                renderer.material.color = __0;
+            }
         }
 
         static Mesh CreateConeMesh(int subdivisions, float radius, float height){
