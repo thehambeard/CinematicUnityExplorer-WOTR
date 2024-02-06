@@ -224,6 +224,7 @@ namespace UnityExplorer.UI.Panels
                             continue;
                         }
 
+                        // We could expose the color of the arrow to a setting
                         GameObject arrow = ArrowGenerator.CreateArrow(lookaheadPoints[i].position, lookaheadPoints[i].rotation, Color.green);
                         arrow.transform.SetParent(pathVisualizer.transform, true);
                         n = 0;

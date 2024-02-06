@@ -1,6 +1,12 @@
 using HarmonyLib;
 using System.Collections.Generic;
 using UnityEngine;
+#if UNHOLLOWER
+using IL2CPPUtils = UnhollowerBaseLib.UnhollowerUtils;
+#endif
+#if INTEROP
+using IL2CPPUtils = Il2CppInterop.Common.Il2CppInteropUtils;
+#endif
 
 namespace UnityExplorer
 {
