@@ -22,6 +22,7 @@ namespace UnityExplorer.Config
         public static ConfigElement<string> Default_Output_Path;
         public static ConfigElement<string> DnSpy_Path;
         public static ConfigElement<bool> Log_Unity_Debug;
+        public static ConfigElement<bool> Log_To_Disk;
         public static ConfigElement<UIManager.VerticalAnchor> Main_Navbar_Anchor;
         public static ConfigElement<KeyCode> World_MouseInspect_Keybind;
         public static ConfigElement<KeyCode> UI_MouseInspect_Keybind;
@@ -80,7 +81,8 @@ namespace UnityExplorer.Config
             InternalHandler.LoadConfig();
 
 #if STANDALONE
-            Loader.Standalone.ExplorerEditorBehaviour.Instance?.LoadConfigs();
+            if (Loader.Standalone.ExplorerEditorBehaviour.Instance)
+                Loader.Standalone.ExplorerEditorBehaviour.Instance.LoadConfigs();
 #endif
         }
 
@@ -146,6 +148,10 @@ namespace UnityExplorer.Config
             Log_Unity_Debug = new("Log Unity Debug",
                 "Should UnityEngine.Debug.Log messages be printed to UnityExplorer's log?",
                 false);
+
+            Log_To_Disk = new("Log To Disk",
+                "Should UnityExplorer save log files to the disk?",
+                true);
 
             World_MouseInspect_Keybind = new("World Mouse-Inspect Keybind",
                 "Optional keybind to being a World-mode Mouse Inspect.",

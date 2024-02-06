@@ -23,10 +23,15 @@ namespace UnityExplorer
         public string ExplorerFolderName => ExplorerCore.DEFAULT_EXPLORER_FOLDER_NAME;
         public string ExplorerFolderDestination => MelonHandler.ModsDirectory;
 
+#if INTEROP
         public string UnhollowedModulesFolder => Path.Combine(
             Path.GetDirectoryName(MelonHandler.ModsDirectory),
             Path.Combine("MelonLoader", "Il2CppAssemblies"));
-
+#else
+        public string UnhollowedModulesFolder => Path.Combine(
+            Path.GetDirectoryName(MelonHandler.ModsDirectory),
+            Path.Combine("MelonLoader", "Managed"));
+#endif
         public ConfigHandler ConfigHandler => _configHandler;
         public MelonLoaderConfigHandler _configHandler;
 

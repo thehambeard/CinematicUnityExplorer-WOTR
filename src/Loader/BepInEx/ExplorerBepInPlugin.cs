@@ -5,7 +5,16 @@ using HarmonyLib;
 using UnityExplorer.Config;
 using UnityExplorer.Loader.BIE;
 #if CPP
+#if BIPUNITY
+using BepInEx.Unity.IL2CPP;
+#else
 using BepInEx.IL2CPP;
+#endif
+#endif
+#if MONO
+#if BIPUNITY
+using BepInEx.Unity.Mono;
+#endif
 #endif
 
 namespace UnityExplorer
