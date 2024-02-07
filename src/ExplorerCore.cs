@@ -59,7 +59,6 @@ namespace UnityExplorer
 
             //Extra inits
             KeypressListener.Setup();
-            IInputManager.Setup();
             ArrowGenerator.PatchLights();
         }
 
@@ -75,6 +74,8 @@ namespace UnityExplorer
             UIManager.InitUI();
 
             Log($"{NAME} {VERSION} ({Universe.Context}) initialized.");
+
+            IInputManager.Setup();
 
             // InspectorManager.Inspect(typeof(Tests.TestClass));
         }

@@ -57,6 +57,8 @@ namespace UnityExplorer.UI.Panels
         static ButtonRef inspectButton;
         static bool disabledCinemachine;
 
+        public static bool supportedInput => InputManager.CurrentType == InputType.Legacy;
+
         static InputFieldRef nearClipPlaneInput;
         static Slider nearClipPlaneSlider;
         static float nearClipPlaneValue;
@@ -195,7 +197,7 @@ namespace UnityExplorer.UI.Panels
                 return;
             
             if (ourCamera){
-                IEnumerable<Behaviour> comps = ourCamera.GetComponents<Behaviour>();
+                IEnumerable<Behaviour> comps = ourCamera.GetComponentsInChildren<Behaviour>();
                 foreach (Behaviour comp in comps)
                 {
                     if (comp.GetType().ToString() == "Cinemachine.CinemachineBrain"){
@@ -330,13 +332,14 @@ namespace UnityExplorer.UI.Panels
             blockFreecamMovementToggle.isOn = false;
             blockFreecamMovementText.text = "Block Freecam movement";
 
-            GameObject blockGamesInputOnFreecam = UIFactory.CreateToggle(togglesRow, "blockGamesInputOnFreecam", out blockGamesInputOnFreecamToggle, out Text blockGamesInputOnFreecamText);
-            UIFactory.SetLayoutElement(blockGamesInputOnFreecam, minHeight: 25, flexibleWidth: 9999);
-            blockGamesInputOnFreecamToggle.isOn = true;
-            blockGamesInputOnFreecamText.text = "Block games input on Freecam";
+            if (supportedInput){
+                GameObject blockGamesInputOnFreecam = UIFactory.CreateToggle(togglesRow, "blockGamesInputOnFreecam", out blockGamesInputOnFreecamToggle, out Text blockGamesInputOnFreecamText);
+                UIFactory.SetLayoutElement(blockGamesInputOnFreecam, minHeight: 25, flexibleWidth: 9999);
+                blockGamesInputOnFreecamToggle.isOn = true;
+                blockGamesInputOnFreecamText.text = "Block games input on Freecam";
 
-            AddSpacer(5);
-
+                AddSpacer(5);
+            }
 
             string instructions = "Controls:\n" +
             $"- {ConfigManager.Forwards_1.Value},{ConfigManager.Backwards_1.Value},{ConfigManager.Left_1.Value},{ConfigManager.Right_1.Value} / {ConfigManager.Forwards_2.Value},{ConfigManager.Backwards_2.Value},{ConfigManager.Left_2.Value},{ConfigManager.Right_2.Value}: Movement\n" +
@@ -352,7 +355,7 @@ namespace UnityExplorer.UI.Panels
             "Extra:\n" +
             $"- {ConfigManager.Freecam_Toggle.Value}: Freecam toggle\n" +
             $"- {ConfigManager.Block_Freecam_Movement.Value}: Toggle block Freecam\n" +
-            $"- {ConfigManager.Toggle_Block_Games_Input.Value}: Toggle games input on Freecam\n" +
+            (supportedInput ? $"- {ConfigManager.Toggle_Block_Games_Input.Value}: Toggle games input on Freecam\n" : "") +
             $"- {ConfigManager.HUD_Toggle.Value}: HUD toggle\n" +
             $"- {ConfigManager.Pause.Value}: Pause\n" +
             $"- {ConfigManager.Frameskip.Value}: Frameskip\n";

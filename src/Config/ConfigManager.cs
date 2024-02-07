@@ -204,7 +204,8 @@ namespace UnityExplorer.Config
                 KeyCode.Home);
 
             Toggle_Block_Games_Input = new("Toggle block games input",
-                "Blocks the games input when the the freecam is on.",
+                "Blocks the games input when the the freecam is on.\n" +
+                "If you don't see a 'Block games input on Freecam' checkbox on the FreecCam panel then it's not supported for this game.",
                 KeyCode.KeypadPeriod);
 
             Speed_Up_Movement = new("Speed up movement",

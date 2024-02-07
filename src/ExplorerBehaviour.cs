@@ -139,7 +139,7 @@ namespace UnityExplorer
                 FreeCamPanel.blockFreecamMovementToggle.isOn = !FreeCamPanel.blockFreecamMovementToggle.isOn;
             }
 
-            if (IInputManager.GetKeyDown(ConfigManager.Toggle_Block_Games_Input.Value))
+            if (FreeCamPanel.supportedInput && IInputManager.GetKeyDown(ConfigManager.Toggle_Block_Games_Input.Value))
             {
                 FreeCamPanel.blockGamesInputOnFreecamToggle.isOn = !FreeCamPanel.blockGamesInputOnFreecamToggle.isOn;
             }
