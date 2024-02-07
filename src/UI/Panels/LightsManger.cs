@@ -158,6 +158,11 @@ namespace UnityExplorer.UI.Panels
             obj.hideFlags = HideFlags.HideAndDontSave;
             Light lightComponent = obj.AddComponent<UnityEngine.Light>();
             lightComponent.type = requestedType;
+            lightComponent.shadows = LightShadows.Soft;
+            lightComponent.shadowBias = 0;
+
+            PropertyInfo test = typeof(Light).GetProperty("shadowCustomResolution");
+            test.SetValue(lightComponent, 5000, null);
 
             switch(requestedType){
                 case LightType.Spot:
