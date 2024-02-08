@@ -161,8 +161,8 @@ namespace UnityExplorer.UI.Panels
             lightComponent.shadows = LightShadows.Soft;
             lightComponent.shadowBias = 0;
 
-            PropertyInfo test = typeof(Light).GetProperty("shadowCustomResolution");
-            test.SetValue(lightComponent, 5000, null);
+            PropertyInfo shadowResolution = typeof(Light).GetProperty("shadowCustomResolution");
+            shadowResolution.SetValue(lightComponent, 5000, null);
 
             switch(requestedType){
                 case LightType.Spot:

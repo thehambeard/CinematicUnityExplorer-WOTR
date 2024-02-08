@@ -53,6 +53,14 @@ namespace UnityExplorer.UI.Panels
         object qualitySettings = null;
         CacheProperty lodBias = null;
 
+        // We save the current properties of the Renderers and Lights to restore them after editing them with togglers
+        internal Dictionary<Renderer, bool> renderersReceiveShadows = new();
+        internal Dictionary<Renderer, UnityEngine.Rendering.ShadowCastingMode> renderersCastShadows = new();
+        internal Dictionary<Light, int> vanillaLightsResolution = new();
+        internal Dictionary<Light, float> vanillaLightsShadowBias = new();
+        internal Dictionary<Light, LightShadows> vanillaLightsShadowType = new();
+        int shadowsResolution = 5000;
+
         // Based on https://github.com/TollyH/Unity-FreeCam
         private void SetValueHUDElements(bool value){
             if (value){
@@ -139,7 +147,79 @@ namespace UnityExplorer.UI.Panels
             if (qualitySettings == null) FindQualitySettings();
             if (lodBias == null) FindLodBias();
 
-            lodBias.TrySetUserValue(areHighLodsOn ? 1000 : 1);
+            lodBias.TrySetUserValue(areHighLodsOn ? 10000 : 1);
+        }
+
+        private void ToggleAllMeshesCastAndRecieveShadows(bool enable){
+            if (enable){
+                renderersReceiveShadows.Clear();
+                renderersCastShadows.Clear();
+
+                List<Renderer> renderers = RuntimeHelper.FindObjectsOfTypeAll(typeof(Renderer))
+                .Select(obj => obj.TryCast<Renderer>())
+                .ToList();
+
+                foreach (Renderer renderer in renderers){
+                    renderersReceiveShadows[renderer] = renderer.receiveShadows;
+                    renderersCastShadows[renderer] = renderer.shadowCastingMode;
+
+                    renderer.receiveShadows = true;
+                    renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
+                }
+            } else {
+                foreach (Renderer renderer in renderersReceiveShadows.Keys){
+                    renderer.receiveShadows = renderersReceiveShadows[renderer];
+                    renderer.shadowCastingMode = renderersCastShadows[renderer];
+                }
+            }
+        }
+
+        private void ToggleHighResShadows(bool enable){
+            PropertyInfo shadowResolution = typeof(Light).GetProperty("shadowCustomResolution");
+
+            if (enable){
+                vanillaLightsResolution.Clear();
+                vanillaLightsShadowBias.Clear();
+
+                List<Light> vanillaLights = RuntimeHelper.FindObjectsOfTypeAll(typeof(Light))
+                .Select(obj => obj.TryCast<Light>())
+                .Where(l => !l.name.Contains("UE - Light") && l.isActiveAndEnabled)
+                .ToList();
+
+                foreach (Light light in vanillaLights){
+                    vanillaLightsResolution[light] = (int) shadowResolution.GetValue(light, null);
+                    shadowResolution.SetValue(light, shadowsResolution, null);
+
+                    vanillaLightsShadowBias[light] = light.shadowBias;
+                    light.shadowBias = 0;
+                }
+            } else {
+                foreach (Light light in vanillaLightsResolution.Keys){
+                    shadowResolution.SetValue(light, vanillaLightsResolution[light], null);
+
+                    light.shadowBias = vanillaLightsShadowBias[light];
+                }
+            }
+        }
+
+        private void ToggleShadowsOnAllLights(bool enable){
+            if (enable){
+                vanillaLightsShadowType.Clear();
+
+                List<Light> vanillaLights = RuntimeHelper.FindObjectsOfTypeAll(typeof(Light))
+                .Select(obj => obj.TryCast<Light>())
+                .Where(l => !l.name.Contains("UE - Light") && l.isActiveAndEnabled)
+                .ToList();
+
+                foreach (Light light in vanillaLights){
+                    vanillaLightsShadowType[light] = light.shadows;
+                    light.shadows = LightShadows.Soft;
+                }
+            } else {
+                foreach (Light light in vanillaLightsShadowType.Keys){
+                    light.shadows = vanillaLightsShadowType[light];
+                }
+            }
         }
 
         // We use an enum to walk a series of steps in each frame, so we can take the screenshot without UnityExplorer UI.
@@ -186,6 +266,34 @@ namespace UnityExplorer.UI.Panels
             HighLodToggle.isOn = false;
             HighLodToggleText.text = "High LODs Toggle";
 
+            Toggle ShadowMeshesToggle = new Toggle();
+            GameObject ShadowMeshesObj = UIFactory.CreateToggle(ContentRoot, "ShadowMeshes", out ShadowMeshesToggle, out Text ShadowMeshesText);
+            UIFactory.SetLayoutElement(ShadowMeshesObj, minHeight: 25);
+            ShadowMeshesToggle.onValueChanged.AddListener(ToggleAllMeshesCastAndRecieveShadows);
+            ShadowMeshesToggle.isOn = false;
+            ShadowMeshesText.text = "Make all meshes cast and recieve shadows";
+
+            Toggle ShadowsOnAllLightsToggle = new Toggle();
+            GameObject ShadowsOnAllLightsObj = UIFactory.CreateToggle(ContentRoot, "ShadowOnAllLights", out ShadowsOnAllLightsToggle, out Text ShadowsOnAllLightsText);
+            UIFactory.SetLayoutElement(ShadowsOnAllLightsObj, minHeight: 25);
+            ShadowsOnAllLightsToggle.onValueChanged.AddListener(ToggleShadowsOnAllLights);
+            ShadowsOnAllLightsToggle.isOn = false;
+            ShadowsOnAllLightsText.text = "Make all game lights emit shadow";
+
+            // High Resolution Shadows
+            GameObject HighResShadowsGroup = UIFactory.CreateHorizontalGroup(ContentRoot, "HighRes shadows group", false, false, true, true, 3,
+            default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
+            UIFactory.SetLayoutElement(HighResShadowsGroup, minHeight: 25, flexibleWidth: 9999);
+
+            Toggle HighResShadowsToggle = new Toggle();
+            GameObject HighResShadowsObj = UIFactory.CreateToggle(HighResShadowsGroup, "HighResShadows", out HighResShadowsToggle, out Text HighResShadowsText);
+            UIFactory.SetLayoutElement(HighResShadowsObj, minHeight: 25);
+            HighResShadowsToggle.onValueChanged.AddListener(ToggleHighResShadows);
+            HighResShadowsToggle.isOn = false;
+            HighResShadowsText.text = "High Res Shadows";
+
+            AddInputField(HighResShadowsGroup, "Resolution", "Resolution:", $"{5000}", HighResShadowsResolution_OnEndEdit);
+
             // Screenshot function
             GameObject TakeScreenshotHoriGroup = UIFactory.CreateHorizontalGroup(ContentRoot, "Take screenshot", false, false, true, true, 3,
             default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
@@ -204,7 +312,7 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(posLabel.gameObject, minWidth: 75, minHeight: 25);
 
             InputFieldRef inputField = UIFactory.CreateInputField(parent, $"{name}_Input", placeHolder);
-            UIFactory.SetLayoutElement(inputField.GameObject, minWidth: 25, minHeight: 25);
+            UIFactory.SetLayoutElement(inputField.GameObject, minWidth: 50, minHeight: 25);
             inputField.Component.GetOnEndEdit().AddListener(onInputEndEdit);
 
             return parent;
@@ -219,6 +327,17 @@ namespace UnityExplorer.UI.Panels
             }
 
             superSizeValue = parsed;
+        }
+
+        void HighResShadowsResolution_OnEndEdit(string input)
+        {
+            if (!ParseUtility.TryParse(input, out int parsed, out Exception parseEx))
+            {
+                ExplorerCore.LogWarning($"Could not parse value: {parseEx.ReflectionExToString()}");
+                return;
+            }
+
+            shadowsResolution = parsed;
         }
     }
 }
