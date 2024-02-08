@@ -35,8 +35,8 @@ namespace UnityExplorer.UI.Panels
 
         public override string Name => "Misc";
         public override UIManager.Panels PanelType => UIManager.Panels.Misc;
-        public override int MinWidth => 275;
-        public override int MinHeight => 150;
+        public override int MinWidth => 325;
+        public override int MinHeight => 200;
         public override Vector2 DefaultAnchorMin => new(0.4f, 0.4f);
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
         public override bool NavButtonWanted => true;
@@ -266,6 +266,17 @@ namespace UnityExplorer.UI.Panels
             HighLodToggle.isOn = false;
             HighLodToggleText.text = "High LODs Toggle";
 
+            // Screenshot function
+            GameObject TakeScreenshotHoriGroup = UIFactory.CreateHorizontalGroup(ContentRoot, "Take screenshot", false, false, true, true, 3,
+            default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
+            UIFactory.SetLayoutElement(TakeScreenshotHoriGroup, minHeight: 25, flexibleWidth: 9999);
+
+            ButtonRef takeScreenshot = UIFactory.CreateButton(TakeScreenshotHoriGroup, "TakeScreenshot", "Take screenshot");
+            UIFactory.SetLayoutElement(takeScreenshot.GameObject, minWidth: 150, minHeight: 25);
+            takeScreenshot.OnClick += () => screenshotStatus = ScreenshotState.TurnOffUI;
+
+            AddInputField(TakeScreenshotHoriGroup, "Supersize", "Supersize:", $"{2}", SuperSize_OnEndEdit);
+
             Toggle ShadowMeshesToggle = new Toggle();
             GameObject ShadowMeshesObj = UIFactory.CreateToggle(ContentRoot, "ShadowMeshes", out ShadowMeshesToggle, out Text ShadowMeshesText);
             UIFactory.SetLayoutElement(ShadowMeshesObj, minHeight: 25);
@@ -293,17 +304,6 @@ namespace UnityExplorer.UI.Panels
             HighResShadowsText.text = "High Res Shadows";
 
             AddInputField(HighResShadowsGroup, "Resolution", "Resolution:", $"{5000}", HighResShadowsResolution_OnEndEdit);
-
-            // Screenshot function
-            GameObject TakeScreenshotHoriGroup = UIFactory.CreateHorizontalGroup(ContentRoot, "Take screenshot", false, false, true, true, 3,
-            default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
-            UIFactory.SetLayoutElement(TakeScreenshotHoriGroup, minHeight: 25, flexibleWidth: 9999);
-
-            ButtonRef takeScreenshot = UIFactory.CreateButton(TakeScreenshotHoriGroup, "TakeScreenshot", "Take screenshot");
-            UIFactory.SetLayoutElement(takeScreenshot.GameObject, minWidth: 150, minHeight: 25);
-            takeScreenshot.OnClick += () => screenshotStatus = ScreenshotState.TurnOffUI;
-
-            AddInputField(TakeScreenshotHoriGroup, "Supersize", "Supersize:", $"{2}", SuperSize_OnEndEdit);
         }
 
         GameObject AddInputField(GameObject parent, string name, string labelText, string placeHolder, Action<string> onInputEndEdit)

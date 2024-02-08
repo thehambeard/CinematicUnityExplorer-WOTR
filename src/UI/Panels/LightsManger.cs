@@ -23,7 +23,7 @@ namespace UnityExplorer.UI.Panels
 
         public override string Name => "Lights Manager";
         public override UIManager.Panels PanelType => UIManager.Panels.LightsManager;
-        public override int MinWidth => 600;
+        public override int MinWidth => 650;
         public override int MinHeight => 500;
         public override Vector2 DefaultAnchorMin => new(0.4f, 0.4f);
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
@@ -38,6 +38,7 @@ namespace UnityExplorer.UI.Panels
         List<GameObject> UIElements = new List<GameObject>();
         //Declaring a counter instead of just using the length of the createdLight list in case we delete lights, so we don't end up with two lists with the same name.
         int lightCounter = 0;
+        float defaultIntensity = 10;
 
         // ~~~~~~~~ UI construction / callbacks ~~~~~~~~
 
@@ -57,6 +58,8 @@ namespace UnityExplorer.UI.Panels
             createPointLightButton = UIFactory.CreateButton(horiGroup, "ToggleButton", "Create PointLight");
             UIFactory.SetLayoutElement(createPointLightButton.GameObject, minWidth: 150, minHeight: 25);
             createPointLightButton.OnClick += () => CreateLight(LightType.Point);
+
+            AddInputField(horiGroup, "Default Itensity", "Default itensity:", $"{10}", DefaultIntensity_OnEndEdit);
 
             //Turn off vanilla lights
             Toggle vanillaLightsToggle = new Toggle();
@@ -160,20 +163,19 @@ namespace UnityExplorer.UI.Panels
             lightComponent.type = requestedType;
             lightComponent.shadows = LightShadows.Soft;
             lightComponent.shadowBias = 0;
+            lightComponent.intensity = defaultIntensity;
 
             PropertyInfo shadowResolution = typeof(Light).GetProperty("shadowCustomResolution");
             shadowResolution.SetValue(lightComponent, 5000, null);
 
             switch(requestedType){
                 case LightType.Spot:
-                    lightComponent.intensity = 200;
                     lightComponent.range = 1000;
                     GameObject arrow = ArrowGenerator.CreateArrow(Vector3.zero, Quaternion.identity, lightComponent.color);
                     arrow.SetActive(false);
                     arrow.transform.SetParent(obj.transform, true);
                     break;
                 case LightType.Point:
-                    lightComponent.intensity = 10;
                     GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                     sphere.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
 
@@ -226,6 +228,29 @@ namespace UnityExplorer.UI.Panels
 
                 return;
             }
+        }
+
+        GameObject AddInputField(GameObject parent, string name, string labelText, string placeHolder, Action<string> onInputEndEdit)
+        {
+            Text posLabel = UIFactory.CreateLabel(parent, $"{name}_Label", labelText);
+            UIFactory.SetLayoutElement(posLabel.gameObject, minWidth: 75, minHeight: 25);
+
+            InputFieldRef inputField = UIFactory.CreateInputField(parent, $"{name}_Input", placeHolder);
+            UIFactory.SetLayoutElement(inputField.GameObject, minWidth: 50, minHeight: 25);
+            inputField.Component.GetOnEndEdit().AddListener(onInputEndEdit);
+
+            return parent;
+        }
+
+        void DefaultIntensity_OnEndEdit(string input)
+        {
+            if (!ParseUtility.TryParse(input, out int parsed, out Exception parseEx))
+            {
+                ExplorerCore.LogWarning($"Could not parse value: {parseEx.ReflectionExToString()}");
+                return;
+            }
+
+            defaultIntensity = parsed;
         }
     }
 }
