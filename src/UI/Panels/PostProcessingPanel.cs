@@ -94,7 +94,11 @@ namespace UnityExplorer.UI.Panels
             };
 
             foreach (string effect in universalClassEffects){
-                AddEffect("UnityEngine.Rendering.Universal", effect);
+                try {
+                    AddEffect("UnityEngine.Rendering.Universal", effect);
+                }
+                catch {}
+                
             }
 
             string[] postProcessingClassEffects = {
@@ -112,7 +116,10 @@ namespace UnityExplorer.UI.Panels
                 };
 
             foreach (string effect in postProcessingClassEffects){
-                AddEffect("UnityEngine.Rendering.PostProcessing", effect);
+                try {
+                    AddEffect("UnityEngine.Rendering.PostProcessing", effect);
+                }
+                catch {}
             }
 
             BuildEffectTogglers();

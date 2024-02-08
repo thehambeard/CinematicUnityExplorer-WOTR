@@ -58,7 +58,6 @@ namespace UnityExplorer
             UnityCrashPrevention.Init();
 
             //Extra inits
-            KeypressListener.Setup();
             ArrowGenerator.PatchLights();
         }
 
@@ -78,6 +77,8 @@ namespace UnityExplorer
             IInputManager.Setup();
 
             // InspectorManager.Inspect(typeof(Tests.TestClass));
+
+            KeypressListener.Setup();
         }
 
         internal static void Update()

@@ -157,6 +157,7 @@ namespace UnityExplorer.UI.Panels
 
                 List<Renderer> renderers = RuntimeHelper.FindObjectsOfTypeAll(typeof(Renderer))
                 .Select(obj => obj.TryCast<Renderer>())
+                .Where(r => r.isVisible && r.enabled)
                 .ToList();
 
                 foreach (Renderer renderer in renderers){

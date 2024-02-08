@@ -200,7 +200,7 @@ namespace UnityExplorer.UI.Panels
                 IEnumerable<Behaviour> comps = ourCamera.GetComponentsInChildren<Behaviour>();
                 foreach (Behaviour comp in comps)
                 {
-                    if (comp.GetType().ToString() == "Cinemachine.CinemachineBrain"){
+                    if (comp.GetActualType().ToString() == "Cinemachine.CinemachineBrain"){
                         comp.enabled = enable;
                         disabledCinemachine = !enable;
                         break;

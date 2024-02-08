@@ -103,7 +103,7 @@ namespace UnityExplorer
             // Continous checks and actions
             stopFrameSkip();
             maybeForcePause();
-            UIManager.GetPanel<UnityExplorer.UI.Panels.Misc>(UIManager.Panels.Misc).MaybeTakeScreenshot();
+            maybeTakeScreenshot();
 
             if (IInputManager.GetKeyDown(ConfigManager.Pause.Value))
             {
@@ -154,8 +154,16 @@ namespace UnityExplorer
 
         void maybeForcePause(){
             // Force pause no matter the game timescale changes
-            if (UIManager.GetTimeScaleWidget().IsPaused() && Time.timeScale != 0) {
-                UIManager.GetTimeScaleWidget().SetTimeScale(0f);
+            TimeScaleWidget timescale = UIManager.GetTimeScaleWidget();
+            if (timescale != null && timescale.IsPaused() && Time.timeScale != 0) {
+                timescale.SetTimeScale(0f);
+            }
+        }
+
+        void maybeTakeScreenshot(){
+            UnityExplorer.UI.Panels.Misc miscPanel = UIManager.GetPanel<UnityExplorer.UI.Panels.Misc>(UIManager.Panels.Misc);
+            if (miscPanel != null){
+                miscPanel.MaybeTakeScreenshot();
             }
         }
     }
