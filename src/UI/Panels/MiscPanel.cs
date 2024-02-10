@@ -99,8 +99,6 @@ namespace UnityExplorer.UI.Panels
             MethodInfo methodInfo = captureScreenshotFunction.MethodInfo;
             string filename = DateTime.Now.ToString("yyyy-M-d HH-mm-ss");
 
-            ExplorerCore.LogWarning(filename);
-
             string screenshotsPath = Path.Combine(ExplorerCore.ExplorerFolder, "Screenshots");
             System.IO.Directory.CreateDirectory(screenshotsPath);
             
@@ -110,12 +108,10 @@ namespace UnityExplorer.UI.Panels
         }
         
         private void FindCaptureScreenshotFunction(){
-            List<object> results = SearchProvider.ClassSearch("UnityEngine.ScreenCapture");
-            // We assume it's the first for now. Come back if we need to do something else to get it.
-            object obj = results[0];
-            Type objType = obj is Type type ? type : obj.GetActualType();
+            object screenCaptureClass = ReflectionUtility.GetTypeByName("UnityEngine.ScreenCapture");
+            Type screenCaptureType = screenCaptureClass is Type type ? type : screenCaptureClass.GetActualType();
             ReflectionInspector inspector = Pool<ReflectionInspector>.Borrow();
-            List<CacheMember> members = CacheMemberFactory.GetCacheMembers(objType, inspector);
+            List<CacheMember> members = CacheMemberFactory.GetCacheMembers(screenCaptureType, inspector);
             foreach (CacheMember member in members){
                 if (member is CacheMethod methodMember && methodMember.NameForFiltering == "ScreenCapture.CaptureScreenshot(string, int)"){
                     captureScreenshotFunction = methodMember;
@@ -125,16 +121,13 @@ namespace UnityExplorer.UI.Panels
         }
 
         private void FindQualitySettings(){
-            List<object> results = SearchProvider.ClassSearch("UnityEngine.QualitySettings");
-            // We assume it's the first for now. Come back if we need to do something else to get it.
-            object obj = results[0];
-            qualitySettings = obj;
+            qualitySettings = ReflectionUtility.GetTypeByName("UnityEngine.QualitySettings");
         }
 
         private void FindLodBias(){
-            Type objType = qualitySettings is Type type ? type : qualitySettings.GetActualType();
+            Type qualitySettingsType = qualitySettings is Type type ? type : qualitySettings.GetActualType();
             ReflectionInspector inspector = Pool<ReflectionInspector>.Borrow();
-            List<CacheMember> members = CacheMemberFactory.GetCacheMembers(objType, inspector);
+            List<CacheMember> members = CacheMemberFactory.GetCacheMembers(qualitySettingsType, inspector);
             foreach (CacheMember member in members){
                 if (member is CacheProperty propertyMember && propertyMember.NameForFiltering == "QualitySettings.lodBias"){
                     lodBias = propertyMember;
