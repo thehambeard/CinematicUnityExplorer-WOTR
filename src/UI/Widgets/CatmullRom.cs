@@ -114,6 +114,8 @@ namespace UnityExplorer.CatmullRom
         float tension = 0;
         float alpha = 0.5f;
 
+        private CatmullRomPoint pauseCamCache;
+
         public CatmullRomMover(){
             splinePoints = new CatmullRomPoint[] { };
             lookaheadPoints = new List<CatmullRomPoint>();
@@ -136,6 +138,12 @@ namespace UnityExplorer.CatmullRom
 
         public void TogglePause(){
             playingPath = !playingPath;
+            if (!playingPath){
+                pauseCamCache = GetCurrentPoint();
+            } else {
+                MoveCameraToPoint(pauseCamCache);
+            }
+            
         }
 
         public bool IsPaused(){
@@ -147,6 +155,7 @@ namespace UnityExplorer.CatmullRom
             delta = lookaheadDelta;
             lookahead = GetPointFromPath(delta);
             MoveCameraToPoint(splinePoints[0]);
+            pauseCamCache = GetCurrentPoint();
         }
 
         public void setClosedLoop(bool newClosedLoop){
@@ -395,6 +404,7 @@ namespace UnityExplorer.CatmullRom
         void PathFinished(){
             playingPath = false;
             delta = 0;
+            pauseCamCache = GetCurrentPoint();
         }
     } 
 }
