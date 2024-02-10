@@ -358,7 +358,8 @@ namespace UnityExplorer.UI.Panels
             (supportedInput ? $"- {ConfigManager.Toggle_Block_Games_Input.Value}: Toggle games input on Freecam\n" : "") +
             $"- {ConfigManager.HUD_Toggle.Value}: HUD toggle\n" +
             $"- {ConfigManager.Pause.Value}: Pause\n" +
-            $"- {ConfigManager.Frameskip.Value}: Frameskip\n";
+            $"- {ConfigManager.Frameskip.Value}: Frameskip\n" +
+            $"- {ConfigManager.Toggle_Animations.Value}: Toggle NPC animations";
 
             if (ConfigManager.Frameskip.Value != KeyCode.None) instructions = instructions + $"- {ConfigManager.Screenshot.Value}: Screenshot\n";
 

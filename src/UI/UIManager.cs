@@ -26,6 +26,7 @@ namespace UnityExplorer.UI
             LightsManager,
             CamPaths,
             PostProcessingPanel,
+            AnimatorPanel,
             Misc,
         }
 
@@ -48,7 +49,7 @@ namespace UnityExplorer.UI
 
         public static RectTransform NavBarRect;
         public static GameObject NavbarTabButtonHolder;
-        private static readonly Vector2 NAVBAR_DIMENSIONS = new(1500f, 35f);
+        private static readonly Vector2 NAVBAR_DIMENSIONS = new(1600f, 35f);
 
         private static ButtonRef closeBtn;
         private static TimeScaleWidget timeScaleWidget;
@@ -99,6 +100,7 @@ namespace UnityExplorer.UI
             UIPanels.Add(Panels.LightsManager, new LightsManager(UiBase));
             UIPanels.Add(Panels.CamPaths, new CamPaths(UiBase));
             UIPanels.Add(Panels.PostProcessingPanel, new PostProcessingPanel(UiBase));
+            UIPanels.Add(Panels.AnimatorPanel, new AnimatorPanel(UiBase));
             UIPanels.Add(Panels.Misc, new UnityExplorer.UI.Panels.Misc(UiBase));
             UIPanels.Add(Panels.Options, new OptionsPanel(UiBase));
             UIPanels.Add(Panels.UIInspectorResults, new MouseInspectorResultsPanel(UiBase));

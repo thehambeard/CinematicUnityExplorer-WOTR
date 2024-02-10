@@ -55,6 +55,7 @@ namespace UnityExplorer.Config
         public static ConfigElement<KeyCode> Increase_FOV;
         public static ConfigElement<KeyCode> Decrease_FOV;
         public static ConfigElement<KeyCode> Reset_FOV;
+        public static ConfigElement<KeyCode> Toggle_Animations;
 
         // internal configs
         internal static InternalConfigHandler InternalHandler { get; private set; }
@@ -279,6 +280,10 @@ namespace UnityExplorer.Config
             Reset_FOV = new("Reset FOV",
                 "Resets the field of view of the current freecam to the original one.",
                 KeyCode.KeypadMultiply);
+
+            Toggle_Animations = new("Toggle NPC animations",
+                "Toggle NPC animations as selected in the Animator panel.",
+                KeyCode.Keypad0);
         }
     }
 }

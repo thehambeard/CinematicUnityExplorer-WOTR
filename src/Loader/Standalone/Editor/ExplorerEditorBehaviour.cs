@@ -52,6 +52,7 @@ namespace UnityExplorer.Loader.Standalone
         public KeyCode Increase_FOV;
         public KeyCode Decrease_FOV;
         public KeyCode Reset_FOV;
+        public KeyCode Toggle_Animations;
 
         internal void Awake()
         {
@@ -105,6 +106,7 @@ namespace UnityExplorer.Loader.Standalone
             ConfigManager.Increase_FOV.Value = this.Increase_FOV;
             ConfigManager.Decrease_FOV.Value = this.Decrease_FOV;
             ConfigManager.Reset_FOV.Value = this.Reset_FOV;
+            ConfigManager.Toggle_Animations.Value = this.Toggle_Animations;
         }
     }
 }
