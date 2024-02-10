@@ -130,7 +130,9 @@ namespace UnityExplorer.UI.Panels
         }
 
         private void AddEffect(string baseClass, string effect){
-            List<object> currentResults = SearchProvider.UnityObjectSearch("", $"{baseClass}.{effect}", ChildFilter.Any, SceneFilter.ActivelyLoaded);
+            Type searchType = ReflectionUtility.GetTypeByName($"{baseClass}.{effect}");
+            searchType = searchType is Type type ? type : searchType.GetActualType();
+            List<object> currentResults = RuntimeHelper.FindObjectsOfTypeAll(searchType).Select(obj => (object) obj).ToList();
 
             //ExplorerCore.LogWarning($"Found {currentResults.Count()} objects for {baseClass}.{effect}");
 

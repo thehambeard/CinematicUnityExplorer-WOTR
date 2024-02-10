@@ -44,9 +44,11 @@ namespace UnityExplorer.UI.Panels
                 ignoresMasterToggler.Clear();
             }
 
-            List<object> animatorsObjects = SearchProvider.UnityObjectSearch("", "UnityEngine.Animator", ChildFilter.Any, SceneFilter.ActivelyLoaded);
-            List<Behaviour> animatorsList = new List<Behaviour>(animatorsObjects.Select(obj => obj.TryCast<Behaviour>())
-            .Where(a => a.GetComponentsInChildren<SkinnedMeshRenderer>(false).Length != 0 && a.enabled && a.GetComponentsInChildren<Rigidbody>(false).Length != 0));
+            Type searchType = ReflectionUtility.GetTypeByName("UnityEngine.Animator");
+            searchType = searchType is Type type ? type : searchType.GetActualType();
+            List<Behaviour> animatorsList = RuntimeHelper.FindObjectsOfTypeAll(searchType).Select(obj => obj.TryCast<Behaviour>())
+            .Where(a => a.GetComponentsInChildren<SkinnedMeshRenderer>(false).Length != 0 && a.enabled && a.GetComponentsInChildren<Rigidbody>(false).Length != 0)
+            .ToList();
 
             foreach(Behaviour animator in animatorsList){
                 GameObject gObj = animator.gameObject;
