@@ -6,8 +6,13 @@ using System.Threading;
 #if UNHOLLOWER
 using UnhollowerRuntimeLib;
 #endif
+#if CPP
 #if INTEROP
+using Il2CppInterop.Runtime.Attributes;
 using Il2CppInterop.Runtime.Injection;
+#else
+using UnhollowerBaseLib.Attributes;
+#endif
 #endif
 
 using UnityExplorer.UI;
@@ -95,7 +100,7 @@ namespace UnityExplorer.CatmullRom
         private bool closedLoop;
         private CatmullRomPoint[] splinePoints;
         // The point the camera will be following along the path
-        private List<CatmullRomPoint> lookaheadPoints;
+        private List<CatmullRomPoint> lookaheadPoints = new List<CatmullRomPoint>();
         private CatmullRomPoint lookahead;
         // How smooth the path is (beware of not making too many calculations per update tho)
         float lookaheadDelta;
@@ -151,7 +156,9 @@ namespace UnityExplorer.CatmullRom
         public void setLocalPoints(bool newArePointsLocal){
             arePointsLocal = newArePointsLocal;
         }
-
+#if CPP
+        [HideFromIl2Cpp]
+#endif
         public void setSplinePoints(CatmullRomPoint[] newSplinePoints){
             splinePoints = newSplinePoints;
         }
@@ -378,6 +385,9 @@ namespace UnityExplorer.CatmullRom
             //ExplorerCore.LogWarning($"lookaheadDelta {lookaheadDelta}");
         }
 
+#if CPP
+        [HideFromIl2Cpp]
+#endif
         public List<CatmullRomPoint> GetLookaheadPoints(){
             return lookaheadPoints;
         }
@@ -385,7 +395,6 @@ namespace UnityExplorer.CatmullRom
         void PathFinished(){
             playingPath = false;
             delta = 0;
-            UIManager.GetPanel<UnityExplorer.UI.Panels.CamPaths>(UIManager.Panels.CamPaths).pathVisualizer.SetActive(true);
         }
     } 
 }

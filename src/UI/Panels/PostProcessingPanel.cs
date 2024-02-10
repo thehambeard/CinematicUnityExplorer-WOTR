@@ -69,6 +69,10 @@ namespace UnityExplorer.UI.Panels
 
         public void UpdatePPElements(){
             if(postProcessingEffects != null){
+                // We turn the effects we had back on so they get captured again on refresh
+                foreach (List<PPEffect> effects in postProcessingEffects.Values){
+                    SetEffect(true, effects);
+                }
                 postProcessingEffects.Clear();
             }
 
