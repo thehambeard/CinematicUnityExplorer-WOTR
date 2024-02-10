@@ -331,7 +331,7 @@ namespace UnityExplorer.UI.Panels
                 UpdateCatmullRomMoverData();
                 GetCameraPathsManager().StartPath();
                 UIManager.ShowMenu = false;
-                if (pathVisualizer) pathVisualizer.SetActive(false);
+                visualizePathToggle.isOn = false;
             }
 
             if (unpauseOnPlay && UIManager.GetTimeScaleWidget().IsPaused()){
@@ -342,7 +342,7 @@ namespace UnityExplorer.UI.Panels
         void TogglePause_OnClick(){
             if(GetCameraPathsManager()){
                 GetCameraPathsManager().TogglePause();
-                if (pathVisualizer) pathVisualizer.SetActive(!GetCameraPathsManager().IsPaused());
+                if (visualizePathToggle.isOn && GetCameraPathsManager().IsPaused()) visualizePathToggle.isOn = false;
             }
 
             EventSystemHelper.SetSelectedGameObject(null);
@@ -351,7 +351,6 @@ namespace UnityExplorer.UI.Panels
         void Stop_OnClick(){
             if (GetCameraPathsManager()){
                 GetCameraPathsManager().Stop();
-                if (pathVisualizer) pathVisualizer.SetActive(true);
             }
 
             EventSystemHelper.SetSelectedGameObject(null);
