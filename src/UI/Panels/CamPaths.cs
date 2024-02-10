@@ -56,6 +56,7 @@ namespace UnityExplorer.UI.Panels
         bool unpauseOnPlay;
         bool waitBeforePlay;
         private System.Timers.Timer startTimer;
+        public bool pauseOnFinish;
 
         InputFieldRef alphaCatmullRomInput;
         Slider alphaCatmullRomSlider;
@@ -152,6 +153,12 @@ namespace UnityExplorer.UI.Panels
             unpauseOnPlayToggle.isOn = false;
             unpauseOnPlayToggle.onValueChanged.AddListener((value) => unpauseOnPlay = value);
             unpauseOnPlayText.text = "Unpause on play";
+
+            GameObject pauseOnFinishObj = UIFactory.CreateToggle(secondRow, "Pause on finish", out Toggle pauseOnFinishToggle, out Text pauseOnFinishText);
+            UIFactory.SetLayoutElement(pauseOnFinishObj, minHeight: 25, flexibleWidth: 9999);
+            pauseOnFinishToggle.isOn = false;
+            pauseOnFinishToggle.onValueChanged.AddListener((value) => pauseOnFinish = value);
+            pauseOnFinishText.text = "Pause on finish";
 
             GameObject waitBeforePlayObj = UIFactory.CreateToggle(secondRow, "Wait before play", out Toggle waitBeforePlayToggle, out Text waitBeforePlayText);
             UIFactory.SetLayoutElement(waitBeforePlayObj, minHeight: 25, flexibleWidth: 9999);

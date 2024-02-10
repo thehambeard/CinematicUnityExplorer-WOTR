@@ -405,6 +405,10 @@ namespace UnityExplorer.CatmullRom
             playingPath = false;
             delta = 0;
             pauseCamCache = GetCurrentPoint();
+
+            if (UIManager.GetPanel<CamPaths>(UIManager.Panels.CamPaths).pauseOnFinish && !UIManager.GetTimeScaleWidget().IsPaused()){
+                UIManager.GetTimeScaleWidget().PauseToggle();
+            }
         }
     } 
 }
