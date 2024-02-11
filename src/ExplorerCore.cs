@@ -79,6 +79,8 @@ namespace UnityExplorer
             // InspectorManager.Inspect(typeof(Tests.TestClass));
 
             KeypressListener.Setup();
+
+            MakeUEUIScale();
         }
 
         internal static void Update()
@@ -193,5 +195,17 @@ namespace UnityExplorer
         }
 
         #endregion
+
+        private static void MakeUEUIScale(){
+            List<CanvasScaler> canvasScalers = RuntimeHelper.FindObjectsOfTypeAll(typeof(CanvasScaler))
+            .Select(obj => obj.TryCast<CanvasScaler>())
+            .Where(c => c.name.Contains("unityexplorer"))
+            .ToList();
+
+            foreach (CanvasScaler scaler in canvasScalers)
+            {
+                scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            }
+        }
     }
 }
