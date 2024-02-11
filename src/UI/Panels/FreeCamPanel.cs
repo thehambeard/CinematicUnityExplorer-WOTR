@@ -68,6 +68,9 @@ namespace UnityExplorer.UI.Panels
         static float farClipPlaneValue;
 
         public static GameObject followObject = null;
+
+        private static FreecamCursorUnlocker freecamCursorUnlocker = null;
+
         internal static void BeginFreecam()
         {
             inFreeCamMode = true;
@@ -80,6 +83,9 @@ namespace UnityExplorer.UI.Panels
             inspectButton.GameObject.SetActive(true);
 
             UpdateClippingPlanes();
+
+            if (freecamCursorUnlocker == null) freecamCursorUnlocker = new FreecamCursorUnlocker();
+            freecamCursorUnlocker.Enable();
         }
 
         static void CacheMainCamera()
@@ -185,6 +191,8 @@ namespace UnityExplorer.UI.Panels
 
             if (lastMainCamera)
                 lastMainCamera.enabled = true;
+
+            freecamCursorUnlocker.Disable();
         }
 
         // Experimental feature to automatically disable cinemachine when turning on the gameplay freecam.
@@ -660,6 +668,20 @@ namespace UnityExplorer.UI.Panels
 
                 FreeCamPanel.previousMousePosition = IInputManager.MousePosition;
             }
+        }
+    }
+
+    // Dummy UI class to unlock the cursor when freecam is active but the UI is hidden
+    internal class FreecamCursorUnlocker : UIBase
+    {
+        public FreecamCursorUnlocker() : base("freecam.cursor.unlocker.unityexplorer", () => { }) { }
+
+        public void Enable(){
+            Enabled = true;
+        }
+
+        public void Disable(){
+            Enabled = false;
         }
     }
 }
