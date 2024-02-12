@@ -108,16 +108,19 @@ namespace UnityExplorer.UI.Panels
         }
         
         private void FindCaptureScreenshotFunction(){
-            object screenCaptureClass = ReflectionUtility.GetTypeByName("UnityEngine.ScreenCapture");
-            Type screenCaptureType = screenCaptureClass is Type type ? type : screenCaptureClass.GetActualType();
-            ReflectionInspector inspector = Pool<ReflectionInspector>.Borrow();
-            List<CacheMember> members = CacheMemberFactory.GetCacheMembers(screenCaptureType, inspector);
-            foreach (CacheMember member in members){
-                if (member is CacheMethod methodMember && methodMember.NameForFiltering == "ScreenCapture.CaptureScreenshot(string, int)"){
-                    captureScreenshotFunction = methodMember;
-                    break;
+            try {
+                object screenCaptureClass = ReflectionUtility.GetTypeByName("UnityEngine.ScreenCapture");
+                Type screenCaptureType = screenCaptureClass is Type type ? type : screenCaptureClass.GetActualType();
+                ReflectionInspector inspector = Pool<ReflectionInspector>.Borrow();
+                List<CacheMember> members = CacheMemberFactory.GetCacheMembers(screenCaptureType, inspector);
+                foreach (CacheMember member in members){
+                    if (member is CacheMethod methodMember && methodMember.NameForFiltering == "ScreenCapture.CaptureScreenshot(string, int)"){
+                        captureScreenshotFunction = methodMember;
+                        break;
+                    }
                 }
             }
+            catch { ExplorerCore.Log("Couldn't find the ScreenCapture class.");}
         }
 
         private void FindQualitySettings(){
@@ -218,22 +221,24 @@ namespace UnityExplorer.UI.Panels
 
         // We use an enum to walk a series of steps in each frame, so we can take the screenshot without UnityExplorer UI.
         public void MaybeTakeScreenshot(){
-            switch (screenshotStatus){
-                case ScreenshotState.TurnOffUI:
-                    screenshotStatus = ScreenshotState.TakeScreenshot;
-                    UIManager.ShowMenu = false;
-                    break;
-                case ScreenshotState.TakeScreenshot:
-                    TakeScreenshot();
-                    screenshotStatus = ScreenshotState.TurnOnUI;
-                    break;
-                case ScreenshotState.TurnOnUI:
-                    screenshotStatus = ScreenshotState.DoNothing;
-                    UIManager.ShowMenu = true;
-                    break;
-                case ScreenshotState.DoNothing:
-                default:
-                    break;
+            if (captureScreenshotFunction != null){
+                switch (screenshotStatus){
+                    case ScreenshotState.TurnOffUI:
+                        screenshotStatus = ScreenshotState.TakeScreenshot;
+                        UIManager.ShowMenu = false;
+                        break;
+                    case ScreenshotState.TakeScreenshot:
+                        TakeScreenshot();
+                        screenshotStatus = ScreenshotState.TurnOnUI;
+                        break;
+                    case ScreenshotState.TurnOnUI:
+                        screenshotStatus = ScreenshotState.DoNothing;
+                        UIManager.ShowMenu = true;
+                        break;
+                    case ScreenshotState.DoNothing:
+                    default:
+                        break;
+                }
             }
         }
 
@@ -261,15 +266,17 @@ namespace UnityExplorer.UI.Panels
             HighLodToggleText.text = "High LODs Toggle";
 
             // Screenshot function
-            GameObject TakeScreenshotHoriGroup = UIFactory.CreateHorizontalGroup(ContentRoot, "Take screenshot", false, false, true, true, 3,
-            default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
-            UIFactory.SetLayoutElement(TakeScreenshotHoriGroup, minHeight: 25, flexibleWidth: 9999);
+            if (captureScreenshotFunction != null){
+                GameObject TakeScreenshotHoriGroup = UIFactory.CreateHorizontalGroup(ContentRoot, "Take screenshot", false, false, true, true, 3,
+                default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
+                UIFactory.SetLayoutElement(TakeScreenshotHoriGroup, minHeight: 25, flexibleWidth: 9999);
 
-            ButtonRef takeScreenshot = UIFactory.CreateButton(TakeScreenshotHoriGroup, "TakeScreenshot", "Take screenshot");
-            UIFactory.SetLayoutElement(takeScreenshot.GameObject, minWidth: 150, minHeight: 25);
-            takeScreenshot.OnClick += () => screenshotStatus = ScreenshotState.TurnOffUI;
+                ButtonRef takeScreenshot = UIFactory.CreateButton(TakeScreenshotHoriGroup, "TakeScreenshot", "Take screenshot");
+                UIFactory.SetLayoutElement(takeScreenshot.GameObject, minWidth: 150, minHeight: 25);
+                takeScreenshot.OnClick += () => screenshotStatus = ScreenshotState.TurnOffUI;
 
-            AddInputField(TakeScreenshotHoriGroup, "Supersize", "Supersize:", $"{2}", SuperSize_OnEndEdit);
+                AddInputField(TakeScreenshotHoriGroup, "Supersize", "Supersize:", $"{2}", SuperSize_OnEndEdit);
+            }
 
             Toggle ShadowMeshesToggle = new Toggle();
             GameObject ShadowMeshesObj = UIFactory.CreateToggle(ContentRoot, "ShadowMeshes", out ShadowMeshesToggle, out Text ShadowMeshesText);
