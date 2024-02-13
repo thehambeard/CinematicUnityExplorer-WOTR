@@ -45,12 +45,15 @@ namespace UnityExplorer.UI.Panels
                 currentAnimation = playingAnimations.Count() != 0 ? playingAnimations[0].clip : animations[0];
 
                 GameObject currentAnimationObj = UIFactory.CreateDropdown(UIRoot, $"Animations_{name}", out Dropdown dropdown, null, 14, (idx) => currentAnimation = animations[idx]);
-                UIFactory.SetLayoutElement(currentAnimationObj, minHeight: 25, minWidth: 100);
+                UIFactory.SetLayoutElement(currentAnimationObj, minHeight: 25, minWidth: 200);
                 foreach (AnimationClip animation in animations)
                     dropdown.options.Add(new Dropdown.OptionData(animation.name));
 
+                dropdown.value = Math.Max(0, animations.FindIndex(a => a == currentAnimation));
+                if (dropdown.value == 0) dropdown.captionText.text = animations[0].name;
+
                 playButton = UIFactory.CreateButton(UIRoot, "PlayButton", "Play", new Color(0.2f, 0.26f, 0.2f));
-                UIFactory.SetLayoutElement(playButton.Component.gameObject, minHeight: 5, minWidth: 90);
+                UIFactory.SetLayoutElement(playButton.Component.gameObject, minHeight: 25, minWidth: 90);
                 playButton.OnClick += PlayButton_OnClick;
             }
         }
