@@ -33,7 +33,6 @@ namespace UnityExplorer.UI.Panels
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
         public override bool NavButtonWanted => true;
         public override bool ShouldSaveActiveState => true;
-        List<GameObject> UIElements = new List<GameObject>();
 
         Dictionary<Animator, Func<bool>> animationEndedFunctions = new Dictionary<Animator, Func<bool>>();
 

@@ -7,6 +7,7 @@ using UnhollowerRuntimeLib;
 #if INTEROP
 using Il2CppInterop.Runtime.Injection;
 #endif
+using UniverseLib.UI.Widgets.ScrollView;
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,13 +16,12 @@ using System.Collections;
 
 namespace UnityExplorer.UI.Panels
 {
-    public class CamPaths : UEPanel
+    public class CamPaths : UEPanel, ICellPoolDataSource<CamPathNodeCell>
     {
         public CamPaths(UIBase owner) : base(owner)
         {
             controlPoints = new List<CatmullRom.CatmullRomPoint>();
             followObject = null;
-            UINodes = new List<GameObject>();
             pathVisualizer = new GameObject("PathVisualizer");
             time = 10;
 
@@ -38,17 +38,16 @@ namespace UnityExplorer.UI.Panels
         public override string Name => "Cam Paths";
         public override UIManager.Panels PanelType => UIManager.Panels.CamPaths;
         public override int MinWidth => 600;
-        public override int MinHeight => 600;
+        public override int MinHeight => 300;
         public override Vector2 DefaultAnchorMin => new(0.4f, 0.4f);
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
         public override bool NavButtonWanted => true;
         public override bool ShouldSaveActiveState => true;
-		public List<CatmullRom.CatmullRomPoint> controlPoints;
-        List<GameObject> UINodes;
+		public List<CatmullRom.CatmullRomPoint> controlPoints = new List<CatmullRom.CatmullRomPoint>();
         bool closedLoop;
         float time = 10;
 
-        GameObject followObject;
+        public GameObject followObject;
 
         Toggle visualizePathToggle;
         public GameObject pathVisualizer;
@@ -65,6 +64,38 @@ namespace UnityExplorer.UI.Panels
         InputFieldRef tensionCatmullRomInput;
         Slider tensionCatmullRomSlider;
         float tensionCatmullRomValue = 0;
+
+        public ScrollPool<CamPathNodeCell> nodesScrollPool;
+        public int ItemCount => controlPoints.Count;
+        private static bool DoneScrollPoolInit;
+
+        public override void SetActive(bool active)
+        {
+            base.SetActive(active);
+            if (active && !DoneScrollPoolInit)
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(this.Rect);
+                nodesScrollPool.Initialize(this);
+                DoneScrollPoolInit = true;
+            }
+
+            nodesScrollPool.Refresh(true, false);
+        }
+
+        public void OnCellBorrowed(CamPathNodeCell cell) { }
+
+        public void SetCell(CamPathNodeCell cell, int index){
+            if (index >= controlPoints.Count)
+            {
+                cell.Disable();
+                return;
+            }
+
+            CatmullRom.CatmullRomPoint point = controlPoints[index];
+            cell.point = point;
+            cell.index = index;
+            cell.indexLabel.text = $"{index}";
+        }
 
         // ~~~~~~~~ UI construction / callbacks ~~~~~~~~
 
@@ -93,9 +124,13 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(AddNode.GameObject, minWidth: 50, minHeight: 25);
             AddNode.OnClick += AddNode_OnClick;
 
-            ButtonRef DeletePath = UIFactory.CreateButton(horiGroup, "DeletePath", "Delete Path");
-            UIFactory.SetLayoutElement(DeletePath.GameObject, minWidth: 150, minHeight: 25);
-            DeletePath.OnClick += () => {controlPoints.Clear(); UpdateListNodes(); ToggleVisualizePath(false);};
+            ButtonRef DeletePath = UIFactory.CreateButton(horiGroup, "DeletePath", "Clear");
+            UIFactory.SetLayoutElement(DeletePath.GameObject, minWidth: 70, minHeight: 25);
+            DeletePath.OnClick += () => {
+                controlPoints.Clear();
+                nodesScrollPool.Refresh(true, false);
+                MaybeRedrawPath();
+            };
 
             Toggle closedLoopToggle = new Toggle();
             GameObject toggleClosedLoopObj = UIFactory.CreateToggle(horiGroup, "Close path in a loop", out closedLoopToggle, out Text toggleClosedLoopText);
@@ -104,43 +139,14 @@ namespace UnityExplorer.UI.Panels
             closedLoopToggle.onValueChanged.AddListener((isClosedLoop) => {closedLoop = isClosedLoop; MaybeRedrawPath(); EventSystemHelper.SetSelectedGameObject(null);});
             toggleClosedLoopText.text = "Close path in a loop";
 
-            // CatmullRom alpha value
-            GameObject catmullRomVariablesGroup = AddInputField("alphaCatmullRom", "Alpha:", "0.5", out alphaCatmullRomInput, AlphaCatmullRom_OnEndEdit, 100, false);
-            alphaCatmullRomInput.Text = alphaCatmullRomValue.ToString();
-
-            GameObject alphaCatmullRomObj = UIFactory.CreateSlider(catmullRomVariablesGroup, "Alpha CatmullRom Slider", out alphaCatmullRomSlider);
-            UIFactory.SetLayoutElement(alphaCatmullRomObj, minHeight: 25, minWidth: 50, flexibleWidth: 0);
-            alphaCatmullRomSlider.m_FillImage.color = Color.clear;
-            alphaCatmullRomSlider.minValue = 0;
-            alphaCatmullRomSlider.maxValue = 1;
-            alphaCatmullRomSlider.value = alphaCatmullRomValue;
-            alphaCatmullRomSlider.onValueChanged.AddListener((newAlpha) => {
-                alphaCatmullRomValue = newAlpha;
-                alphaCatmullRomInput.Text = alphaCatmullRomValue.ToString();
-
-                MaybeRedrawPath();
-            });
-
-            // CatmullRom tension value
-            AddInputField("tensionCatmullRomO", "Tension:", "0", out tensionCatmullRomInput, TensionCatmullRom_OnEndEdit, 100, false, catmullRomVariablesGroup);
-            tensionCatmullRomInput.Text = tensionCatmullRomValue.ToString();
-
-            GameObject tensionCatmullRomObj = UIFactory.CreateSlider(catmullRomVariablesGroup, "Tension CatmullRom Slider", out tensionCatmullRomSlider);
-            UIFactory.SetLayoutElement(tensionCatmullRomObj, minHeight: 25, minWidth: 50, flexibleWidth: 0);
-            tensionCatmullRomSlider.m_FillImage.color = Color.clear;
-            tensionCatmullRomSlider.minValue = 0;
-            tensionCatmullRomSlider.maxValue = 1;
-            tensionCatmullRomSlider.value = tensionCatmullRomValue;
-            tensionCatmullRomSlider.onValueChanged.AddListener((newTension) => {
-                tensionCatmullRomValue = newTension;
-                tensionCatmullRomInput.Text = tensionCatmullRomValue.ToString();
-
-                MaybeRedrawPath();
-            });
-
             InputFieldRef TimeInput = null;
-            GameObject secondRow = AddInputField("Time", "Path time (in seconds at 60fps):", $"Default: {time}", out TimeInput, Time_OnEndEdit, 50, false);
+            AddInputField("Time", "Path time (in seconds at 60fps):", $"Default: {time}", out TimeInput, Time_OnEndEdit, 50, horiGroup);
             TimeInput.Text = time.ToString();
+
+            
+            GameObject secondRow = UIFactory.CreateHorizontalGroup(ContentRoot, "ExtraOptions", false, false, true, true, 3,
+                default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
+            UIFactory.SetLayoutElement(secondRow, minHeight: 25, flexibleWidth: 9999);
 
             GameObject visualizePathObj = UIFactory.CreateToggle(secondRow, "Visualize Path", out visualizePathToggle, out Text visualizePathText);
             UIFactory.SetLayoutElement(visualizePathObj, minHeight: 25, flexibleWidth: 9999);
@@ -165,6 +171,45 @@ namespace UnityExplorer.UI.Panels
             waitBeforePlayToggle.isOn = false;
             waitBeforePlayToggle.onValueChanged.AddListener((value) => waitBeforePlay = value);
             waitBeforePlayText.text = "Wait 3 seconds before start";
+
+
+            // CatmullRom alpha value
+            GameObject thridRow = AddInputField("alphaCatmullRom", "Alpha:", "0.5", out alphaCatmullRomInput, AlphaCatmullRom_OnEndEdit, 100);
+            alphaCatmullRomInput.Text = alphaCatmullRomValue.ToString();
+
+            GameObject alphaCatmullRomObj = UIFactory.CreateSlider(thridRow, "Alpha CatmullRom Slider", out alphaCatmullRomSlider);
+            UIFactory.SetLayoutElement(alphaCatmullRomObj, minHeight: 25, minWidth: 50, flexibleWidth: 0);
+            alphaCatmullRomSlider.m_FillImage.color = Color.clear;
+            alphaCatmullRomSlider.minValue = 0;
+            alphaCatmullRomSlider.maxValue = 1;
+            alphaCatmullRomSlider.value = alphaCatmullRomValue;
+            alphaCatmullRomSlider.onValueChanged.AddListener((newAlpha) => {
+                alphaCatmullRomValue = newAlpha;
+                alphaCatmullRomInput.Text = alphaCatmullRomValue.ToString();
+
+                MaybeRedrawPath();
+            });
+
+            // CatmullRom tension value
+            AddInputField("tensionCatmullRomO", "Tension:", "0", out tensionCatmullRomInput, TensionCatmullRom_OnEndEdit, 100, thridRow);
+            tensionCatmullRomInput.Text = tensionCatmullRomValue.ToString();
+
+            GameObject tensionCatmullRomObj = UIFactory.CreateSlider(thridRow, "Tension CatmullRom Slider", out tensionCatmullRomSlider);
+            UIFactory.SetLayoutElement(tensionCatmullRomObj, minHeight: 25, minWidth: 50, flexibleWidth: 0);
+            tensionCatmullRomSlider.m_FillImage.color = Color.clear;
+            tensionCatmullRomSlider.minValue = 0;
+            tensionCatmullRomSlider.maxValue = 1;
+            tensionCatmullRomSlider.value = tensionCatmullRomValue;
+            tensionCatmullRomSlider.onValueChanged.AddListener((newTension) => {
+                tensionCatmullRomValue = newTension;
+                tensionCatmullRomInput.Text = tensionCatmullRomValue.ToString();
+
+                MaybeRedrawPath();
+            });
+
+            nodesScrollPool = UIFactory.CreateScrollPool<CamPathNodeCell>(ContentRoot, "NodeList", out GameObject scrollObj,
+                out GameObject scrollContent, new Color(0.03f, 0.03f, 0.03f));
+            UIFactory.SetLayoutElement(scrollObj, flexibleWidth: 9999, flexibleHeight: 9999);
         }
 
         void AlphaCatmullRom_OnEndEdit(string input)
@@ -201,19 +246,6 @@ namespace UnityExplorer.UI.Panels
             MaybeRedrawPath();
         }
 
-        private void UpdateListNodes(){
-            //Refresh list
-            foreach (var comp in UINodes){
-                UnityEngine.Object.Destroy(comp);
-                //UIElements.Remove(comp);
-            }
-
-            for(int i = 0; i < controlPoints.Count; i++) {
-                CatmullRom.CatmullRomPoint point = controlPoints[i];
-                DrawNodeOptions(point, i);
-            }
-        }
-
         private void ToggleVisualizePath(bool enable){
             // Had to include this check because the pathVisualizer was null for some reason
             if (pathVisualizer == null) pathVisualizer = new GameObject("PathVisualizer");
@@ -247,66 +279,17 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        private void MaybeRedrawPath(){
+        public void MaybeRedrawPath(){
             if (visualizePathToggle.isOn){
                 ToggleVisualizePath(false);
                 ToggleVisualizePath(true);
             }
         }
 
-        private void DrawNodeOptions(CatmullRom.CatmullRomPoint point, int index){
-            GameObject horiGroup = UIFactory.CreateHorizontalGroup(ContentRoot, "LightOptions", true, false, true, false, 4,
-                default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
-            UIFactory.SetLayoutElement(horiGroup, minHeight: 25, flexibleWidth: 9999);
-            UINodes.Add(horiGroup);
-
-            //Move to Camera
-            ButtonRef moveToCameraButton = UIFactory.CreateButton(horiGroup, "Copy Camera pos and rot", "Copy Camera pos and rot");
-            UIFactory.SetLayoutElement(moveToCameraButton.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
-            moveToCameraButton.OnClick += () => {
-                point.position = followObject != null ? FreeCamPanel.ourCamera.transform.localPosition : FreeCamPanel.ourCamera.transform.position;
-                point.rotation = followObject != null ? FreeCamPanel.ourCamera.transform.localRotation : FreeCamPanel.ourCamera.transform.rotation;
-                controlPoints[index] = point;
-
-                MaybeRedrawPath();
-
-                EventSystemHelper.SetSelectedGameObject(null);
-            };
-
-            ButtonRef copyFovButton = UIFactory.CreateButton(horiGroup, "Copy Camera FoV", "Copy Camera FoV");
-            UIFactory.SetLayoutElement(copyFovButton.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
-            copyFovButton.OnClick += () => {point.fov = FreeCamPanel.ourCamera.fieldOfView; controlPoints[index] = point; EventSystemHelper.SetSelectedGameObject(null);};
-
-            ButtonRef moveToPointButton = UIFactory.CreateButton(horiGroup, "Move Cam to Node", "Move Cam to Node");
-            UIFactory.SetLayoutElement(moveToPointButton.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
-            moveToPointButton.OnClick += () => {
-                if (followObject != null){
-                    FreeCamPanel.ourCamera.transform.localPosition = point.position;
-                    FreeCamPanel.ourCamera.transform.localRotation = point.rotation;
-                } else {
-                    FreeCamPanel.ourCamera.transform.position = point.position;
-                    FreeCamPanel.ourCamera.transform.rotation = point.rotation;
-                }
-                FreeCamPanel.ourCamera.fieldOfView = point.fov;
-
-                EventSystemHelper.SetSelectedGameObject(null);
-            };
-
-            //Add node next
-
-            ButtonRef destroyButton = UIFactory.CreateButton(horiGroup, "Delete", "Delete");
-            UIFactory.SetLayoutElement(destroyButton.GameObject, minWidth: 80, minHeight: 25, flexibleWidth: 9999);
-            destroyButton.OnClick += () => {controlPoints.Remove(point); UpdateListNodes(); MaybeRedrawPath();};
-
-            //ShowPos and rot?
-        }
-
-        GameObject AddInputField(string name, string labelText, string placeHolder, out InputFieldRef inputField, Action<string> onInputEndEdit, int inputMinWidth = 50, bool shouldDeleteOnUpdate = true, GameObject existingRow = null)
+        GameObject AddInputField(string name, string labelText, string placeHolder, out InputFieldRef inputField, Action<string> onInputEndEdit, int inputMinWidth = 50, GameObject existingRow = null)
         {
             GameObject row = existingRow != null ? existingRow : UIFactory.CreateHorizontalGroup(ContentRoot, "Editor Field",
             false, false, true, true, 5, default, new Color(1, 1, 1, 0));
-            if(shouldDeleteOnUpdate)
-                UINodes.Add(row); //To delete it when we update the node list
 
             Text posLabel = UIFactory.CreateLabel(row, $"{name}_Label", labelText);
             UIFactory.SetLayoutElement(posLabel.gameObject, minWidth: 40, minHeight: 25);
@@ -374,7 +357,7 @@ namespace UnityExplorer.UI.Panels
             );
 
             controlPoints.Add(point);
-            UpdateListNodes();
+            nodesScrollPool.Refresh(true, false);
             MaybeRedrawPath();
         }
 
@@ -410,7 +393,7 @@ namespace UnityExplorer.UI.Panels
                 TranslatePointsToLocal();
                 pathVisualizer.transform.SetParent(obj.transform, true);
             }
-            UpdateListNodes();
+            //nodesScrollPool.Refresh(true, false);
         }
 
         void TranslatePointsToGlobal() {
