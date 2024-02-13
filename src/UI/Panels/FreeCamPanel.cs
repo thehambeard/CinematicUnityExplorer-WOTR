@@ -367,7 +367,7 @@ namespace UnityExplorer.UI.Panels
             $"- {ConfigManager.HUD_Toggle.Value}: HUD toggle\n" +
             $"- {ConfigManager.Pause.Value}: Pause\n" +
             $"- {ConfigManager.Frameskip.Value}: Frameskip\n" +
-            $"- {ConfigManager.Toggle_Animations.Value}: Toggle NPC animations";
+            $"- {ConfigManager.Toggle_Animations.Value}: Toggle NPC animations\n";
 
             if (ConfigManager.Frameskip.Value != KeyCode.None) instructions = instructions + $"- {ConfigManager.Screenshot.Value}: Screenshot\n";
 

@@ -19,7 +19,7 @@ using Animator = UnityEngine.Behaviour;
 
 namespace UnityExplorer.UI.Panels
 {
-    internal class AnimatorPanel : UEPanel, ICellPoolDataSource<AnimatorCell>
+    public class AnimatorPanel : UEPanel, ICellPoolDataSource<AnimatorCell>
     {
         public AnimatorPanel(UIBase owner) : base(owner)
         {
@@ -27,7 +27,7 @@ namespace UnityExplorer.UI.Panels
 
         public override string Name => "Animator";
         public override UIManager.Panels PanelType => UIManager.Panels.AnimatorPanel;
-        public override int MinWidth => 500;
+        public override int MinWidth => 750;
         public override int MinHeight => 200;
         public override Vector2 DefaultAnchorMin => new(0.4f, 0.4f);
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
@@ -40,6 +40,7 @@ namespace UnityExplorer.UI.Panels
 
         private static ScrollPool<AnimatorCell> animatorScrollPool;
         internal List<Animator> animators = new List<Animator>();
+        public Dictionary<Animator, bool> shouldIgnoreMasterToggle = new Dictionary<Animator, bool>();
         public int ItemCount => animators.Count;
 
         private static bool DoneScrollPoolInit;
@@ -64,7 +65,9 @@ namespace UnityExplorer.UI.Panels
                 masterAnimatorToggle.isOn = true; // Will also trigger "MasterToggleAnimators(true)"
                 animators.Clear();
                 animationEndedFunctions.Clear();
+                shouldIgnoreMasterToggle.Clear();
 #if MONO
+                // TODO: Move the reset behavior to this panel, because we would only get the cells being currently displayed.
                 foreach (AnimatorCell animatorCell in animatorScrollPool.CellPool)
                 {
                     animatorCell.ResetAnimation();
@@ -79,16 +82,28 @@ namespace UnityExplorer.UI.Panels
             .OrderBy(x=>x.name)
             .ToList();
 
+            foreach(Animator animator in animators){
+                shouldIgnoreMasterToggle[animator] = animator.gameObject.name.IndexOf("play", 0, StringComparison.OrdinalIgnoreCase) >= 0;
+            }
+
             animatorScrollPool.Refresh(true, false);
         }
 
         public void MasterToggleAnimators(bool enable){
             // Load animators for the first time if there are not any
             if (animators.Count == 0) FindAllAnimators();
+
             foreach (AnimatorCell animatorCell in animatorScrollPool.CellPool)
             {
                 if (animatorCell.animator != null && !animatorCell.IgnoreMasterToggle.isOn){
                     animatorCell.AnimatorToggle.isOn = enable;
+                }
+            }
+
+            // We gotta do this for the animators which cell are not being currently rendered.
+            foreach (Animator animator in animators){
+                if (!shouldIgnoreMasterToggle[animator]){
+                    animator.enabled = enable;
                 }
             }
         }
@@ -146,8 +161,8 @@ namespace UnityExplorer.UI.Panels
 
             cell.animator = animator;
             cell.name.text = animator.gameObject.name;
+            cell.IgnoreMasterToggle.isOn = shouldIgnoreMasterToggle[animator];
 
-            cell.MaybeSetIgnoreMasterToggleSet();
 #if MONO
             cell.DrawAnimatorPlayer();
             animationEndedFunctions[animator] = cell.IsPlayingSelectedAnimation;

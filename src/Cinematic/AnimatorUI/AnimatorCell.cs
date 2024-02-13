@@ -11,7 +11,6 @@ namespace UnityExplorer.UI.Panels
 {
     public class AnimatorCell : ICell
     {
-        private bool autoIgnoreMasterToggleSet;
         public Toggle IgnoreMasterToggle;
         public Toggle AnimatorToggle;
 
@@ -28,10 +27,10 @@ namespace UnityExplorer.UI.Panels
         public void Disable() => UIRoot.SetActive(false);
 
 // IL2CPP games seem to have animation-related code stripped from their builds
+        private bool stopAfterAnimationFinishes = false;
 #if MONO
-        ButtonRef playButton;
-        private bool manuallyPlayedAnimation;
         private bool skippedStopFrames;
+        ButtonRef playButton;
 
         private AnimationClip currentAnimation;
         private AnimationClip defaultAnimation;
@@ -67,22 +66,23 @@ namespace UnityExplorer.UI.Panels
 
             skippedStopFrames = false;
 
+            stopAfterAnimationFinishes = !AnimatorToggle.isOn;
             AnimatorToggle.isOn = true;
-            manuallyPlayedAnimation = true;
             animator.Play(currentAnimation.name);
         }
 
         // Disables the animator when the animation we manually triggered isn't present on the subject anymore
         public bool IsPlayingSelectedAnimation(){
-            if (animator != null && currentAnimation != null && name.text == "Player"){
-                if (manuallyPlayedAnimation && !GetAllCurrentAnimations().Contains(currentAnimation)){
-
+            if (animator != null && currentAnimation != null){
+                if (stopAfterAnimationFinishes && !GetAllCurrentAnimations().Contains(currentAnimation)){
+                    
+                    // Wait a frame. Otherwise, it will stop the animation immediately.
                     if (!skippedStopFrames){
                         skippedStopFrames = true;
                         return false;
                     }
 
-                    manuallyPlayedAnimation = false;
+                    stopAfterAnimationFinishes = false;
                     AnimatorToggle.isOn = false;
                     return true;
                 }
@@ -100,7 +100,7 @@ namespace UnityExplorer.UI.Panels
 
         public void ResetAnimation(){
             if (defaultAnimation != null){
-                manuallyPlayedAnimation = false;
+                stopAfterAnimationFinishes = false;
 
                 animator.Play(defaultAnimation.name);
                 AnimatorToggle.isOn = true;
@@ -109,21 +109,18 @@ namespace UnityExplorer.UI.Panels
         }
 #endif
 
-        // If it's the first time we are rendering the AnimatorCell, assign the ignore value automatically based on it's name
-        public void MaybeSetIgnoreMasterToggleSet(){
-            if (animator != null && !autoIgnoreMasterToggleSet){
-                // A weird canse insensitive "Contains" to identify the player
-                IgnoreMasterToggle.isOn = animator.gameObject.name.IndexOf("play", 0, StringComparison.OrdinalIgnoreCase) >= 0;
-                autoIgnoreMasterToggleSet = true;
-            }
-        }
-
         public virtual GameObject CreateContent(GameObject parent)
         {
             GameObject AnimatorToggleObj = UIFactory.CreateToggle(parent, $"AnimatorToggle", out AnimatorToggle, out Text animatorToggleText);
             UIFactory.SetLayoutElement(AnimatorToggleObj, minHeight: 25);
             AnimatorToggle.isOn = true;
-            AnimatorToggle.onValueChanged.AddListener(value => animator.enabled = value);
+            AnimatorToggle.onValueChanged.AddListener(value => {
+                    //ExplorerCore.LogWarning($"Animator toggled: {animator} to {animator.enabled}");
+                    animator.enabled = value;
+                    // If we play an animation and we disable the animator then don't stop the animation when it finishes after we enable the animator again
+                    if (!value && stopAfterAnimationFinishes) stopAfterAnimationFinishes = false;
+                }
+            );
 
             UIRoot = AnimatorToggleObj;
             UIRoot.SetActive(false);
@@ -148,9 +145,18 @@ namespace UnityExplorer.UI.Panels
             GameObject ignoresMasterTogglerObj = UIFactory.CreateToggle(UIRoot, $"AnimatorIgnoreMasterToggle", out IgnoreMasterToggle, out Text ignoreMasterToggleText);
             UIFactory.SetLayoutElement(ignoresMasterTogglerObj, minHeight: 25);
             IgnoreMasterToggle.isOn = false;
+            IgnoreMasterToggle.onValueChanged.AddListener(IgnoreMasterToggle_Clicked);
             ignoreMasterToggleText.text = "Ignore Master Toggle  ";
 
             return UIRoot;
+        }
+
+        internal void IgnoreMasterToggle_Clicked(bool value){
+            GetAnimatorPanel().shouldIgnoreMasterToggle[animator] = value;
+        }
+
+        public UnityExplorer.UI.Panels.AnimatorPanel GetAnimatorPanel(){
+            return UIManager.GetPanel<UnityExplorer.UI.Panels.AnimatorPanel>(UIManager.Panels.AnimatorPanel);
         }
     }
 }
