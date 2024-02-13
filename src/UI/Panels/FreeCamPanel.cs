@@ -644,6 +644,12 @@ namespace UnityExplorer.UI.Panels
 
                         float newRotationX = transform.localEulerAngles.y + newMouseCoords.x;
                         float newRotationY = transform.localEulerAngles.x - newMouseCoords.y;
+
+                        // Block the camera rotation to not go further than looking directly up or down.
+                        // We give a little extra to the [0, 90] rotation segment to not get the camera rotation stuck.
+                        // If it doesn't work in some game we should revisit this.
+                        newRotationY = newRotationY > 180f ? Mathf.Clamp(newRotationY, 270f, 360f) : Mathf.Clamp(newRotationY, -1f, 90.0f);
+
                         transform.localEulerAngles = new Vector3(newRotationY, newRotationX, transform.localEulerAngles.z);
                     }
 
