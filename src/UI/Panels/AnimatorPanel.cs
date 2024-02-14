@@ -103,7 +103,20 @@ namespace UnityExplorer.UI.Panels
             // We gotta do this for the animators which cell are not being currently rendered.
             foreach (Animator animator in animators){
                 if (!shouldIgnoreMasterToggle[animator]){
-                    animator.enabled = enable;
+                    try {
+                        Type animatorClass = ReflectionUtility.GetTypeByName("UnityEngine.Animator");
+                        if (enable) {
+                            MethodInfo stopPlayBack = animatorClass.GetMethod("StopPlayback");
+                            stopPlayBack.Invoke(animator.TryCast(), null);
+                        } else {
+                            MethodInfo startPlayBack = animatorClass.GetMethod("StartPlayback");
+                            startPlayBack.Invoke(animator.TryCast(), null);
+                        }
+                    }
+                    catch {
+                        // Fallback in case reflection isn't working
+                        animator.enabled = enable;
+                    }
                 }
             }
         }

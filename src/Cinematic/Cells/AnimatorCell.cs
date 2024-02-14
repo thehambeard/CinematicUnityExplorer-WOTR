@@ -116,7 +116,20 @@ namespace UnityExplorer.UI.Panels
             AnimatorToggle.isOn = true;
             AnimatorToggle.onValueChanged.AddListener(value => {
                     //ExplorerCore.LogWarning($"Animator toggled: {animator} to {animator.enabled}");
-                    animator.enabled = value;
+                    try {
+                        Type animatorClass = ReflectionUtility.GetTypeByName("UnityEngine.Animator");
+                        if (value) {
+                            MethodInfo stopPlayBack = animatorClass.GetMethod("StopPlayback");
+                            stopPlayBack.Invoke(animator.TryCast(), null);
+                        } else {
+                            MethodInfo startPlayBack = animatorClass.GetMethod("StartPlayback");
+                            startPlayBack.Invoke(animator.TryCast(), null);
+                        }
+                    }
+                    catch {
+                        // Fallback in case reflection isn't working
+                        animator.enabled = value;
+                    }
                     // If we play an animation and we disable the animator then don't stop the animation when it finishes after we enable the animator again
                     if (!value && stopAfterAnimationFinishes) stopAfterAnimationFinishes = false;
                 }
