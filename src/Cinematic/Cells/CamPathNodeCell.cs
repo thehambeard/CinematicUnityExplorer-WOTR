@@ -60,6 +60,32 @@ namespace UnityExplorer.UI.Panels
                 FreeCamPanel.ourCamera.fieldOfView = point.fov;
             };
 
+            ButtonRef moveUpButton = UIFactory.CreateButton(UIRoot, "MoveUp", "▲");
+            UIFactory.SetLayoutElement(moveUpButton.GameObject, minWidth: 25, minHeight: 25, flexibleWidth: 0);
+            moveUpButton.OnClick += () => {
+                int pointIndex = GetCamPathsPanel().controlPoints.IndexOf(point);
+                if (pointIndex != 0){
+                    CatmullRom.CatmullRomPoint temporalPoint = GetCamPathsPanel().controlPoints[pointIndex - 1];
+                    GetCamPathsPanel().controlPoints[pointIndex - 1] = point;
+                    GetCamPathsPanel().controlPoints[pointIndex] = temporalPoint;
+                }
+                GetCamPathsPanel().nodesScrollPool.Refresh(true, false);
+                GetCamPathsPanel().MaybeRedrawPath();
+            };
+
+            ButtonRef moveDownButton = UIFactory.CreateButton(UIRoot, "MoveDown", "▼");
+            UIFactory.SetLayoutElement(moveDownButton.GameObject, minWidth: 25, minHeight: 25, flexibleWidth: 0);
+            moveDownButton.OnClick += () => {
+                int pointIndex = GetCamPathsPanel().controlPoints.IndexOf(point);
+                if (pointIndex != GetCamPathsPanel().controlPoints.Count - 1){
+                    CatmullRom.CatmullRomPoint temporalPoint = GetCamPathsPanel().controlPoints[pointIndex + 1];
+                    GetCamPathsPanel().controlPoints[pointIndex + 1] = point;
+                    GetCamPathsPanel().controlPoints[pointIndex] = temporalPoint;
+                }
+                GetCamPathsPanel().nodesScrollPool.Refresh(true, false);
+                GetCamPathsPanel().MaybeRedrawPath();
+            };
+
             ButtonRef destroyButton = UIFactory.CreateButton(UIRoot, "Delete", "Delete");
             UIFactory.SetLayoutElement(destroyButton.GameObject, minWidth: 30, minHeight: 25, flexibleWidth: 9999);
             destroyButton.OnClick += () => {
