@@ -14,7 +14,7 @@ namespace UnityExplorer.UI.Panels
         public Toggle IgnoreMasterToggle;
         public Toggle AnimatorToggle;
 
-        public Text name;
+        public ButtonRef inspectButton;
         public Animator animator;
 
         // ICell
@@ -43,7 +43,7 @@ namespace UnityExplorer.UI.Panels
                 AnimatorClipInfo[] playingAnimations = animator.GetCurrentAnimatorClipInfo(0);
                 currentAnimation = playingAnimations.Count() != 0 ? playingAnimations[0].clip : animations[0];
 
-                GameObject currentAnimationObj = UIFactory.CreateDropdown(UIRoot, $"Animations_{name}", out Dropdown dropdown, null, 14, (idx) => currentAnimation = animations[idx]);
+                GameObject currentAnimationObj = UIFactory.CreateDropdown(UIRoot, $"Animations_{animator.name}", out Dropdown dropdown, null, 14, (idx) => currentAnimation = animations[idx]);
                 UIFactory.SetLayoutElement(currentAnimationObj, minHeight: 25, minWidth: 200);
                 foreach (AnimationClip animation in animations)
                     dropdown.options.Add(new Dropdown.OptionData(animation.name));
@@ -146,9 +146,9 @@ namespace UnityExplorer.UI.Panels
             
             UIFactory.SetLayoutElement(UIRoot, minWidth: 100, flexibleWidth: 9999, minHeight: 25, flexibleHeight: 0);
 
-            name = UIFactory.CreateLabel(UIRoot, "NameLabel", "", TextAnchor.MiddleLeft, Color.white, false, 14);
-            UIFactory.SetLayoutElement(name.gameObject, minHeight: 25, minWidth: 30, flexibleWidth: 40);
-
+            inspectButton = UIFactory.CreateButton(UIRoot, "InspectButton", "");
+            UIFactory.SetLayoutElement(inspectButton.GameObject, minWidth: 25, minHeight: 25, flexibleWidth: 9999);
+            inspectButton.OnClick += () => InspectorManager.Inspect(animator.gameObject);
 #if MONO
             ButtonRef resetAnimation = UIFactory.CreateButton(UIRoot, "Reset Animation", "Reset");
             UIFactory.SetLayoutElement(resetAnimation.GameObject, minWidth: 50, minHeight: 25);

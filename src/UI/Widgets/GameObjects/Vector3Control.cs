@@ -120,6 +120,22 @@ namespace UnityExplorer.UI.Widgets
             UIFactory.SetLayoutElement(control.IncrementInput.GameObject, minWidth: 30, flexibleWidth: 0, minHeight: 25);
             control.IncrementInput.Component.GetOnEndEdit().AddListener(control.IncrementInput_OnEndEdit);
 
+            if (type == TransformType.Scale){
+                GameObject extraRowObj = UIFactory.CreateUIObject($"Row_UniformScale", transformGroup);
+                UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(extraRowObj, false, false, true, true, 5, 0, 0, 0, 0, default);
+                UIFactory.SetLayoutElement(extraRowObj, minHeight: 25, flexibleWidth: 9999);
+
+                Text uniformScaleTitleLabel = UIFactory.CreateLabel(extraRowObj, "UniformScaleLabel", "Uniform Scale:", TextAnchor.MiddleRight, Color.grey);
+                UIFactory.SetLayoutElement(uniformScaleTitleLabel.gameObject, minHeight: 25, minWidth: 110);
+
+                GameObject uniformScaleControlObj = UIFactory.CreateSlider(extraRowObj, "UniformScaleSlider", out Slider uniformScaleControl);
+                UIFactory.SetLayoutElement(uniformScaleControlObj, minHeight: 25, minWidth: 200, flexibleHeight: 0);
+                uniformScaleControl.minValue = 0.0001f;
+                uniformScaleControl.maxValue = 10;
+                uniformScaleControl.value = 1;
+                uniformScaleControl.onValueChanged.AddListener((float val) => { owner.Owner.Target.transform.localScale = new Vector3(val, val, val); });
+            }
+
             return control;
         }
     }

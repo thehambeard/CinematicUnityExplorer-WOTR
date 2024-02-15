@@ -21,7 +21,7 @@ namespace UnityExplorer.UI.Panels
         public override string Name => "Freecam";
         public override UIManager.Panels PanelType => UIManager.Panels.Freecam;
         public override int MinWidth => 450;
-        public override int MinHeight => 700;
+        public override int MinHeight => 750;
         public override Vector2 DefaultAnchorMin => new(0.4f, 0.4f);
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
         public override bool NavButtonWanted => true;

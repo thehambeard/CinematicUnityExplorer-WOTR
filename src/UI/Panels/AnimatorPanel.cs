@@ -173,7 +173,7 @@ namespace UnityExplorer.UI.Panels
                 return;
 
             cell.animator = animator;
-            cell.name.text = animator.gameObject.name;
+            cell.inspectButton.ButtonText.text = animator.gameObject.name;
             cell.IgnoreMasterToggle.isOn = shouldIgnoreMasterToggle[animator];
 
 #if MONO
