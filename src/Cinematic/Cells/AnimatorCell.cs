@@ -31,6 +31,7 @@ namespace UnityExplorer.UI.Panels
 #if MONO
         private bool skippedStopFrames;
         ButtonRef playButton;
+        private Dropdown animatorDropdown;
 
         private AnimationClip currentAnimation;
         private AnimationClip defaultAnimation;
@@ -43,13 +44,21 @@ namespace UnityExplorer.UI.Panels
                 AnimatorClipInfo[] playingAnimations = animator.GetCurrentAnimatorClipInfo(0);
                 currentAnimation = playingAnimations.Count() != 0 ? playingAnimations[0].clip : animations[0];
 
-                GameObject currentAnimationObj = UIFactory.CreateDropdown(UIRoot, $"Animations_{animator.name}", out Dropdown dropdown, null, 14, (idx) => currentAnimation = animations[idx]);
+                ButtonRef prevAnimation = UIFactory.CreateButton(UIRoot, "PreviousAnimation", "◀", new Color(0.05f, 0.05f, 0.05f));
+                UIFactory.SetLayoutElement(prevAnimation.Component.gameObject, minHeight: 25, minWidth: 25);
+                prevAnimation.OnClick += () => animatorDropdown.value = animatorDropdown.value == 0 ? animatorDropdown.options.Count - 1 : animatorDropdown.value - 1;
+
+                GameObject currentAnimationObj = UIFactory.CreateDropdown(UIRoot, $"Animations_{animator.name}", out animatorDropdown, null, 14, (idx) => currentAnimation = animations[idx]);
                 UIFactory.SetLayoutElement(currentAnimationObj, minHeight: 25, minWidth: 200);
                 foreach (AnimationClip animation in animations)
-                    dropdown.options.Add(new Dropdown.OptionData(animation.name));
+                    animatorDropdown.options.Add(new Dropdown.OptionData(animation.name));
 
-                dropdown.value = Math.Max(0, animations.FindIndex(a => a == currentAnimation));
-                if (dropdown.value == 0) dropdown.captionText.text = animations[0].name;
+                animatorDropdown.value = Math.Max(0, animations.FindIndex(a => a == currentAnimation));
+                if (animatorDropdown.value == 0) animatorDropdown.captionText.text = animations[0].name;
+
+                ButtonRef nextAnimation = UIFactory.CreateButton(UIRoot, "NextAnimation", "▶", new Color(0.05f, 0.05f, 0.05f));
+                UIFactory.SetLayoutElement(nextAnimation.Component.gameObject, minHeight: 25, minWidth: 25);
+                nextAnimation.OnClick += () => animatorDropdown.value = animatorDropdown.value == animatorDropdown.options.Count - 1 ? 0 : animatorDropdown.value + 1;
 
                 playButton = UIFactory.CreateButton(UIRoot, "PlayButton", "Play", new Color(0.2f, 0.26f, 0.2f));
                 UIFactory.SetLayoutElement(playButton.Component.gameObject, minHeight: 25, minWidth: 90);
