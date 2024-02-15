@@ -131,8 +131,7 @@ namespace UnityExplorer.CatmullRom
                 playingPath = true;
                 delta = lookaheadDelta;
                 MoveCameraToPoint(splinePoints[0]);
-                CalculateLookahead();
-                lookahead = lookaheadPoints[(int)(lookaheadPoints.Count * lookaheadDelta)];
+                lookahead = lookaheadPoints[1];
             }
         }
 

@@ -251,8 +251,9 @@ namespace UnityExplorer.UI.Panels
             if (pathVisualizer == null) pathVisualizer = new GameObject("PathVisualizer");
             if (enable){
                 if (controlPoints.Count > 2){
+                    if (followObject != null) pathVisualizer.transform.SetParent(followObject.transform, true);
+
                     UpdateCatmullRomMoverData();
-                    
                     List<CatmullRom.CatmullRomPoint> lookaheadPoints = GetCameraPathsManager().GetLookaheadPoints();
                     int skip_points = 5; // How many points do we have to skip before drawing another arrow (otherwise they look very cluttered)
                     int n = 0;
@@ -263,13 +264,16 @@ namespace UnityExplorer.UI.Panels
                             continue;
                         }
 
+                        Vector3 arrowPos = lookaheadPoints[i].position;
+                        if (followObject != null) arrowPos = followObject.transform.TransformPoint(arrowPos);
+                        Quaternion arrowRot = lookaheadPoints[i].rotation;
+                        if (followObject != null) arrowRot = followObject.transform.rotation * arrowRot;
                         // We could expose the color of the arrow to a setting
-                        GameObject arrow = ArrowGenerator.CreateArrow(lookaheadPoints[i].position, lookaheadPoints[i].rotation, Color.green);
+                        GameObject arrow = ArrowGenerator.CreateArrow(arrowPos, arrowRot, Color.green);
                         arrow.transform.SetParent(pathVisualizer.transform, true);
                         n = 0;
                     }
                 }
-
             }
             else {
                 if (pathVisualizer) {
