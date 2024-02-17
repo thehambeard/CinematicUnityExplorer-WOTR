@@ -130,24 +130,25 @@ namespace UnityExplorer.UI.Panels
         }
 
         private void AddEffect(string baseClass, string effect){
-            Type searchType = ReflectionUtility.GetTypeByName($"{baseClass}.{effect}");
-            searchType = searchType is Type type ? type : searchType.GetActualType();
-            List<object> currentResults = RuntimeHelper.FindObjectsOfTypeAll(searchType).Select(obj => (object) obj).ToList();
+            try {
+                Type searchType = ReflectionUtility.GetTypeByName($"{baseClass}.{effect}");
+                searchType = searchType is Type type ? type : searchType.GetActualType();
+                List<object> currentResults = RuntimeHelper.FindObjectsOfTypeAll(searchType).Select(obj => (object) obj).ToList();
 
-            //ExplorerCore.LogWarning($"Found {currentResults.Count()} objects for {baseClass}.{effect}");
+                foreach (object obj in currentResults){
+                    PPEffect entry = new PPEffect(obj);
+                    
+                    // Ignore non-active objects and objects without a name, since those tend to be irrelevant
+                    if ((bool) entry.Active.Value && entry.Name.Value.ToString() != ""){
+                        if (!postProcessingEffects.ContainsKey(effect)){
+                            postProcessingEffects.Add(effect, new List<PPEffect>());
+                        }
 
-            foreach (object obj in currentResults){
-                PPEffect entry = new PPEffect(obj);
-                
-                // Ignore non-active objects and objects without a name, since those tend to be irrelevant
-                if ((bool) entry.Active.Value && entry.Name.Value.ToString() != ""){
-                    if (!postProcessingEffects.ContainsKey(effect)){
-                        postProcessingEffects.Add(effect, new List<PPEffect>());
+                        postProcessingEffects[effect].Add(entry);
                     }
-
-                    postProcessingEffects[effect].Add(entry);
                 }
             }
+            catch { ExplorerCore.Log($"Couldn't find {baseClass}.{effect}");}
         }
 
         private void SetEffect(bool value, List<PPEffect> effects){

@@ -27,33 +27,34 @@ namespace UnityExplorer.UI.Panels
         public void Disable() => UIRoot.SetActive(false);
 
 // IL2CPP games seem to have animation-related code stripped from their builds
-        private bool stopAfterAnimationFinishes = false;
 #if MONO
-        private bool skippedStopFrames;
         ButtonRef playButton;
         private Dropdown animatorDropdown;
 
-        private AnimationClip currentAnimation;
-        private AnimationClip defaultAnimation;
+        private AnimationClip overridingAnimation;
+        private AnimationClip originalAnimation;
+        private RuntimeAnimatorController originalAnimatorController;
 
         public void DrawAnimatorPlayer(){
             if (playButton == null){
                 List<AnimationClip> animations = animator.runtimeAnimatorController.animationClips.OrderBy(x=>x.name).Where(c => c.length > 0).Distinct().ToList();
 
+                originalAnimatorController = animator.runtimeAnimatorController;
+
                 //ExplorerCore.LogWarning(animations.Count);
                 AnimatorClipInfo[] playingAnimations = animator.GetCurrentAnimatorClipInfo(0);
-                currentAnimation = playingAnimations.Count() != 0 ? playingAnimations[0].clip : animations[0];
+                overridingAnimation = playingAnimations.Count() != 0 ? playingAnimations[0].clip : animations[0];
 
                 ButtonRef prevAnimation = UIFactory.CreateButton(UIRoot, "PreviousAnimation", "◀", new Color(0.05f, 0.05f, 0.05f));
                 UIFactory.SetLayoutElement(prevAnimation.Component.gameObject, minHeight: 25, minWidth: 25);
                 prevAnimation.OnClick += () => animatorDropdown.value = animatorDropdown.value == 0 ? animatorDropdown.options.Count - 1 : animatorDropdown.value - 1;
 
-                GameObject currentAnimationObj = UIFactory.CreateDropdown(UIRoot, $"Animations_{animator.name}", out animatorDropdown, null, 14, (idx) => currentAnimation = animations[idx]);
-                UIFactory.SetLayoutElement(currentAnimationObj, minHeight: 25, minWidth: 200);
+                GameObject overridingAnimationObj = UIFactory.CreateDropdown(UIRoot, $"Animations_{animator.name}", out animatorDropdown, null, 14, (idx) => overridingAnimation = animations[idx]);
+                UIFactory.SetLayoutElement(overridingAnimationObj, minHeight: 25, minWidth: 200);
                 foreach (AnimationClip animation in animations)
                     animatorDropdown.options.Add(new Dropdown.OptionData(animation.name));
 
-                animatorDropdown.value = Math.Max(0, animations.FindIndex(a => a == currentAnimation));
+                animatorDropdown.value = Math.Max(0, animations.FindIndex(a => a == overridingAnimation));
                 if (animatorDropdown.value == 0) animatorDropdown.captionText.text = animations[0].name;
 
                 ButtonRef nextAnimation = UIFactory.CreateButton(UIRoot, "NextAnimation", "▶", new Color(0.05f, 0.05f, 0.05f));
@@ -68,38 +69,27 @@ namespace UnityExplorer.UI.Panels
 
         private void PlayButton_OnClick(){
             // We save the last animation played by the game in case we want to go back to it
-            if (defaultAnimation == null){
+            if (originalAnimation == null){
                 AnimatorClipInfo[] playingAnimations = animator.GetCurrentAnimatorClipInfo(0);
-                defaultAnimation = playingAnimations.Count() != 0 ? playingAnimations[0].clip : null;
+                originalAnimation = playingAnimations.Count() != 0 ? playingAnimations[0].clip : null;
             }
+            // Need to assign the original animator controller back so to get the correct currentClip
+            animator.runtimeAnimatorController = originalAnimatorController;
+            AnimationClip currentClip = animator.GetCurrentAnimatorClipInfo(0)[0].clip;
 
-            skippedStopFrames = false;
+            AnimatorOverrideController animatorOverrideController = new AnimatorOverrideController();
+            animatorOverrideController.runtimeAnimatorController = originalAnimatorController;
+            animator.runtimeAnimatorController = animatorOverrideController;
 
-            stopAfterAnimationFinishes = !AnimatorToggle.isOn;
-            AnimatorToggle.isOn = true;
-            animator.Play(currentAnimation.name);
+            animatorOverrideController[currentClip.name] = overridingAnimation;
+
+            animator.Play(currentClip.name);
+
+            // Turn the toggle on to keep consistency
+            if (!AnimatorToggle.isOn) AnimatorToggle.isOn = true;
         }
 
-        // Disables the animator when the animation we manually triggered isn't present on the subject anymore
-        public bool IsPlayingSelectedAnimation(){
-            if (animator != null && currentAnimation != null){
-                if (stopAfterAnimationFinishes && !GetAllCurrentAnimations().Contains(currentAnimation)){
-                    
-                    // Wait a frame. Otherwise, it will stop the animation immediately.
-                    if (!skippedStopFrames){
-                        skippedStopFrames = true;
-                        return false;
-                    }
-
-                    stopAfterAnimationFinishes = false;
-                    AnimatorToggle.isOn = false;
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private List<AnimationClip> GetAllCurrentAnimations(){
+        private List<AnimationClip> GetAllAnimations(){
             List<AnimationClip> allAnimations = new List<AnimationClip>();
             for (int layer = 0; layer < animator.layerCount; layer++){
                 allAnimations.AddRange(animator.GetCurrentAnimatorClipInfo(layer).Select(ainfo => ainfo.clip).ToList());
@@ -108,13 +98,7 @@ namespace UnityExplorer.UI.Panels
         }
 
         public void ResetAnimation(){
-            if (defaultAnimation != null){
-                stopAfterAnimationFinishes = false;
-
-                animator.Play(defaultAnimation.name);
-                AnimatorToggle.isOn = true;
-                defaultAnimation = null;
-            }
+            animator.runtimeAnimatorController = originalAnimatorController;
         }
 #endif
 
@@ -124,23 +108,16 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(AnimatorToggleObj, minHeight: 25);
             AnimatorToggle.isOn = true;
             AnimatorToggle.onValueChanged.AddListener(value => {
-                    //ExplorerCore.LogWarning($"Animator toggled: {animator} to {animator.enabled}");
                     try {
                         Type animatorClass = ReflectionUtility.GetTypeByName("UnityEngine.Animator");
-                        if (value) {
-                            MethodInfo stopPlayBack = animatorClass.GetMethod("StopPlayback");
-                            stopPlayBack.Invoke(animator.TryCast(), null);
-                        } else {
-                            MethodInfo startPlayBack = animatorClass.GetMethod("StartPlayback");
-                            startPlayBack.Invoke(animator.TryCast(), null);
-                        }
+
+                        PropertyInfo animatorSpeed = animatorClass.GetProperty("speed");
+                        animatorSpeed.SetValue(animator, value ? 1 : 0, null);
                     }
                     catch {
                         // Fallback in case reflection isn't working
                         animator.enabled = value;
                     }
-                    // If we play an animation and we disable the animator then don't stop the animation when it finishes after we enable the animator again
-                    if (!value && stopAfterAnimationFinishes) stopAfterAnimationFinishes = false;
                 }
             );
 

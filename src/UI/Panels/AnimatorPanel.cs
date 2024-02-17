@@ -34,8 +34,6 @@ namespace UnityExplorer.UI.Panels
         public override bool NavButtonWanted => true;
         public override bool ShouldSaveActiveState => true;
 
-        Dictionary<Animator, Func<bool>> animationEndedFunctions = new Dictionary<Animator, Func<bool>>();
-
         Toggle masterAnimatorToggle = new Toggle();
 
         private static ScrollPool<AnimatorCell> animatorScrollPool;
@@ -64,7 +62,6 @@ namespace UnityExplorer.UI.Panels
             if (animators.Count != 0) {
                 masterAnimatorToggle.isOn = true; // Will also trigger "MasterToggleAnimators(true)"
                 animators.Clear();
-                animationEndedFunctions.Clear();
                 shouldIgnoreMasterToggle.Clear();
 #if MONO
                 // TODO: Move the reset behavior to this panel, because we would only get the cells being currently displayed.
@@ -125,13 +122,6 @@ namespace UnityExplorer.UI.Panels
             masterAnimatorToggle.isOn = !masterAnimatorToggle.isOn;
         }
 
-#if MONO
-        public override void Update(){
-            foreach (Animator animator in animators){
-                animationEndedFunctions[animator]();
-            }
-        }
-#endif
         // ~~~~~~~~ UI construction / callbacks ~~~~~~~~
 
         protected override void ConstructPanelContent()
@@ -178,7 +168,6 @@ namespace UnityExplorer.UI.Panels
 
 #if MONO
             cell.DrawAnimatorPlayer();
-            animationEndedFunctions[animator] = cell.IsPlayingSelectedAnimation;
 #endif
         }
 
