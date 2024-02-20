@@ -13,10 +13,6 @@ using UnhollowerRuntimeLib;
 using Il2CppInterop.Runtime.Injection;
 #endif
 
-#if CPP
-using Animator = UnityEngine.Behaviour;
-#endif
-
 namespace UnityExplorer.UI.Panels
 {
     public class AnimatorPanel : UEPanel, ICellPoolDataSource<AnimatorCell>
@@ -37,10 +33,8 @@ namespace UnityExplorer.UI.Panels
         Toggle masterAnimatorToggle = new Toggle();
 
         private static ScrollPool<AnimatorCell> animatorScrollPool;
-        internal List<Animator> animators = new List<Animator>();
-        public Dictionary<Animator, bool> shouldIgnoreMasterToggle = new Dictionary<Animator, bool>();
+        internal List<AnimatorPlayer> animators = new List<AnimatorPlayer>();
         public int ItemCount => animators.Count;
-
         private static bool DoneScrollPoolInit;
 
         public override void SetActive(bool active)
@@ -60,28 +54,31 @@ namespace UnityExplorer.UI.Panels
         private void FindAllAnimators(){
             // Enable all animators on refresh
             if (animators.Count != 0) {
-                masterAnimatorToggle.isOn = true; // Will also trigger "MasterToggleAnimators(true)"
-                animators.Clear();
-                shouldIgnoreMasterToggle.Clear();
-#if MONO
-                // TODO: Move the reset behavior to this panel, because we would only get the cells being currently displayed.
-                foreach (AnimatorCell animatorCell in animatorScrollPool.CellPool)
+                foreach (AnimatorPlayer animatorPlayer in animators)
                 {
-                    animatorCell.ResetAnimation();
+                    animatorPlayer.ResetAnimation();
                 }
-#endif
+                masterAnimatorToggle.isOn = true; // Will also trigger "MasterToggleAnimators(true)"
             }
 
             Type searchType = ReflectionUtility.GetTypeByName("UnityEngine.Animator");
             searchType = searchType is Type type ? type : searchType.GetActualType();
-            animators = RuntimeHelper.FindObjectsOfTypeAll(searchType).Select(obj => obj.TryCast<Animator>())
+            List<AnimatorPlayer> newAnimators = RuntimeHelper.FindObjectsOfTypeAll(searchType).Select(obj => obj.TryCast<Behaviour>())
             .Where(a => a.GetComponentsInChildren<SkinnedMeshRenderer>(false).Length != 0 && a.enabled && a.GetComponentsInChildren<Rigidbody>(false).Length != 0)
             .OrderBy(x=>x.name)
+            .Select(a => new AnimatorPlayer(a))
             .ToList();
 
-            foreach(Animator animator in animators){
-                shouldIgnoreMasterToggle[animator] = animator.gameObject.name.IndexOf("play", 0, StringComparison.OrdinalIgnoreCase) >= 0;
+            // If there are old animators in the new list keep the old object with its properties.
+            for(int i = 0; i < animators.Count; i++)
+            {
+                if (animators[i].animator.wrappedObject != null){
+                    int newAnimatorsIndex = newAnimators.FindIndex(a => a.animator.wrappedObject == animators[i].animator.wrappedObject);
+                    if (newAnimatorsIndex != -1)
+                        newAnimators[newAnimatorsIndex] = animators[i];
+                }
             }
+            animators = newAnimators;
 
             animatorScrollPool.Refresh(true, false);
         }
@@ -90,32 +87,14 @@ namespace UnityExplorer.UI.Panels
             // Load animators for the first time if there are not any
             if (animators.Count == 0) FindAllAnimators();
 
-            foreach (AnimatorCell animatorCell in animatorScrollPool.CellPool)
-            {
-                if (animatorCell.animator != null && !animatorCell.IgnoreMasterToggle.isOn){
-                    animatorCell.AnimatorToggle.isOn = enable;
+            foreach (AnimatorPlayer animatorPlayer in animators){
+                if (!animatorPlayer.shouldIgnoreMasterToggle){
+                    if (animatorPlayer.animator.wrappedObject != null)
+                        animatorPlayer.animator.speed = enable ? 1 : 0;
                 }
             }
 
-            // We gotta do this for the animators which cell are not being currently rendered.
-            foreach (Animator animator in animators){
-                if (!shouldIgnoreMasterToggle[animator]){
-                    try {
-                        Type animatorClass = ReflectionUtility.GetTypeByName("UnityEngine.Animator");
-                        if (enable) {
-                            MethodInfo stopPlayBack = animatorClass.GetMethod("StopPlayback");
-                            stopPlayBack.Invoke(animator.TryCast(), null);
-                        } else {
-                            MethodInfo startPlayBack = animatorClass.GetMethod("StartPlayback");
-                            startPlayBack.Invoke(animator.TryCast(), null);
-                        }
-                    }
-                    catch {
-                        // Fallback in case reflection isn't working
-                        animator.enabled = enable;
-                    }
-                }
-            }
+            animatorScrollPool.Refresh(true, false);
         }
 
         public void HotkeyToggleAnimators(){
@@ -158,17 +137,19 @@ namespace UnityExplorer.UI.Panels
                 return;
             }
 
-            Animator animator = animators[index];
-            if (animator == null)
+            AnimatorPlayer animatorPlayer = animators[index];
+
+            if (animatorPlayer.animator.wrappedObject == null)
                 return;
+            // Check if the animator wrapped object was deleted by trying to access one of its properties
+            try {
+                string check = animatorPlayer.animator.name;
+            }
+            catch {
+                return;
+            }
 
-            cell.animator = animator;
-            cell.inspectButton.ButtonText.text = animator.gameObject.name;
-            cell.IgnoreMasterToggle.isOn = shouldIgnoreMasterToggle[animator];
-
-#if MONO
-            cell.DrawAnimatorPlayer();
-#endif
+            cell.SetAnimatorPlayer(animatorPlayer);
         }
 
         public void OnCellBorrowed(AnimatorCell cell) { }
