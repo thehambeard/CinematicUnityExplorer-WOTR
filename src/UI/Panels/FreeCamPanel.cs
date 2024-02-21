@@ -1,4 +1,5 @@
-﻿using UnityExplorer.Config;
+﻿using UnityEngine.SceneManagement;
+using UnityExplorer.Config;
 using UnityExplorer.Inspectors;
 using UniverseLib.Input;
 using UniverseLib.UI;
@@ -36,6 +37,7 @@ namespace UnityExplorer.UI.Panels
 
         internal static float desiredMoveSpeed = 5f;
 
+        internal static string lastScene;
         internal static Vector3 originalCameraPosition;
         internal static Quaternion originalCameraRotation;
         internal static float originalCameraFOV;
@@ -152,6 +154,12 @@ namespace UnityExplorer.UI.Panels
 
             ourCamera.gameObject.SetActive(true);
             ourCamera.enabled = true;
+
+            string currentScene = SceneManager.GetActiveScene().name;
+            if (lastScene != currentScene){
+                OnResetPosButtonClicked();
+            }
+            lastScene = currentScene;
         }
 
         internal static void EndFreecam()
@@ -469,7 +477,7 @@ namespace UnityExplorer.UI.Panels
             BeginFreecam();
         }
 
-        void OnResetPosButtonClicked()
+        static void OnResetPosButtonClicked()
         {
             currentUserCameraPosition = originalCameraPosition;
             currentUserCameraRotation = originalCameraRotation;

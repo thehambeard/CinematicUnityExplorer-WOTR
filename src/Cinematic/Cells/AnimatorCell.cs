@@ -75,7 +75,7 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(UIRoot, minWidth: 100, flexibleWidth: 9999, minHeight: 25, flexibleHeight: 0);
 
             inspectButton = UIFactory.CreateButton(UIRoot, "InspectButton", "");
-            UIFactory.SetLayoutElement(inspectButton.GameObject, minWidth: 250, minHeight: 25);
+            UIFactory.SetLayoutElement(inspectButton.GameObject, minWidth: 200, minHeight: 25);
             inspectButton.OnClick += () => InspectorManager.Inspect(animatorPlayer.animator.gameObject);
 
             ButtonRef resetAnimation = UIFactory.CreateButton(UIRoot, "Reset Animation", "Reset");
@@ -83,7 +83,7 @@ namespace UnityExplorer.UI.Panels
             resetAnimation.OnClick += ResetAnimation;
 
             GameObject ignoresMasterTogglerObj = UIFactory.CreateToggle(UIRoot, $"AnimatorIgnoreMasterToggle", out IgnoreMasterToggle, out Text ignoreMasterToggleText);
-            UIFactory.SetLayoutElement(ignoresMasterTogglerObj, minHeight: 25, minWidth: 200);
+            UIFactory.SetLayoutElement(ignoresMasterTogglerObj, minHeight: 25, minWidth: 155);
             IgnoreMasterToggle.isOn = false;
             IgnoreMasterToggle.onValueChanged.AddListener(IgnoreMasterToggle_Clicked);
             ignoreMasterToggleText.text = "Ignore Master Toggle  ";
