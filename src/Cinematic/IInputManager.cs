@@ -260,9 +260,9 @@ namespace UniverseLib.Input
 
         // Postfix functions
 
-        public static void OverrideKeyString(ref bool __result, ref string key)
+        public static void OverrideKeyString(ref bool __result, ref string name)
         {
-            KeyCode thisKeyCode = (KeyCode) System.Enum.Parse(typeof(KeyCode), key);
+            KeyCode thisKeyCode = (KeyCode) System.Enum.Parse(typeof(KeyCode), name);
             getKeyDict[thisKeyCode] = __result;
             if (FreeCamPanel.ShouldOverrideInput()){
                 __result = false;
@@ -279,9 +279,9 @@ namespace UniverseLib.Input
             }
         }
 
-        public static void OverrideKeyDownString(ref bool __result, ref string key)
+        public static void OverrideKeyDownString(ref bool __result, ref string name)
         {
-            KeyCode thisKeyCode = (KeyCode) System.Enum.Parse(typeof(KeyCode), key);
+            KeyCode thisKeyCode = (KeyCode) System.Enum.Parse(typeof(KeyCode), name);
             getKeyDownDict[thisKeyCode] = __result;
             if (FreeCamPanel.ShouldOverrideInput()){
                 __result = false;
@@ -298,9 +298,9 @@ namespace UniverseLib.Input
             }
         }
 
-        public static void OverrideKeyUpString(ref bool __result, ref string key)
+        public static void OverrideKeyUpString(ref bool __result, ref string name)
         {
-            KeyCode thisKeyCode = (KeyCode) System.Enum.Parse(typeof(KeyCode), key);
+            KeyCode thisKeyCode = (KeyCode) System.Enum.Parse(typeof(KeyCode), name);
             getKeyUpDict[thisKeyCode] = __result;
             if (FreeCamPanel.ShouldOverrideInput()){
                 __result = false;
