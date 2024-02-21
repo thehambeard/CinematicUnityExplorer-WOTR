@@ -641,27 +641,31 @@ namespace UnityExplorer.UI.Panels
                 if (IInputManager.GetMouseButton(1))
                 {
                     Vector3 mouseDelta = IInputManager.MousePosition - FreeCamPanel.previousMousePosition;
-                    if (mouseDelta.x != 0 || mouseDelta.y != 0){
-                        // Calculate the mouse movement vector depending on the current camera tilt.
-                        float tiltAngle = transform.eulerAngles.z;
-                        const float PI = 3.141592f;
-                        float dirAngle = Mathf.Atan2(mouseDelta.y, mouseDelta.x);
-                        dirAngle *= 180 / PI;
-                        float newAngle = (dirAngle + tiltAngle) * PI / 180;
-                        Vector2 newMouseCoords = new Vector2(Mathf.Cos(newAngle), Mathf.Sin(newAngle) ).normalized * mouseDelta.magnitude;
+                    
+                    float newRotationX = transform.localEulerAngles.y + mouseDelta.x * 0.3f;
+                    float newRotationY = transform.localEulerAngles.x - mouseDelta.y * 0.3f;
 
-                        float newRotationX = transform.localEulerAngles.y + newMouseCoords.x;
-                        float newRotationY = transform.localEulerAngles.x - newMouseCoords.y;
+                    // Block the camera rotation to not go further than looking directly up or down.
+                    // We give a little extra to the [0, 90] rotation segment to not get the camera rotation stuck.
+                    // If it doesn't work in some game we should revisit this.
+                    newRotationY = newRotationY > 180f ? Mathf.Clamp(newRotationY, 270f, 360f) : Mathf.Clamp(newRotationY, -1f, 90.0f);
 
-                        // Block the camera rotation to not go further than looking directly up or down.
-                        // We give a little extra to the [0, 90] rotation segment to not get the camera rotation stuck.
-                        // If it doesn't work in some game we should revisit this.
-                        newRotationY = newRotationY > 180f ? Mathf.Clamp(newRotationY, 270f, 360f) : Mathf.Clamp(newRotationY, -1f, 90.0f);
+                    transform.localEulerAngles = new Vector3(newRotationY, newRotationX, transform.localEulerAngles.z);
+                    
+                    // Apply the rotation changes while maintaining the camera's current roll.
+                    // Not using this method as it can easily modify the tilt, which is undesired.
 
-                        transform.localEulerAngles = new Vector3(newRotationY, newRotationX, transform.localEulerAngles.z);
-                    }
+                    /*float pitch = -mouseDelta.y * speedModifier * Time.deltaTime;
+                    float yaw = mouseDelta.x * speedModifier * Time.deltaTime;
 
-                    FreeCamPanel.previousMousePosition = IInputManager.MousePosition;
+                    Vector3 forwardDirection = transform.rotation * Vector3.forward;
+                    Vector3 rightDirection = transform.rotation * Vector3.right;
+                    Vector3 upDirection = transform.rotation * Vector3.up;
+
+                    Quaternion pitchRotation = Quaternion.AngleAxis(pitch, rightDirection);
+                    Quaternion yawRotation = Quaternion.AngleAxis(yaw, upDirection);
+
+                    transform.rotation = pitchRotation * yawRotation * transform.rotation;*/
                 }
 
                 if (IInputManager.GetKey(ConfigManager.Decrease_FOV.Value))
