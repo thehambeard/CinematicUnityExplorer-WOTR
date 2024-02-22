@@ -25,11 +25,7 @@ namespace UnityExplorer.UI.Panels
 
         public Misc(UIBase owner) : base(owner)
         {
-            captureScreenshotFunction = null;
-            FindCaptureScreenshotFunction();
-            superSizeValue = 2;
             disabledCanvases = new List<Canvas>();
-
             screenshotStatus = ScreenshotState.DoNothing;
         }
 
@@ -45,8 +41,8 @@ namespace UnityExplorer.UI.Panels
         List<Canvas> disabledCanvases;
         Toggle HUDToggle;
 
-        CacheMethod captureScreenshotFunction;
-        int superSizeValue;
+        CacheMethod captureScreenshotFunction = null;
+        int superSizeValue = 2;
         public ScreenshotState screenshotStatus;
 
         Toggle HighLodToggle;
@@ -114,9 +110,11 @@ namespace UnityExplorer.UI.Panels
                 ReflectionInspector inspector = Pool<ReflectionInspector>.Borrow();
                 List<CacheMember> members = CacheMemberFactory.GetCacheMembers(screenCaptureType, inspector);
                 foreach (CacheMember member in members){
-                    if (member is CacheMethod methodMember && methodMember.NameForFiltering == "ScreenCapture.CaptureScreenshot(string, int)"){
-                        captureScreenshotFunction = methodMember;
-                        break;
+                    if (member is CacheMethod methodMember){
+                        if (methodMember.NameForFiltering == "ScreenCapture.CaptureScreenshot(string, int)"){
+                            captureScreenshotFunction = methodMember;
+                            break;
+                        }
                     }
                 }
             }
@@ -266,6 +264,7 @@ namespace UnityExplorer.UI.Panels
             HighLodToggleText.text = "High LODs Toggle";
 
             // Screenshot function
+            FindCaptureScreenshotFunction();
             if (captureScreenshotFunction != null){
                 GameObject TakeScreenshotHoriGroup = UIFactory.CreateHorizontalGroup(ContentRoot, "Take screenshot", false, false, true, true, 3,
                 default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
