@@ -19,14 +19,14 @@ namespace UnityExplorer
 {
     public static class ExplorerCore
     {
-        public const string NAME = "UnityExplorer";
-        public const string VERSION = "4.11.1";
-        public const string AUTHOR = "Sinai, yukieiji";
-        public const string GUID = "com.sinai.unityexplorer";
+        public const string NAME = "CinematicUnityExplorer";
+        public const string VERSION = "1.0.0";
+        public const string AUTHOR = "originalnicodr, Sinai, yukieiji";
+        public const string GUID = "com.originalnicodr.cinematicunityexplorer";
 
         public static IExplorerLoader Loader { get; private set; }
         public static string ExplorerFolder => Path.Combine(Loader.ExplorerFolderDestination, Loader.ExplorerFolderName);
-        public const string DEFAULT_EXPLORER_FOLDER_NAME = "sinai-dev-UnityExplorer";
+        public const string DEFAULT_EXPLORER_FOLDER_NAME = "CinematicUnityExplorer";
 
         public static HarmonyLib.Harmony Harmony { get; } = new HarmonyLib.Harmony(GUID);
 
@@ -36,7 +36,7 @@ namespace UnityExplorer
         public static void Init(IExplorerLoader loader)
         {
             if (Loader != null)
-                throw new Exception("UnityExplorer is already loaded.");
+                throw new Exception("CinematicUnityExplorer is already loaded.");
 
             Loader = loader;
 
@@ -147,7 +147,7 @@ namespace UnityExplorer
             string legacyPath = Path.Combine(Loader.ExplorerFolderDestination, "UnityExplorer");
             if (Directory.Exists(legacyPath))
             {
-                LogWarning($"Attempting to migrate old 'UnityExplorer/' folder to 'sinai-dev-UnityExplorer/'...");
+                LogWarning($"Attempting to migrate old 'UnityExplorer/' folder to 'CinematicUnityExplorer/'...");
 
                 // If new folder doesn't exist yet, let's just use Move().
                 if (!Directory.Exists(ExplorerFolder))

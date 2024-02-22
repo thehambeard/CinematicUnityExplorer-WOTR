@@ -692,7 +692,7 @@ namespace UnityExplorer.UI.Panels
     // Dummy UI class to unlock the cursor when freecam is active but the UI is hidden
     internal class FreecamCursorUnlocker : UIBase
     {
-        public FreecamCursorUnlocker() : base("freecam.cursor.unlocker.unityexplorer", () => { }) { }
+        public FreecamCursorUnlocker() : base("freecam.cursor.unlocker.cinematicunityexplorer", () => { }) { }
 
         public void Enable(){
             Enabled = true;

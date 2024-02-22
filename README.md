@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  🎥 Fork of the excellent UnityExplorer mod made by <a href="https://github.com/sinai-dev">sinai-dev</a> focused on providing tools for creating marketing material for Unity games. You can check out the fork features here.
+  🎥 Fork of the excellent UnityExplorer mod made by <a href="https://github.com/sinai-dev">sinai-dev</a> focused on providing tools for creating marketing material for Unity games. You can check out the fork features [here](#fork-features).
 </p>
 <p align="center">
   To see the forks features I have worked on so far check out the <a href="#fork-features">Fork Features</a> section.
@@ -15,26 +15,26 @@
   ✨ Powered by <a href="https://github.com/yukieiji/UniverseLib">UniverseLib</a>
 </p>
 
-# Releases  [![](https://img.shields.io/github/downloads/originalnicodr/UnityExplorer/total.svg)](../../releases)
+# Releases  [![](https://img.shields.io/github/downloads/originalnicodr/CinematicUnityExplorer/total.svg)](../../releases)
 
-[![](https://img.shields.io/github/release/originalnicodr/UnityExplorer.svg?label=version)](../../releases/latest) [![](https://img.shields.io/github/workflow/status/originalnicodr/UnityExplorer/Build%20UnityExplorer)](https://github.com/originalnicodr/UnityExplorer/actions) [![](https://img.shields.io/github/downloads/originalnicodr/UnityExplorer/latest/total.svg)](../../releases/latest)
+[![](https://img.shields.io/github/release/originalnicodr/CinematicUnityExplorer.svg?label=version)](../../releases/latest) [![](https://img.shields.io/github/workflow/status/originalnicodr/CinematicUnityExplorer/Build%20CinematicUnityExplorer)](https://github.com/originalnicodr/CinematicUnityExplorer/actions) [![](https://img.shields.io/github/downloads/originalnicodr/CinematicUnityExplorer/latest/total.svg)](../../releases/latest)
 
-⚡ Thunderstore releases: [BepInEx Mono](https://thunderstore.io/package/originalnicodr/UnityExplorer) | [BepInEx IL2CPP](https://gtfo.thunderstore.io/package/originalnicodr/UnityExplorer_IL2CPP) | [MelonLoader IL2CPP](https://boneworks.thunderstore.io/package/originalnicodr/UnityExplorer_IL2CPP_ML)
+⚡ Thunderstore releases: [BepInEx Mono](https://thunderstore.io/package/originalnicodr/CinematicUnityExplorer) | [BepInEx IL2CPP](https://gtfo.thunderstore.io/package/originalnicodr/CinematicUnityExplorer_IL2CPP) | [MelonLoader IL2CPP](https://boneworks.thunderstore.io/package/originalnicodr/CinematicUnityExplorer_IL2CPP_ML)
 
 ## Release schedule
 
-Nightly builds can be found [here](https://github.com/originalnicodr/UnityExplorer/actions).
+Nightly builds can be found [here](https://github.com/originalnicodr/CinematicUnityExplorer/actions).
 
 ## BepInEx
 
 | Release | IL2CPP(CoreCLR) | IL2CPP(Unhollower) | Mono |
 | ------- | ------ |  ------ | ---- |
-| BIE 6.X be.647+ | ✅ [link](https://github.com/originalnicodr/UnityExplorer/releases/latest/download/UnityExplorer.BepInEx.Unity.IL2CPP.CoreCLR.zip) | ✖️ n/a | ✅ [link](https://github.com/originalnicodr/UnityExplorer/releases/latest/download/UnityExplorer.BepInEx6.Unity.Mono.zip) |
-| BIE 6.X be.472 to be.577 | ✅ [link](https://github.com/originalnicodr/UnityExplorer/releases/latest/download/UnityExplorer.BepInEx.IL2CPP.CoreCLR.zip) | ✅ [link](https://github.com/originalnicodr/UnityExplorer/releases/latest/download/UnityExplorer.BepInEx.IL2CPP.zip)  | ✅ [link](https://github.com/originalnicodr/UnityExplorer/releases/latest/download/UnityExplorer.BepInEx6.Mono.zip) |
-| BIE 5.X | ✖️ n/a |  ✖️ n/a |  ✅ [link](https://github.com/originalnicodr/UnityExplorer/releases/latest/download/UnityExplorer.BepInEx5.Mono.zip) |
+| BIE 6.X be.647+ | ✅ [link](https://github.com/originalnicodr/CinematicUnityExplorer/releases/latest/download/CinematicUnityExplorer.BepInEx.Unity.IL2CPP.CoreCLR.zip) | ✖️ n/a | ✅ [link](https://github.com/originalnicodr/CinematicUnityExplorer/releases/latest/download/CinematicUnityExplorer.BepInEx6.Unity.Mono.zip) |
+| BIE 6.X be.472 to be.577 | ✅ [link](https://github.com/originalnicodr/CinematicUnityExplorer/releases/latest/download/CinematicUnityExplorer.BepInEx.IL2CPP.CoreCLR.zip) | ✅ [link](https://github.com/originalnicodr/CinematicUnityExplorer/releases/latest/download/CinematicUnityExplorer.BepInEx.IL2CPP.zip)  | ✅ [link](https://github.com/originalnicodr/CinematicUnityExplorer/releases/latest/download/CinematicUnityExplorer.BepInEx6.Mono.zip) |
+| BIE 5.X | ✖️ n/a |  ✖️ n/a |  ✅ [link](https://github.com/originalnicodr/CinematicUnityExplorer/releases/latest/download/CinematicUnityExplorer.BepInEx5.Mono.zip) |
 
 1. Unzip the release file into a folder
-2. Take the `plugins/originalnicodr-UnityExplorer` folder and place it in `BepInEx/plugins/`
+2. Take the `plugins/CinematicUnityExplorer` folder and place it in `BepInEx/plugins/`
 
 <i>Note: BepInEx 6 is obtainable via [builds.bepinex.dev](https://builds.bepinex.dev/projects/bepinex_be)</i>
 
@@ -42,9 +42,9 @@ Nightly builds can be found [here](https://github.com/originalnicodr/UnityExplor
 
 | Release | IL2CPP | Mono |
 | ------- | ------ | ---- |
-| ML 0.6.x  | ✅ [link](https://github.com/originalnicodr/UnityExplorer/releases/latest/download/UnityExplorer.MelonLoader.IL2CPP.CoreCLR.zip) | ✖️ |
-| ML 0.6(only alpha build)  | ✅ [link](https://github.com/originalnicodr/UnityExplorer/releases/latest/download/UnityExplorer.MelonLoader.IL2CPP.net6preview.zip) | ✖️ |
-| ML 0.5  | ✅ [link](https://github.com/originalnicodr/UnityExplorer/releases/latest/download/UnityExplorer.MelonLoader.IL2CPP.zip) | ✅ [link](https://github.com/originalnicodr/UnityExplorer/releases/latest/download/UnityExplorer.MelonLoader.Mono.zip) | 
+| ML 0.6.x  | ✅ [link](https://github.com/originalnicodr/CinematicUnityExplorer/releases/latest/download/CinematicUnityExplorer.MelonLoader.IL2CPP.CoreCLR.zip) | ✖️ |
+| ML 0.6(only alpha build)  | ✅ [link](https://github.com/originalnicodr/CinematicUnityExplorer/releases/latest/download/CinematicUnityExplorer.MelonLoader.IL2CPP.net6preview.zip) | ✖️ |
+| ML 0.5  | ✅ [link](https://github.com/originalnicodr/CinematicUnityExplorer/releases/latest/download/CinematicUnityExplorer.MelonLoader.IL2CPP.zip) | ✅ [link](https://github.com/originalnicodr/CinematicUnityExplorer/releases/latest/download/CinematicUnityExplorer.MelonLoader.Mono.zip) | 
 
 1. Unzip the release file into a folder
 2. Copy the DLL inside the `Mods` folder into your MelonLoader `Mods` folder
@@ -54,33 +54,33 @@ Nightly builds can be found [here](https://github.com/originalnicodr/UnityExplor
 
 | IL2CPP | Mono |
 | ------ | ---- |
-| ✅ [link](https://github.com/originalnicodr/UnityExplorer/releases/latest/download/UnityExplorer.Standalone.IL2CPP.zip) | ✅ [link](https://github.com/originalnicodr/UnityExplorer/releases/latest/download/UnityExplorer.Standalone.Mono.zip) | 
+| ✅ [link](https://github.com/originalnicodr/CinematicUnityExplorer/releases/latest/download/CinematicUnityExplorer.Standalone.IL2CPP.zip) | ✅ [link](https://github.com/originalnicodr/CinematicUnityExplorer/releases/latest/download/CinematicUnityExplorer.Standalone.Mono.zip) | 
 
 The standalone release can be used with any injector or loader of your choice, but it requires you to load the dependencies manually.
 
-1. Ensure the required libs are loaded - UniverseLib, HarmonyX and MonoMod. Take them from the [`UnityExplorer.Editor`](https://github.com/originalnicodr/UnityExplorer/releases/latest/download/UnityExplorer.Editor.zip) release if you need them.
+1. Ensure the required libs are loaded - UniverseLib, HarmonyX and MonoMod. Take them from the [`CinematicUnityExplorer.Editor`](https://github.com/originalnicodr/CinematicUnityExplorer/releases/latest/download/CinematicUnityExplorer.Editor.zip) release if you need them.
 2. For IL2CPP, load Il2CppAssemblyUnhollower and start an [Il2CppAssemblyUnhollower runtime](https://github.com/knah/Il2CppAssemblyUnhollower#required-external-setup)
-2. Load the UnityExplorer DLL
+2. Load the CinematicUnityExplorer DLL
 3. Create an instance of Unity Explorer with `UnityExplorer.ExplorerStandalone.CreateInstance();`
 4. Optionally subscribe to the `ExplorerStandalone.OnLog` event to handle logging if you wish
 
 ## Unity Editor
 
-1. Download the [`UnityExplorer.Editor`](https://github.com/originalnicodr/UnityExplorer/releases/latest/download/UnityExplorer.Editor.zip) release.
+1. Download the [`CinematicUnityExplorer.Editor`](https://github.com/originalnicodr/CinematicUnityExplorer/releases/latest/download/CinematicUnityExplorer.Editor.zip) release.
 2. Install the package, either by using the Package Manager and importing the `package.json` file, or by manually dragging the folder into your `Assets` folder.
-3. Drag the `Runtime/UnityExplorer` prefab into your scene, or create a GameObject and add the `Explorer Editor Behaviour` script to it.
+3. Drag the `Runtime/CinematicUnityExplorer` prefab into your scene, or create a GameObject and add the `Explorer Editor Behaviour` script to it.
 
 # Common issues and solutions
 
-Although UnityExplorer should work out of the box for most Unity games, in some cases you may need to tweak the settings for it to work properly.
+Although CinematicUnityExplorer should work out of the box for most Unity games, in some cases you may need to tweak the settings for it to work properly.
 
 To adjust the settings, open the config file:
-* BepInEx: `BepInEx\config\com.sinai.unityexplorer.cfg`
+* BepInEx: `BepInEx\config\com.originalnicodr.cinematicunityexplorer.cfg`
 * MelonLoader: `UserData\MelonPreferences.cfg`
-* Standalone: `originalnicodr-UnityExplorer\config.cfg`
+* Standalone: `CinematicUnityExplorer\config.cfg`
 
 Try adjusting the following settings and see if it fixes your issues:
-* `Startup_Delay_Time` - increase to 5-10 seconds (or more as needed), can fix issues with UnityExplorer being destroyed or corrupted during startup.
+* `Startup_Delay_Time` - increase to 5-10 seconds (or more as needed), can fix issues with CinematicUnityExplorer being destroyed or corrupted during startup.
 * `Disable_EventSystem_Override` - if input is not working properly, try setting this to `true`.
 
 If these fixes do not work, please create an issue in this repo and I'll do my best to look into it.
@@ -88,7 +88,7 @@ If these fixes do not work, please create an issue in this repo and I'll do my b
 # Features
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/originalnicodr/UnityExplorer/master/img/preview.png">
+  <a href="https://raw.githubusercontent.com/originalnicodr/CinematicUnityExplorer/master/img/preview.png">
     <img src="img/preview.png" />
   </a>
 </p>
@@ -133,7 +133,7 @@ The inspector is used to see detailed information on objects of any type and man
 ### C# Console
 
 * The C# Console uses the `Mono.CSharp.Evaluator` to define temporary classes or run immediate REPL code.
-* You can execute a script automatically on startup by naming it `startup.cs` and placing it in the `originalnicodr-UnityExplorer\Scripts\` folder (this folder will be created where you placed the DLL file).
+* You can execute a script automatically on startup by naming it `startup.cs` and placing it in the `CinematicUnityExplorer\Scripts\` folder (this folder will be created where you placed the DLL file).
 * See the "Help" dropdown in the C# console menu for more detailed information.
 
 ### Hook Manager
@@ -150,8 +150,8 @@ The inspector is used to see detailed information on objects of any type and man
 
 ### Freecam
 
-* UnityExplorer provides a basic Free Camera which you can control with your keyboard and mouse.
-* Unlike all other features of UnityExplorer, you can still use Freecam while UnityExplorer's menu is hidden.
+* CinematicUnityExplorer provides a basic Free Camera which you can control with your keyboard and mouse.
+* Unlike all other features of CinematicUnityExplorer, you can still use Freecam while CinematicUnityExplorer's menu is hidden.
 * Supports using the game's main Camera or a separate custom Camera.
 * See the Freecam panel for further instructions and details.
 
@@ -166,19 +166,19 @@ The inspector is used to see detailed information on objects of any type and man
 ### Settings
 
 * You can change the settings via the "Options" tab of the menu, or directly from the config file.
-  * BepInEx: `BepInEx\config\com.sinai.unityexplorer.cfg`
+  * BepInEx: `BepInEx\config\com.originalnicodr.cinematicunityexplorer.cfg`
   * MelonLoader: `UserData\MelonPreferences.cfg`
-  * Standalone `{DLL_location}\originalnicodr-UnityExplorer\config.cfg`
+  * Standalone `{DLL_location}\CinematicUnityExplorer\config.cfg`
 
 # Building
 
-1. Run the `build.ps1` powershell script to build UnityExplorer. Releases are found in the `Release` folder.
+1. Run the `build.ps1` powershell script to build CinematicUnityExplorer. Releases are found in the `Release` folder.
 
 Building individual configurations from your IDE is fine, though note that the intial build process builds into `Release/<version>/...` instead of the subfolders that the powershell script uses. Batch building is not currently supported with the project.
 
 # Fork Features
 
-Keep in mind this is a WIP and I am still working on ironing out some stuff. To see the things I want to improve head out to the [issues page](https://github.com/originalnicodr/UnityExplorer/issues).
+Keep in mind this is a WIP and I am still working on ironing out some stuff. To see the things I want to improve head out to the [issues page](https://github.com/originalnicodr/CinematicUnityExplorer/issues).
 
 ## Improved Freecam
 
@@ -217,4 +217,4 @@ Features include:
 
 ### Disclaimer
 
-UnityExplorer is in no way associated with Unity Technologies. "Unity", Unity logos, and other Unity trademarks are trademarks or registered trademarks of Unity Technologies or its affiliates in the U.S. and elsewhere.
+CinematicUnityExplorer is in no way associated with Unity Technologies. "Unity", Unity logos, and other Unity trademarks are trademarks or registered trademarks of Unity Technologies or its affiliates in the U.S. and elsewhere.

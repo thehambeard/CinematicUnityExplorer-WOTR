@@ -1,19 +1,23 @@
 {
-  "name": "com.sinai-dev.unityexplorer",
-  "version": "4.7.12",
-  "displayName": "UnityExplorer",
-  "description": "An in-game UI for exploring, debugging and modifying Unity games.",
+  "name": "com.originalnicodr.cinematicunityexplorer",
+  "version": "1.0.0",
+  "displayName": "CinematicUnityExplorer",
+  "description": "UnityExplorer fork focused on providing tools for creating marketing material for Unity games.",
   "unity": "2017.1",
-  "documentationUrl": "https://github.com/sinai-dev/UnityExplorer",
-  "changelogUrl": "https://github.com/sinai-dev/UnityExplorer/releases",
-  "licensesUrl": "https://github.com/sinai-dev/UnityExplorer/blob/master/LICENSE",
+  "documentationUrl": "https://github.com/originalnicodr/UnityExplorer",
+  "changelogUrl": "https://github.com/originalnicodr/UnityExplorer/releases",
+  "licensesUrl": "https://github.com/originalnicodr/UnityExplorer/blob/master/LICENSE",
   "keywords": [
     "inspector",
     "debug",
-    "runtime"
+    "runtime",
+    "camera-tools",
+    "cinematic",
+    "freecam",
+    "photomode"
   ],
   "author": {
-    "name": "Sinai",
-    "url": "https://github.com/sinai-dev"
+    "name": "originalnicodr",
+    "url": "https://github.com/originalnicodr"
   }
 }

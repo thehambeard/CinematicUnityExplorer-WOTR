@@ -62,7 +62,7 @@ The inspector is used to see detailed information on objects of any type and man
 ### Settings
 
 * You can change the settings via the "Options" tab of the menu, or directly from the config file.
-  * <AssetsFolder>/sinai-dev-UnityExplorer~/config.cfg
+  * <AssetsFolder>/CinematicUnityExplorer~/config.cfg
 
 # Acknowledgments
 

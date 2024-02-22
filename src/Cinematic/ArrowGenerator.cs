@@ -31,7 +31,7 @@ namespace UnityExplorer
 
             cylinder.transform.rotation = Quaternion.LookRotation(Vector3.back, Vector3.up);
 
-            GameObject arrow = new GameObject("UE-Arrow");
+            GameObject arrow = new GameObject("CUE-Arrow");
             cylinder.transform.SetParent(arrow.transform, true);
             arrow.transform.position = arrowPosition;
             arrow.transform.rotation = arrowRotation;
@@ -57,7 +57,7 @@ namespace UnityExplorer
         }
 
         private static void ChangeArrowColor(Light __instance, Color __0){
-            if (!__instance.name.Contains("UE - Light"))
+            if (!__instance.name.Contains("CUE - Light"))
                 return;
 
             Renderer[] renderers = __instance.GetComponentsInChildren<Renderer>();

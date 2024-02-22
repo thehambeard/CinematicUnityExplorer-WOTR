@@ -11,7 +11,7 @@ namespace UnityExplorer.Config
         // See the UnityExplorer.Loader namespace for the implementations.
         public static ConfigHandler Handler { get; private set; }
 
-        // Actual UE Settings
+        // Actual CUE Settings
         public static ConfigElement<KeyCode> Master_Toggle;
         public static ConfigElement<bool> Hide_On_Startup;
         public static ConfigElement<float> Startup_Delay_Time;
@@ -103,12 +103,12 @@ namespace UnityExplorer.Config
 
         private static void CreateConfigElements()
         {
-            Master_Toggle = new("UnityExplorer Toggle",
-                "The key to enable or disable UnityExplorer's menu and features.",
+            Master_Toggle = new("CinematicUnityExplorer Toggle",
+                "The key to enable or disable CinematicUnityExplorer's menu and features.",
                 KeyCode.F7);
 
             Hide_On_Startup = new("Hide On Startup",
-                "Should UnityExplorer be hidden on startup?",
+                "Should CinematicUnityExplorer be hidden on startup?",
                 false);
 
             Startup_Delay_Time = new("Startup Delay Time",
@@ -116,26 +116,26 @@ namespace UnityExplorer.Config
                 1f);
 
             Target_Display = new("Target Display",
-                "The monitor index for UnityExplorer to use, if you have multiple. 0 is the default display, 1 is secondary, etc. " +
+                "The monitor index for CinematicUnityExplorer to use, if you have multiple. 0 is the default display, 1 is secondary, etc. " +
                 "Restart recommended when changing this setting. Make sure your extra monitors are the same resolution as your primary monitor.",
                 0);
 
             Force_Unlock_Mouse = new("Force Unlock Mouse",
-                "Force the Cursor to be unlocked (visible) when the UnityExplorer menu is open.",
+                "Force the Cursor to be unlocked (visible) when the CinematicUnityExplorer menu is open.",
                 true);
             Force_Unlock_Mouse.OnValueChanged += (bool value) => UniverseLib.Config.ConfigManager.Force_Unlock_Mouse = value;
 
             Force_Unlock_Toggle = new("Force Unlock Toggle Key",
-                "The keybind to toggle the 'Force Unlock Mouse' setting. Only usable when UnityExplorer is open.",
+                "The keybind to toggle the 'Force Unlock Mouse' setting. Only usable when CinematicUnityExplorer is open.",
                 KeyCode.None);
 
             Disable_EventSystem_Override = new("Disable EventSystem override",
-                "If enabled, UnityExplorer will not override the EventSystem from the game.\n<b>May require restart to take effect.</b>",
+                "If enabled, CinematicUnityExplorer will not override the EventSystem from the game.\n<b>May require restart to take effect.</b>",
                 false);
             Disable_EventSystem_Override.OnValueChanged += (bool value) => UniverseLib.Config.ConfigManager.Disable_EventSystem_Override = value;
 
             Default_Output_Path = new("Default Output Path",
-                "The default output path when exporting things from UnityExplorer.",
+                "The default output path when exporting things from CinematicUnityExplorer.",
                 Path.Combine(ExplorerCore.ExplorerFolder, "Output"));
 
             DnSpy_Path = new("dnSpy Path",
@@ -143,15 +143,15 @@ namespace UnityExplorer.Config
                 @"C:/Program Files/dnspy/dnSpy.exe");
 
             Main_Navbar_Anchor = new("Main Navbar Anchor",
-                "The vertical anchor of the main UnityExplorer Navbar, in case you want to move it.",
+                "The vertical anchor of the main CinematicUnityExplorer Navbar, in case you want to move it.",
                 UIManager.VerticalAnchor.Top);
 
             Log_Unity_Debug = new("Log Unity Debug",
-                "Should UnityEngine.Debug.Log messages be printed to UnityExplorer's log?",
+                "Should UnityEngine.Debug.Log messages be printed to CinematicUnityExplorer's log?",
                 false);
 
             Log_To_Disk = new("Log To Disk",
-                "Should UnityExplorer save log files to the disk?",
+                "Should CinematicUnityExplorer save log files to the disk?",
                 true);
 
             World_MouseInspect_Keybind = new("World Mouse-Inspect Keybind",
@@ -189,7 +189,7 @@ namespace UnityExplorer.Config
 
             Screenshot = new("Take a screenshot",
                 "Takes a screenshot with the size multiplier specified in the Misc panel.\n" +
-                "Saves the screenshot to 'sinai-dev-UnityExplorer\\Screenshots' in png format.",
+                "Saves the screenshot to 'CinematicUnityExplorer\\Screenshots' in png format.",
                 KeyCode.None);
 
             HUD_Toggle = new("HUD Toggle",

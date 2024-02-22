@@ -10,16 +10,16 @@ body:
   - type: checkboxes
     id: latestversion
     attributes:
-      label: Are you on the latest version of UnityExplorer?
+      label: Are you on the latest version of CinematicUnityExplorer?
       description: If not, you must update first.
       options:
-        - label: Yes, I'm on the latest version of UnityExplorer.
+        - label: Yes, I'm on the latest version of CinematicUnityExplorer.
           required: true
   - type: dropdown
     id: version
     attributes:
       label: Which release are you using?
-      description: Please select your environment for UnityExplorer.
+      description: Please select your environment for CinematicUnityExplorer.
       options:
         - BepInEx IL2CPP
         - BepInEx IL2CPP CoreCLR
@@ -59,7 +59,7 @@ body:
         * Unity log: `%userprofile%\AppData\LocalLow\{Company}\{Game}\Player.log` or `output_log.txt`
         * BepInEx: `BepInEx\LogOutput.log`
         * MelonLoader: `MelonLoader\latest.log`
-        * Standalone: `{DLL_Location}\UnityExplorer\Logs\` (pick the most recent one)
+        * Standalone: `{DLL_Location}\CinematicUnityExplorer\Logs\` (pick the most recent one)
       render: shell
     validations:
       required: false

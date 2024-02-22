@@ -76,7 +76,7 @@ namespace UnityExplorer.UI.Panels
         private void CopyLight(){
             GameObject newLight = UnityEngine.Object.Instantiate(light);
             CopyFreeCamTransform(newLight);
-            newLight.name = $"UE - Light {GetLightsManagerPanel().lightCounter}";
+            newLight.name = $"CUE - Light {GetLightsManagerPanel().lightCounter}";
 
             GetLightsManagerPanel().CreatedLights.Add(newLight);
             GetLightsManagerPanel().lightsScrollPool.Refresh(true, false);

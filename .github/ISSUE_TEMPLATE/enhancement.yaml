@@ -1,12 +1,12 @@
 name: New feature or enhancement
-description: Suggest or discuss a feature or enhancement for UnityExplorer
+description: Suggest or discuss a feature or enhancement for CinematicUnityExplorer
 title: "[Enhancement]: "
 labels: [enhancement]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to discuss UnityExplorer, please provide as much detail as possible.
+        Thanks for taking the time to discuss CinematicUnityExplorer, please provide as much detail as possible.
   - type: textarea
     id: description
     attributes:

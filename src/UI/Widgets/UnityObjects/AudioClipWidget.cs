@@ -150,7 +150,7 @@ namespace UnityExplorer.UI.Widgets
             if (AudioPlayerObject)
                 return;
 
-            AudioPlayerObject = new GameObject("UnityExplorer.AudioPlayer");
+            AudioPlayerObject = new GameObject("CinematicUnityExplorer.AudioPlayer");
             UnityEngine.Object.DontDestroyOnLoad(AudioPlayerObject);
             AudioPlayerObject.hideFlags = HideFlags.HideAndDontSave;
             AudioPlayerObject.transform.position = new(int.MinValue, int.MinValue); // move it as far away as possible

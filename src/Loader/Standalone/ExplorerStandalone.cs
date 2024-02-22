@@ -45,24 +45,24 @@ namespace UnityExplorer
         Action<object> IExplorerLoader.OnLogError   => (object log) => { OnLog?.Invoke(log?.ToString() ?? "", LogType.Error); };
 
         /// <summary>
-        /// Call this to initialize UnityExplorer without adding a log listener or Unhollowed modules path.
-        /// The default Unhollowed path "sinai-dev-UnityExplorer\Modules\" will be used.
+        /// Call this to initialize CinematicUnityExplorer without adding a log listener or Unhollowed modules path.
+        /// The default Unhollowed path "CinematicUnityExplorer\Modules\" will be used.
         /// </summary>
         /// <returns>The new (or active, if one exists) instance of ExplorerStandalone.</returns>
         public static ExplorerStandalone CreateInstance() => CreateInstance(null, null);
 
         /// <summary>
-        /// Call this to initialize UnityExplorer and add a listener for UnityExplorer's log messages, without specifying an Unhollowed modules path.
-        /// The default Unhollowed path "sinai-dev-UnityExplorer\Modules\" will be used.
+        /// Call this to initialize CinematicUnityExplorer and add a listener for CinematicUnityExplorer's log messages, without specifying an Unhollowed modules path.
+        /// The default Unhollowed path "CinematicUnityExplorer\Modules\" will be used.
         /// </summary>
-        /// <param name="logListener">Your log listener to handle UnityExplorer logs.</param>
+        /// <param name="logListener">Your log listener to handle CinematicUnityExplorer logs.</param>
         /// <returns>The new (or active, if one exists) instance of ExplorerStandalone.</returns>
         public static ExplorerStandalone CreateInstance(Action<string, LogType> logListener) => CreateInstance(logListener, null);
 
         /// <summary>
-        /// Call this to initialize UnityExplorer with the provided log listener and Unhollowed modules path.
+        /// Call this to initialize CinematicUnityExplorer with the provided log listener and Unhollowed modules path.
         /// </summary>
-        /// <param name="logListener">Your log listener to handle UnityExplorer logs.</param>
+        /// <param name="logListener">Your log listener to handle CinematicUnityExplorer logs.</param>
         /// <param name="unhollowedModulesPath">The path of the Unhollowed modules, either relative or absolute.</param>
         /// <returns>The new (or active, if one exists) instance of ExplorerStandalone.</returns>
         public static ExplorerStandalone CreateInstance(Action<string, LogType> logListener, string unhollowedModulesPath)

@@ -367,7 +367,7 @@ namespace UnityExplorer.Inspectors
             }
             else
             {
-                Notification.ShowMessage($"Please set a valid dnSpy path in UnityExplorer Settings.");
+                Notification.ShowMessage($"Please set a valid dnSpy path in CinematicUnityExplorer Settings.");
             }
         }
 

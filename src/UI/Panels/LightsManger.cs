@@ -114,7 +114,7 @@ namespace UnityExplorer.UI.Panels
                 foreach(UnityEngine.Light light in gameLights)
                 {   
                     //We want to avoid grabbing our own lights
-                    if(!light.name.Contains("UE - Light")){
+                    if(!light.name.Contains("CUE - Light")){
                         vanillaGameLights.Add(light);
                         light.enabled = false;
                     }
@@ -131,7 +131,7 @@ namespace UnityExplorer.UI.Panels
         }
 
         private void CreateLight(LightType requestedType){
-            GameObject obj = new($"UE - Light {lightCounter}");
+            GameObject obj = new($"CUE - Light {lightCounter}");
             //DontDestroyOnLoad(obj);
             obj.hideFlags = HideFlags.HideAndDontSave;
             Light lightComponent = obj.AddComponent<UnityEngine.Light>();

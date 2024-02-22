@@ -57,7 +57,7 @@ namespace UnityExplorer.UI.Panels
 
         private void SetupIO()
         {
-            string fileName = $"UnityExplorer {DateTime.Now:u}.txt";
+            string fileName = $"CinematicUnityExplorer {DateTime.Now:u}.txt";
             fileName = IOUtility.EnsureValidFilename(fileName);
             string path = Path.Combine(ExplorerCore.ExplorerFolder, "Logs");
             CurrentStreamPath = IOUtility.EnsureValidFilePath(Path.Combine(path, fileName));

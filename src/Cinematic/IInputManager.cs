@@ -320,7 +320,7 @@ namespace UniverseLib.Input
         public static void OverrideMouseButton(ref bool __result, ref int button)
         {
             getMouseButton[button] = __result;
-            // Since UnityExplorer uses Unity's native UI for its menu, we can't switch off the mouse interaction with it on this wrapper.
+            // Since CinematicUnityExplorer uses Unity's native UI for its menu, we can't switch off the mouse interaction with it on this wrapper.
             // Therefore, if we still want to interact with the Unity Explorer menu we would need to let the button action pass through when it's open.
             if (FreeCamPanel.ShouldOverrideInput() && !(button == 0 && UIManager.ShowMenu)){
                 __result = false;
@@ -330,7 +330,7 @@ namespace UniverseLib.Input
         public static void OverrideMouseButtonDown(ref bool __result, ref int button)
         {
             getMouseButtonDown[button] = __result;
-            // Since UnityExplorer uses Unity's native UI for its menu, we can't switch off the mouse interaction with it on this wrapper.
+            // Since CinematicUnityExplorer uses Unity's native UI for its menu, we can't switch off the mouse interaction with it on this wrapper.
             // Therefore, if we still want to interact with the Unity Explorer menu we would need to let the button action pass through when it's open.
             if (FreeCamPanel.ShouldOverrideInput() && !(button == 0 && UIManager.ShowMenu)){
                 __result = false;
