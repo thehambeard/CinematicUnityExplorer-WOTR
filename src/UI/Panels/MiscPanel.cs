@@ -178,7 +178,7 @@ namespace UnityExplorer.UI.Panels
 
                 List<Light> vanillaLights = RuntimeHelper.FindObjectsOfTypeAll(typeof(Light))
                 .Select(obj => obj.TryCast<Light>())
-                .Where(l => !l.name.Contains("UE - Light") && l.isActiveAndEnabled)
+                .Where(l => !l.name.Contains("CUE - Light") && l.isActiveAndEnabled)
                 .ToList();
 
                 foreach (Light light in vanillaLights){
@@ -203,7 +203,7 @@ namespace UnityExplorer.UI.Panels
 
                 List<Light> vanillaLights = RuntimeHelper.FindObjectsOfTypeAll(typeof(Light))
                 .Select(obj => obj.TryCast<Light>())
-                .Where(l => !l.name.Contains("UE - Light") && l.isActiveAndEnabled)
+                .Where(l => !l.name.Contains("CUE - Light") && l.isActiveAndEnabled)
                 .ToList();
 
                 foreach (Light light in vanillaLights){
@@ -217,7 +217,7 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        // We use an enum to walk a series of steps in each frame, so we can take the screenshot without UnityExplorer UI.
+        // We use an enum to walk a series of steps in each frame, so we can take the screenshot without CinematicUnityExplorer UI.
         public void MaybeTakeScreenshot(){
             if (captureScreenshotFunction != null){
                 switch (screenshotStatus){
