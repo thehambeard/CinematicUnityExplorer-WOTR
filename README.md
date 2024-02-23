@@ -3,10 +3,10 @@
 </p>
 
 <p align="center">
-  🎥 Fork of the excellent UnityExplorer mod made by <a href="https://github.com/sinai-dev">sinai-dev</a> focused on providing tools for creating marketing material for Unity games. You can check out the fork features [here](#fork-features).
+  🎥 Fork of the excellent UnityExplorer mod made by <a href="https://github.com/sinai-dev">sinai-dev</a> focused on providing tools for creating marketing material for Unity games.
 </p>
 <p align="center">
-  To see the forks features I have worked on so far check out the <a href="#fork-features">Fork Features</a> section.
+  To see the forks features I have worked on so far check out the <a href="#features">Features</a> section.
 </p>
 <p align="center">
   ✔️ Supports most Unity versions from 5.2 to 2021+ (IL2CPP and Mono).
@@ -85,7 +85,137 @@ Try adjusting the following settings and see if it fixes your issues:
 
 If these fixes do not work, please create an issue in this repo and I'll do my best to look into it.
 
+
+# Default Hotkeys
+
+The table below describes all of the relevant default hotkeys. You can edit them to your liking by going to the Options panel, changing the hotkeys you want, and saving the settings.
+
+Feature | Key
+-|-
+Freecam | `Insert`
+Move the camera forward/left/right/backward | `W`/`A`/`S`/`D` - `UpArrow`/`LeftArrow`/`RightArrow`/`DownArrow`
+Move the camera upwards | `Space`
+Move the camera downwards | `LeftControl`
+Speed up movement | `LeftShift`
+Speed down movement | `LeftAlt`
+Change freecam orientation | Right mouse click
+Tilt left | `Numpad 1`
+Tilt right | `Numpad 3`
+Reset tilt | `Numpad 2`
+Increase FOV | `Numpad +`
+Decrease FOV | `Numpad -`
+Reset FOV | `Numpad *`
+Pause | `PageUp`
+Block Freecam movement and rotation | `Home`
+Block games input | `Numpad .`
+Frameskip | `PageDown`
+HUD Toggle | `Delete`
+Freeze NPC animations | `Numpad 0`
+
 # Features
+
+The following are the features I developed for this fork. All focused on making things easier for capture artists to get marketing material for studios.
+
+If you found a bug or a problem (or want to see the things I want to work on) head over to the [issues page](https://github.com/originalnicodr/CinematicUnityExplorer/issues).
+
+## Improved Freecam
+
+The original Unity Explorer had a Freecam feature, but even if it was useful at the time it had a lot of quirks that could be ironed out, so I did. The following are the changes and improvements I made over the original UnityExplorer freecam:
+
+- The Freecam can now move when the game is paused.
+- Added tilt support.
+- Added FOV control support.
+- Added near and far clip sliders on the Freecam panel, to cut out objects near the camera out of view, or include more scene objects on sight.
+- Automatically disable the Cinemachine component if present when using the gameplay camera, to avoid the game from trying to take control.
+- Added a toggle to block the freecam from moving with user input.
+- Unlocked the mouse on freecam even when the mod UI is hidden.
+- The freecam resets its position and orientation when changing scenes, to avoid getting it into weird locations when turning it on again after switching levels.
+- Blocked rotation from going further when looking directly up or directly down.
+
+### Follow Object
+You can click on the "Follow object" button on the panel and select the object you want to follow on screen or click on the "Follow object" button in the inspector screen for more granularity. Should be useful for creating motion blur, or to use alongside the [camera paths](#camera-paths).
+
+### Game input block for Unity's legacy system
+Added game input block for Unity's legacy system. You can now block (or unblock) the game's input when using the freecam, as long as the game is using the Unity Legacy Input system. If the game uses a custom solution or the latest Unity system then this won't work. Implementing this for Unity's new system is in the backlog, so if you find a game using it (should say "Initialized new InputSystem support." on the logs) then please let me know so I can implement it using that game!
+
+## Lights manager
+It allows you to spawn spotlights and pointlights, as well as toggle the game's original lights to allow you to relight the scene however you want (a task that is pretty common for screenshots and lighting artists). Please note that this only turns off scene lights and won't turn off ambient light or lights created by emissive materials, effects, or shaders.
+
+<p align="center">
+  <a href="https://raw.githubusercontent.com/originalnicodr/CinematicUnityExplorer/master/img/lights_demo.jpg">
+    <img src="img/lights_demo.jpg" />
+  </a>
+</p>
+
+You can edit the light parameters by clicking on the "Config" button. There might be a ton of stuff there, but you would want to focus on these properties:
+
+- **Intensity**: How strong the light is. 
+- **Range**: How far the light travels.
+- **Color**: Pretty self explanatory.
+- **Color Temperature**: In case you want to use more natural colors. You would also need to enable the `useColorTemperature` property.
+- **Spot Angle**: The angle of the spotlight (bigger means wider).
+
+If you want to move an already created light you can use the "Move to Camera" option after positioning the camera. But if you need to fine-tune its position or orientation you can do so by clicking on the "Config" button, "Inspect Game Object", and editing the position and rotation from there.
+
+There also is a default intensity input field on the panel. Since the intensity varies a lot from game to game you have to increase/decrease this property on a light until it looks right, and once you figure out a value that works for your game you can write it as the default intensity and don't have to edit it on the new lights you spawn from that point.
+
+### Visualizer
+You can also draw an arrow or sphere representing the light source from spotlights and point lights respectively, to understand your light setups better. To do so click on the "Toggle visualizer" button on a light in the panel.
+
+## Camera paths
+It allows you to create nodes to build camera paths for videos and cinematics. Features include:
+
+- Add and delete camera path nodes.
+- Copy camera position and rotation to an existing node.
+- Copy camera FoV to an existing node.
+- Change the camera position and rotation to the ones in an existing node.
+- Specify the time it takes the camera to complete the path (as long as the game is playing at capped 60fps), defining its speed in the process.
+- Close the camera path in a loop toggler.
+- Unpause on play toggler.
+- Pause on finish toggler.
+- Wait 3 seconds before start toggler.
+- Move nodes up or down on the list.
+- Control over the tension and alpha values of the path, which are curve constants that change the resulting path created from the nodes. Their effect can be clearly seen when visualizing the path, as explained below.
+
+As a side note, the mod UI will be disabled once the path starts, to ease video recording.
+
+### Visualizer
+Similarly to the Light Manager, you can visualize a camera path with arrows, whose origin and orientation represent the position and orientation that the camera will have at that point in the curve. You can turn this on by clicking on the "Visualize path" checkbox. Keep in mind that this will be turned off once the path starts playing since its purpose is to help the user set up the path itself.
+
+## Post-processing panel
+It loads all the current vanilla post-processing effects being used and offers togglers to disable them. It also lets you inspect the postprocessing objects yourself if you want to edit their parameters instead.
+
+[Shader toggler](https://github.com/FransBouma/ShaderToggler) would still be preferred (especially as it will be able to catch custom effects that this mod can't), but it might still be useful for some.
+
+## Animator
+Allows you to manually play characters and NPC animations in a scene. This should be pretty useful for getting the right animation on each enemy to set up marketing screenshots.
+
+The Animator Panel also allows you to freeze all characters in a scene all at once, alongside giving you control over which characters should ignore the master toggler. That way you can make the playable character avoid getting frozen, or avoid un-freezing NPCs or enemies that already have the animations you want them to have.
+
+Alongside all of this, you can also open each character game object by clicking on their names, so you can move, rotate, scale them around, disable them, or further edit their properties and child objects.
+
+## Misc Panel
+- HUD toggle.
+- Force high LODs toggle. This means that the highest models possible will be forced on all meshes.
+- Screenshot support. Allows you to momentarily render the game at a higher resolution than the one being used and take a screenshot. You can enter the multiplier of the current resolution at which the screenshot should render in the "Supersize" field.
+  - Unity games tend to be easily [hotsampeable](https://framedsc.com/basics.htm#hotsampling), but I still thought it could be useful for people who do marketing work and don't use Reshade effects on their work. Please take in mind that using this function will not save the screenshot with Reshade effects, as these get rendered outside of the engine.
+  - Screenshots are saved inside `BepInEx\plugins\CinematicUnityExplorer\Screenshots` by default, in png format.
+  - You can also set up a hotkey for it on the Options panel.
+- Toggle to make all meshes cast and receive shadows.
+- Toggle to make all game lights emit shadows.
+- Toggle to change the resolution of shadows generated by the game's vanilla lights. Beware using this one with the two options from above. Also, take in mind that lights created with the Light Manager already generate high-resolution shadows.
+
+## And more!
+- Refactored the pause to make it more reliable.
+- Hotkey to pause the game.
+- Added a slider to the TimeScale.
+- Frameskip. Once the game is paused you can press the frameskip hotkey to skip one frame, to get just the right animation for your action shots.
+- Added assignable hotkeys on the Options panel, all of which are displayed on the freecam panel.
+- Made the mod UI scale with higher resolutions.
+
+# Vanilla UnityExplorer Features
+
+The following are features from the original UnityExplorer project which I have not made myself.
 
 <p align="center">
   <a href="https://raw.githubusercontent.com/originalnicodr/CinematicUnityExplorer/master/img/preview.png">
@@ -176,42 +306,10 @@ The inspector is used to see detailed information on objects of any type and man
 
 Building individual configurations from your IDE is fine, though note that the intial build process builds into `Release/<version>/...` instead of the subfolders that the powershell script uses. Batch building is not currently supported with the project.
 
-# Fork Features
-
-Keep in mind this is a WIP and I am still working on ironing out some stuff. To see the things I want to improve head out to the [issues page](https://github.com/originalnicodr/CinematicUnityExplorer/issues).
-
-## Improved Freecam
-
-- The Freecam can now move when the game is paused.
-- Added tilt support for the camera with `Q` / `E`
-- Added FoV control support with `Numpad +` / `Numpad -`
-- Added another modifier key to move the camera in smaller increments `Alt`
-- Added a hotkey to pause the game with `Pause` (also called `Break`)
-
-## Lights manager
-
-It allows you to spawn PointLights and SpotLights, as well as toggle the game's original lights to allow you to relight the scene however you want (a task that is pretty common for screenshots and lighting artists). Please note that this only turns off scene lights and won't turn off ambient light, lights created by emissive materials, effects, or shaders.
-
-You can edit the light parameters by opening the object in the Object Explorer tab for now, but I plan on creating its own window to trim the available settings to only the things the user would be interested in.
-
-If you want to move an already created light you can use the "Move to Camera" option after positioning the camera. But if you need to fine-tune its position or orientation you can do so by moving clicking on the Config button, Inspect Game Object, and editing the position and rotation there.
-
-## Camera paths
-
-It allows you to create nodes to build camera paths for videos and cinematics.
-
-Features include:
-
-- Add and delete camera nodes
-- Copy camera position and rotation to a node
-- Copy camera FoV to a node
-- Move the camera position and rotation to the ones in the node
-- Edit the number of frames it takes the camera to move from one specific node to the next.
-- Close the camera path in a loop
-
 # Acknowledgments
 
-* [Sinai-dev](https://github.com/sinai-dev/) for his incredible work on the original UnityExplorer.
+* [sinai-dev](https://github.com/sinai-dev/) for their incredible work on the original UnityExplorer.
+* [yukieiji](https://github.com/yukieiji/) for their awesome work on mainting [their fork](https://github.com/yukieiji/UnityExplorer) of UnityExplorer giving support to new versions of the engine.
 * [ManlyMarco](https://github.com/ManlyMarco) for [Runtime Unity Editor](https://github.com/ManlyMarco/RuntimeUnityEditor) \[[license](THIRDPARTY_LICENSES.md#runtimeunityeditor-license)\], the ScriptEvaluator from RUE's REPL console was used as the base for UnityExplorer's C# console.
 * [Geoffrey Horsington](https://github.com/ghorsington) for [mcs-unity](https://github.com/sinai-dev/mcs-unity) \[no license\], used as the `Mono.CSharp` reference for the C# Console.
 
