@@ -17,7 +17,7 @@
 
 # Releases  [![](https://img.shields.io/github/downloads/originalnicodr/CinematicUnityExplorer/total.svg)](../../releases)
 
-[![](https://img.shields.io/github/release/originalnicodr/CinematicUnityExplorer.svg?label=version)](../../releases/latest) [![](https://img.shields.io/github/workflow/status/originalnicodr/CinematicUnityExplorer/Build%20CinematicUnityExplorer)](https://github.com/originalnicodr/CinematicUnityExplorer/actions) [![](https://img.shields.io/github/downloads/originalnicodr/CinematicUnityExplorer/latest/total.svg)](../../releases/latest)
+[![](https://img.shields.io/github/release/originalnicodr/CinematicUnityExplorer.svg?label=version)](../../releases/latest) [![](https://img.shields.io/github/actions/workflow/status/originalnicodr/CinematicUnityExplorer/dotnet.yml)](https://github.com/originalnicodr/CinematicUnityExplorer/actions) [![](https://img.shields.io/github/downloads/originalnicodr/CinematicUnityExplorer/latest/total.svg)](../../releases/latest)
 
 ⚡ Thunderstore releases: [BepInEx Mono](https://thunderstore.io/package/originalnicodr/CinematicUnityExplorer) | [BepInEx IL2CPP](https://gtfo.thunderstore.io/package/originalnicodr/CinematicUnityExplorer_IL2CPP) | [MelonLoader IL2CPP](https://boneworks.thunderstore.io/package/originalnicodr/CinematicUnityExplorer_IL2CPP_ML)
 
@@ -212,6 +212,12 @@ Alongside all of this, you can also open each character game object by clicking 
 - Frameskip. Once the game is paused you can press the frameskip hotkey to skip one frame, to get just the right animation for your action shots.
 - Added assignable hotkeys on the Options panel, all of which are displayed on the freecam panel.
 - Made the mod UI scale with higher resolutions.
+
+# Why a fork instead of making a new mod?
+
+It wasn't the original intention to develop this fork to its current state. I just wanted to make it easier for me and my friends to take screenshots of Unity games and it rolled from there. It is in fact true that me modifying an already existing generic mod streamlined things instead of doing everything from zero, but it's also true that some of UnityExplorer vanilla functionality is useful for doing marketing-related stuff as well.
+
+Maybe I would make a separate version one day, but for now, it is what it is.
 
 # Vanilla UnityExplorer Features
 
