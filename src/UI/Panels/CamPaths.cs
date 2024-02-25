@@ -185,7 +185,7 @@ namespace UnityExplorer.UI.Panels
             alphaCatmullRomSlider.value = alphaCatmullRomValue;
             alphaCatmullRomSlider.onValueChanged.AddListener((newAlpha) => {
                 alphaCatmullRomValue = newAlpha;
-                alphaCatmullRomInput.Text = alphaCatmullRomValue.ToString();
+                alphaCatmullRomInput.Text = alphaCatmullRomValue.ToString("0.00");
 
                 MaybeRedrawPath();
             });
@@ -202,7 +202,7 @@ namespace UnityExplorer.UI.Panels
             tensionCatmullRomSlider.value = tensionCatmullRomValue;
             tensionCatmullRomSlider.onValueChanged.AddListener((newTension) => {
                 tensionCatmullRomValue = newTension;
-                tensionCatmullRomInput.Text = tensionCatmullRomValue.ToString();
+                tensionCatmullRomInput.Text = tensionCatmullRomValue.ToString("0.00");
 
                 MaybeRedrawPath();
             });

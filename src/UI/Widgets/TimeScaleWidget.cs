@@ -31,26 +31,35 @@ namespace UnityExplorer.UI.Widgets
         bool pause;
         Slider slider;
 
+        bool shouldSliderUnpauseOnValueChange = true;
+        float previousDesiredTime;
+        bool previousLocked;
+
         public void Update()
         {
-            // Fallback in case Time.timeScale patch failed for whatever reason
+            // Force the timescale in case the game tries force it for us
             if (locked)
                 SetTimeScale(desiredTime);
 
-            if (!timeInput.Component.isFocused)
-                timeInput.Text = Time.timeScale.ToString("F2");
+            //if (!timeInput.Component.isFocused)
+            //    timeInput.Text = Time.timeScale.ToString("F2");
         }
 
         public void PauseToggle(){
-            pause = !pause;
-            if (!pause) {
-                SetTimeScale(1f); //or previous timescale
-            }
-            locked = pause;
-            desiredTime = pause ? 0f : 1f;
-            slider.value = desiredTime;
+            // If not paused but moved the slider to 0, consider that as it being paused
+            if (desiredTime == 0 && locked && !pause) pause = true;
 
-            UpdatePauseButton();
+            pause = !pause;
+
+            locked = pause ? true : previousLocked;
+            UpdateLockedButton();
+            desiredTime = pause ? 0f : previousDesiredTime;
+            // We assume the vanilla game speed was 1f before editing it
+            SetTimeScale(locked ? desiredTime : 1f);
+
+            shouldSliderUnpauseOnValueChange = false;
+            slider.value = desiredTime;
+            shouldSliderUnpauseOnValueChange = true;
         }
 
         public bool IsPaused(){
@@ -70,31 +79,35 @@ namespace UnityExplorer.UI.Widgets
         {
             if (float.TryParse(val, out float f))
             {
-                desiredTime = f;
-                slider.value = f;
+                if (f < slider.minValue || f > slider.maxValue){
+                    ExplorerCore.LogWarning("Error, new time scale value outside of margins.");
+                    timeInput.Text = desiredTime.ToString("0.00");
+                    return;
+                }
+
+                slider.value = f; // Will update the desiredTime value and extra things
             }
         }
 
-        void OnPauseButtonClicked()
+        void OnLockedButtonClicked()
         {
-            if (pause){
-                pause = false;
-                desiredTime = 1f;
-                slider.value = desiredTime;
+            locked = !locked;
+            UpdateLockedButton();
+            previousLocked = locked;
+
+            // If the game was paused we consider this an unpause
+            if (pause) pause = false;
+
+            if (locked){
                 SetTimeScale(desiredTime);
             }
             else {
-                OnTimeInputEndEdit(timeInput.Text);
-                // We assume the normal timescale is 1.0, but we will stop setting it on Update() so the game can handle it.
-                SetTimeScale(1.0f);
+                // We assume the vanilla game speed was 1f before editing it
+                SetTimeScale(1f);
             }
-            
-            locked = !locked;
-
-            UpdatePauseButton();
         }
 
-        void UpdatePauseButton()
+        void UpdateLockedButton()
         {
             Color color = locked ? new Color(0.3f, 0.3f, 0.2f) : new Color(0.2f, 0.2f, 0.2f);
             RuntimeHelper.SetColorBlock(lockBtn.Component, color, color * 1.2f, color * 0.7f);
@@ -117,7 +130,17 @@ namespace UnityExplorer.UI.Widgets
 
             GameObject sliderObj = UIFactory.CreateSlider(parent, "Slider_time_scale", out slider);
             UIFactory.SetLayoutElement(sliderObj, minHeight: 25, minWidth: 75, flexibleWidth: 0);
-            slider.onValueChanged.AddListener((newTimeScale) => desiredTime = newTimeScale);
+            slider.onValueChanged.AddListener((newTimeScale) => {
+                desiredTime = newTimeScale;
+                timeInput.Text = desiredTime.ToString("0.00");
+                
+                if (shouldSliderUnpauseOnValueChange){
+                    pause = false;
+                    // Don't save 0 as a previous desired time, it might not do anything when unpausing
+                    if (desiredTime != 0) previousDesiredTime = desiredTime;
+                    previousLocked = locked;
+                }
+            });
             slider.m_FillImage.color = Color.clear;
             slider.value = 1;
             slider.minValue = 0f;
@@ -125,7 +148,7 @@ namespace UnityExplorer.UI.Widgets
 
             lockBtn = UIFactory.CreateButton(parent, "PauseButton", "Lock", new Color(0.2f, 0.2f, 0.2f));
             UIFactory.SetLayoutElement(lockBtn.Component.gameObject, minHeight: 25, minWidth: 50);
-            lockBtn.OnClick += OnPauseButtonClicked;
+            lockBtn.OnClick += OnLockedButtonClicked;
         }
 
         // Only allow Time.timeScale to be set if the user hasn't "locked" it or if we are setting the value internally.
