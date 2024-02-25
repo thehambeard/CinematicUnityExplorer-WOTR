@@ -23,22 +23,21 @@ namespace UnityExplorer.UI.Widgets
 
         static TimeScaleWidget Instance;
 
-        ButtonRef lockBtn;
-        bool locked;
+        Toggle overrideTimeScaleToggle;
         InputFieldRef timeInput;
         float desiredTime = 1;
         bool settingTimeScale;
         bool pause;
         Slider slider;
 
-        bool shouldSliderUnpauseOnValueChange = true;
+        bool pressedPauseHotkey = false;
         float previousDesiredTime;
-        bool previousLocked;
+        bool previousOverride;
 
         public void Update()
         {
             // Force the timescale in case the game tries force it for us
-            if (locked)
+            if (overrideTimeScaleToggle.isOn)
                 SetTimeScale(desiredTime);
 
             //if (!timeInput.Component.isFocused)
@@ -47,19 +46,15 @@ namespace UnityExplorer.UI.Widgets
 
         public void PauseToggle(){
             // If not paused but moved the slider to 0, consider that as it being paused
-            if (desiredTime == 0 && locked && !pause) pause = true;
+            if (desiredTime == 0 && overrideTimeScaleToggle.isOn && !pause) pause = true;
 
             pause = !pause;
-
-            locked = pause ? true : previousLocked;
-            UpdateLockedButton();
             desiredTime = pause ? 0f : previousDesiredTime;
-            // We assume the vanilla game speed was 1f before editing it
-            SetTimeScale(locked ? desiredTime : 1f);
 
-            shouldSliderUnpauseOnValueChange = false;
+            pressedPauseHotkey = true;
+            overrideTimeScaleToggle.isOn = pause ? true : previousOverride;
             slider.value = desiredTime;
-            shouldSliderUnpauseOnValueChange = true;
+            pressedPauseHotkey = false;
         }
 
         public bool IsPaused(){
@@ -89,29 +84,20 @@ namespace UnityExplorer.UI.Widgets
             }
         }
 
-        void OnLockedButtonClicked()
+        void OnOverrideValueChanged(bool value)
         {
-            locked = !locked;
-            UpdateLockedButton();
-            previousLocked = locked;
+            if (!pressedPauseHotkey) previousOverride = overrideTimeScaleToggle.isOn;
 
             // If the game was paused we consider this an unpause
             if (pause) pause = false;
 
-            if (locked){
+            if (value){
                 SetTimeScale(desiredTime);
             }
             else {
                 // We assume the vanilla game speed was 1f before editing it
                 SetTimeScale(1f);
             }
-        }
-
-        void UpdateLockedButton()
-        {
-            Color color = locked ? new Color(0.3f, 0.3f, 0.2f) : new Color(0.2f, 0.2f, 0.2f);
-            RuntimeHelper.SetColorBlock(lockBtn.Component, color, color * 1.2f, color * 0.7f);
-            lockBtn.ButtonText.text = locked ? "Unlock" : "Lock";
         }
 
         // UI Construction
@@ -134,24 +120,24 @@ namespace UnityExplorer.UI.Widgets
                 desiredTime = newTimeScale;
                 timeInput.Text = desiredTime.ToString("0.00");
                 
-                if (shouldSliderUnpauseOnValueChange){
+                if (!pressedPauseHotkey){
                     pause = false;
                     // Don't save 0 as a previous desired time, it might not do anything when unpausing
                     if (desiredTime != 0) previousDesiredTime = desiredTime;
-                    previousLocked = locked;
                 }
             });
             slider.m_FillImage.color = Color.clear;
-            slider.value = 1;
             slider.minValue = 0f;
             slider.maxValue = 2f;
 
-            lockBtn = UIFactory.CreateButton(parent, "PauseButton", "Lock", new Color(0.2f, 0.2f, 0.2f));
-            UIFactory.SetLayoutElement(lockBtn.Component.gameObject, minHeight: 25, minWidth: 50);
-            lockBtn.OnClick += OnLockedButtonClicked;
-        }
+            GameObject overrideTimeScaleObj = UIFactory.CreateToggle(parent, "Override TimeScale", out overrideTimeScaleToggle, out Text overrideTimeScaleText);
+            UIFactory.SetLayoutElement(overrideTimeScaleObj, minHeight: 25, flexibleWidth: 0);
+            overrideTimeScaleToggle.isOn = false;
+            overrideTimeScaleToggle.onValueChanged.AddListener(OnOverrideValueChanged);
+            overrideTimeScaleText.text = "Override";
 
-        // Only allow Time.timeScale to be set if the user hasn't "locked" it or if we are setting the value internally.
+            slider.value = 1;
+        }
 
         static void InitPatch()
         {
@@ -171,7 +157,7 @@ namespace UnityExplorer.UI.Widgets
 
         static bool Prefix_Time_set_timeScale()
         {
-            return !Instance.locked || Instance.settingTimeScale;
+            return !Instance.overrideTimeScaleToggle.isOn || Instance.settingTimeScale;
         }
     }
 }

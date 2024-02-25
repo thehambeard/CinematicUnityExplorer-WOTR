@@ -174,11 +174,11 @@ namespace UnityExplorer.UI.Panels
 
 
             // CatmullRom alpha value
-            GameObject thridRow = AddInputField("alphaCatmullRom", "Alpha:", "0.5", out alphaCatmullRomInput, AlphaCatmullRom_OnEndEdit, 100);
+            GameObject thridRow = AddInputField("alphaCatmullRom", "Alpha:", "0.5", out alphaCatmullRomInput, AlphaCatmullRom_OnEndEdit, 50);
             alphaCatmullRomInput.Text = alphaCatmullRomValue.ToString();
 
             GameObject alphaCatmullRomObj = UIFactory.CreateSlider(thridRow, "Alpha CatmullRom Slider", out alphaCatmullRomSlider);
-            UIFactory.SetLayoutElement(alphaCatmullRomObj, minHeight: 25, minWidth: 50, flexibleWidth: 0);
+            UIFactory.SetLayoutElement(alphaCatmullRomObj, minHeight: 25, minWidth: 100, flexibleWidth: 0);
             alphaCatmullRomSlider.m_FillImage.color = Color.clear;
             alphaCatmullRomSlider.minValue = 0;
             alphaCatmullRomSlider.maxValue = 1;
@@ -191,11 +191,11 @@ namespace UnityExplorer.UI.Panels
             });
 
             // CatmullRom tension value
-            AddInputField("tensionCatmullRomO", "Tension:", "0", out tensionCatmullRomInput, TensionCatmullRom_OnEndEdit, 100, thridRow);
+            AddInputField("tensionCatmullRomO", "Tension:", "0", out tensionCatmullRomInput, TensionCatmullRom_OnEndEdit, 50, thridRow);
             tensionCatmullRomInput.Text = tensionCatmullRomValue.ToString();
 
             GameObject tensionCatmullRomObj = UIFactory.CreateSlider(thridRow, "Tension CatmullRom Slider", out tensionCatmullRomSlider);
-            UIFactory.SetLayoutElement(tensionCatmullRomObj, minHeight: 25, minWidth: 50, flexibleWidth: 0);
+            UIFactory.SetLayoutElement(tensionCatmullRomObj, minHeight: 25, minWidth: 100, flexibleWidth: 0);
             tensionCatmullRomSlider.m_FillImage.color = Color.clear;
             tensionCatmullRomSlider.minValue = 0;
             tensionCatmullRomSlider.maxValue = 1;
