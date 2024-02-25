@@ -25,6 +25,8 @@ namespace UnityExplorer.UI.Panels
         //private IAnimationClip lastManuallyPlayedAnimation;
         private IRuntimeAnimatorController originalAnimatorController;
 
+        public List<IAnimationClip> favAnimations {get;}
+
         public AnimatorPlayer(Behaviour animator){
             this.animator = new IAnimator(animator);
             if (this.animator.runtimeAnimatorController != null){
@@ -38,6 +40,8 @@ namespace UnityExplorer.UI.Panels
             IAnimatorClipInfo[] playingAnimations = this.animator.GetCurrentAnimatorClipInfo(0);
             this.originalAnimation = playingAnimations.Count() != 0 ? playingAnimations[0].clip : null;
             this.overridingAnimation = originalAnimation != null ? originalAnimation : (animations.Count > 0 ? animations[0] : null);
+
+            this.favAnimations = new List<IAnimationClip>();
         }
 
         // Include the animations being played in other layers
@@ -78,6 +82,19 @@ namespace UnityExplorer.UI.Panels
                 originalAnimation = currentAnimation;
             lastManuallyPlayedAnimation = overridingAnimation;
             */
+        }
+
+        public void FavAnimation(IAnimationClip animation){
+            favAnimations.Add(animation);
+            favAnimations.OrderBy(x => x.name);
+        }
+
+        public void UnfavAnimation(IAnimationClip animation){
+            favAnimations.Remove(animation);
+        }
+
+        public bool IsAnimationFaved(IAnimationClip animation){
+            return favAnimations.Contains(animation);
         }
 
         public override string ToString(){

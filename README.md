@@ -190,6 +190,8 @@ It loads all the current vanilla post-processing effects being used and offers t
 ## Animator
 Allows you to manually play characters and NPC animations in a scene. This should be pretty useful for getting the right animation on each enemy to set up marketing screenshots.
 
+Favorite animations so they appear first on the dropdown list by clicking on the star button with the animation selected.
+
 The Animator Panel also allows you to freeze all characters in a scene all at once, alongside giving you control over which characters should ignore the master toggler. That way you can make the playable character avoid getting frozen, or avoid un-freezing NPCs or enemies that already have the animations you want them to have.
 
 Alongside all of this, you can also open each character game object by clicking on their names, so you can move, rotate, scale them around, disable them, or further edit their properties and child objects.
