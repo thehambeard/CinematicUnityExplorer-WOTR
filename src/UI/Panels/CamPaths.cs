@@ -37,7 +37,7 @@ namespace UnityExplorer.UI.Panels
 
         public override string Name => "Cam Paths";
         public override UIManager.Panels PanelType => UIManager.Panels.CamPaths;
-        public override int MinWidth => 600;
+        public override int MinWidth => 725;
         public override int MinHeight => 300;
         public override Vector2 DefaultAnchorMin => new(0.4f, 0.4f);
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);

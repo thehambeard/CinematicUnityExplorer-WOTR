@@ -97,7 +97,7 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(toggleObj, minHeight: 25, flexibleWidth: 9999);
             vanillaLightsToggle.onValueChanged.AddListener(ToggleGameLights);
             vanillaLightsToggle.isOn = true;
-            toggleText.text = "Toggle Game Lights";
+            toggleText.text = "Vanilla Game Lights";
 
             lightsScrollPool = UIFactory.CreateScrollPool<LightCell>(ContentRoot, "NodeList", out GameObject scrollObj,
                 out GameObject scrollContent, new Color(0.03f, 0.03f, 0.03f));
