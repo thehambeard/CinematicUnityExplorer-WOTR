@@ -19,8 +19,6 @@
 
 [![](https://img.shields.io/github/release/originalnicodr/CinematicUnityExplorer.svg?label=version)](../../releases/latest) [![](https://img.shields.io/github/actions/workflow/status/originalnicodr/CinematicUnityExplorer/dotnet.yml)](https://github.com/originalnicodr/CinematicUnityExplorer/actions) [![](https://img.shields.io/github/downloads/originalnicodr/CinematicUnityExplorer/latest/total.svg)](../../releases/latest)
 
-⚡ Thunderstore releases: [BepInEx Mono](https://thunderstore.io/package/originalnicodr/CinematicUnityExplorer) | [BepInEx IL2CPP](https://gtfo.thunderstore.io/package/originalnicodr/CinematicUnityExplorer_IL2CPP) | [MelonLoader IL2CPP](https://boneworks.thunderstore.io/package/originalnicodr/CinematicUnityExplorer_IL2CPP_ML)
-
 ## Release schedule
 
 Nightly builds can be found [here](https://github.com/originalnicodr/CinematicUnityExplorer/actions).
@@ -85,6 +83,9 @@ Try adjusting the following settings and see if it fixes your issues:
 
 If these fixes do not work, please create an issue in this repo and I'll do my best to look into it.
 
+# Guide and documentation
+
+I wrote a [guide](https://framedsc.com/GeneralGuides/cinematic-unity-explorer.htm) explaining different things regarding the Cinematic Unity Explorer over the Framed website, from knowing what version to download with your game and troubleshooting, to usage and tips and tricks. Feel free to create a PR on the [Framed GitHub repo](https://github.com/framedsc/Sitesource) if you want to improve it.
 
 # Default Hotkeys
 
@@ -320,6 +321,12 @@ Building individual configurations from your IDE is fine, though note that the i
 * [yukieiji](https://github.com/yukieiji/) for their awesome work on mainting [their fork](https://github.com/yukieiji/UnityExplorer) of UnityExplorer giving support to new versions of the engine.
 * [ManlyMarco](https://github.com/ManlyMarco) for [Runtime Unity Editor](https://github.com/ManlyMarco/RuntimeUnityEditor) \[[license](THIRDPARTY_LICENSES.md#runtimeunityeditor-license)\], the ScriptEvaluator from RUE's REPL console was used as the base for UnityExplorer's C# console.
 * [Geoffrey Horsington](https://github.com/ghorsington) for [mcs-unity](https://github.com/sinai-dev/mcs-unity) \[no license\], used as the `Mono.CSharp` reference for the C# Console.
+
+# Support
+
+If you have found this project fun or useful in any capacity please consider supporting it on ko-fi. And please also consider donating to the people in the acknowledgments above! As well as the mod loader maintainers.
+
+Also, if you happen to use this on a commercial project, please let me know! Would love to see what this project helped create!
 
 ### Disclaimer
 
