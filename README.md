@@ -324,7 +324,7 @@ Building individual configurations from your IDE is fine, though note that the i
 
 # Support
 
-If you have found this project fun or useful in any capacity please consider supporting it on ko-fi. And please also consider donating to the people in the acknowledgments above! As well as the mod loader maintainers.
+If you have found this project fun or useful in any capacity please consider [supporting me on Ko-fi](https://ko-fi.com/originalnicodr). And please also consider donating to the people in the acknowledgments above! As well as the mod loader maintainers.
 
 Also, if you happen to use this on a commercial project, please let me know! Would love to see what this project helped create!
 
