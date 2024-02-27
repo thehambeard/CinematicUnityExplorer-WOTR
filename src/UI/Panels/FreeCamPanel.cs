@@ -286,7 +286,7 @@ namespace UnityExplorer.UI.Panels
             AddSpacer(5);
 
             GameObject nearCameraClipGroup = AddInputField("NearClipPlane", "Near clip plane:", "0", out nearClipPlaneInput, NearClipInput_OnEndEdit);
-            moveSpeedInput.Text = nearClipPlaneValue.ToString();
+            nearClipPlaneInput.Text = nearClipPlaneValue.ToString();
 
             GameObject nearClipObj = UIFactory.CreateSlider(nearCameraClipGroup, "Camera near plane clip", out nearClipPlaneSlider);
             UIFactory.SetLayoutElement(nearClipObj, minHeight: 25, minWidth: 250, flexibleWidth: 0);
@@ -306,7 +306,7 @@ namespace UnityExplorer.UI.Panels
             AddSpacer(5);
 
             GameObject farCameraClipGroup = AddInputField("FearClipPlane", "Far clip plane:", "0", out farClipPlaneInput, FarClipInput_OnEndEdit);
-            moveSpeedInput.Text = farClipPlaneValue.ToString();
+            farClipPlaneInput.Text = farClipPlaneValue.ToString();
 
             GameObject farClipObj = UIFactory.CreateSlider(farCameraClipGroup, "Camera far plane clip", out farClipPlaneSlider);
             UIFactory.SetLayoutElement(farClipObj, minHeight: 25, minWidth: 250, flexibleWidth: 0);

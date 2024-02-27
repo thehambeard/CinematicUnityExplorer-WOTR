@@ -107,7 +107,7 @@ namespace UnityExplorer.UI.Panels
                     return;
                 animatorDropdown.value = animatorDropdown.value == 0 ? animatorDropdown.options.Count - 1 : animatorDropdown.value - 1;
 
-                favAnimation.ButtonText.text = animatorPlayer.IsAnimationFaved(animatorPlayer.overridingAnimation) ? "☆" : "★";
+                favAnimation.ButtonText.text = animatorPlayer.IsAnimationFaved(animatorPlayer.overridingAnimation) ? "★" : "☆";
             };
 
             GameObject overridingAnimationObj = UIFactory.CreateDropdown(UIRoot, $"Animations_Dropdown", out animatorDropdown, null, 14, (idx) => {
@@ -115,7 +115,7 @@ namespace UnityExplorer.UI.Panels
                     return;
                 animatorPlayer.overridingAnimation = idx < animatorDropdown.options.Count ? animatorPlayer.animations.Find(a => a.name == animatorDropdown.options[idx].text) : animatorPlayer.overridingAnimation;
 
-                favAnimation.ButtonText.text = animatorPlayer.IsAnimationFaved(animatorPlayer.overridingAnimation) ? "☆" : "★";
+                favAnimation.ButtonText.text = animatorPlayer.IsAnimationFaved(animatorPlayer.overridingAnimation) ? "★": "☆";
                 }
             );
             
@@ -128,10 +128,10 @@ namespace UnityExplorer.UI.Panels
                     return;
                 animatorDropdown.value = animatorDropdown.value == animatorDropdown.options.Count - 1 ? 0 : animatorDropdown.value + 1;
 
-                favAnimation.ButtonText.text = animatorPlayer.IsAnimationFaved(animatorPlayer.overridingAnimation) ? "☆" : "★";
+                favAnimation.ButtonText.text = animatorPlayer.IsAnimationFaved(animatorPlayer.overridingAnimation) ? "★" : "☆";
             };
 
-            favAnimation = UIFactory.CreateButton(UIRoot, "FavAnimation", "★", new Color(0.05f, 0.05f, 0.05f));
+            favAnimation = UIFactory.CreateButton(UIRoot, "FavAnimation", "☆", new Color(0.05f, 0.05f, 0.05f));
             UIFactory.SetLayoutElement(favAnimation.Component.gameObject, minHeight: 25, minWidth: 25);
             favAnimation.OnClick += () => {
                 if (animatorPlayer.animator.wrappedObject == null || animatorDropdown == null)
@@ -145,7 +145,7 @@ namespace UnityExplorer.UI.Panels
                     animatorPlayer.UnfavAnimation(animatorPlayer.overridingAnimation);
                 }
 
-                favAnimation.ButtonText.text = !isAnimationFaved ? "☆" : "★";
+                favAnimation.ButtonText.text = !isAnimationFaved ? "★" : "☆";
                 //UpdateDropdownOptions();
             };
 
