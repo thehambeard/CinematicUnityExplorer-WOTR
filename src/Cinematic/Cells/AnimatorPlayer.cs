@@ -21,9 +21,9 @@ namespace UnityExplorer.UI.Panels
         public bool shouldIgnoreMasterToggle = false;
 
         public IAnimationClip overridingAnimation;
-        private IAnimationClip originalAnimation;
-        //private IAnimationClip lastManuallyPlayedAnimation;
+        private IAnimationClip lastCurrentAnimation;
         private IRuntimeAnimatorController originalAnimatorController;
+        private IAnimatorOverrideController animatorOverrideController = null;
 
         public List<IAnimationClip> favAnimations {get;}
 
@@ -38,8 +38,8 @@ namespace UnityExplorer.UI.Panels
             this.originalAnimatorController = this.animator.runtimeAnimatorController;
 
             IAnimatorClipInfo[] playingAnimations = this.animator.GetCurrentAnimatorClipInfo(0);
-            this.originalAnimation = playingAnimations.Count() != 0 ? playingAnimations[0].clip : null;
-            this.overridingAnimation = originalAnimation != null ? originalAnimation : (animations.Count > 0 ? animations[0] : null);
+            lastCurrentAnimation = playingAnimations.Count() != 0 ? playingAnimations[0].clip : null;
+            this.overridingAnimation = lastCurrentAnimation != null ? lastCurrentAnimation : (animations.Count > 0 ? animations[0] : null);
 
             this.favAnimations = new List<IAnimationClip>();
         }
@@ -57,31 +57,30 @@ namespace UnityExplorer.UI.Panels
             if (originalAnimatorController != null && animator.wrappedObject != null){
                 if (animator.runtimeAnimatorController != null && originalAnimatorController != null){
                     animator.runtimeAnimatorController = originalAnimatorController;
-                    if (originalAnimation != null) animator.Play(originalAnimation.name);
+
+                    animatorOverrideController = null;
                 }
             }
         }
 
         public void PlayOverridingAnimation(){
-            // Need to assign the original animator controller back so to get the correct currentAnimation
-            animator.runtimeAnimatorController = originalAnimatorController;
+            if (animatorOverrideController == null){
+                animatorOverrideController = new IAnimatorOverrideController();
+                animatorOverrideController.runtimeAnimatorController = originalAnimatorController;
+                // Actually uses runtimeAnimatorController on the original object, should make the wrapper class a child of the runtimeAnimatorController instead
+                animator.runtimeAnimatorControllerOverride = animatorOverrideController;
+            }
+
+            // Restore previous animation
+            if (lastCurrentAnimation != null){
+                animatorOverrideController[lastCurrentAnimation.name] = lastCurrentAnimation;
+            }
+
             IAnimationClip currentAnimation = animator.GetCurrentAnimatorClipInfo(0)[0].clip;
+            animatorOverrideController[currentAnimation.name] = overridingAnimation;
+            animator.Play(currentAnimation.name);
 
-            IAnimatorOverrideController animatorOverrideController = new IAnimatorOverrideController();
-            animatorOverrideController.runtimeAnimatorController = originalAnimatorController;
-            // Actually uses runtimeAnimatorController on the original object, should make the wrapper class a child of the runtimeAnimatorController instead
-            animator.runtimeAnimatorControllerOverride = animatorOverrideController;
-
-            animatorOverrideController[originalAnimation.name] = overridingAnimation;
-            animator.Play(originalAnimation.name);
-
-            // Save the last non-manually played animation as the original animations,
-            // So we can reset to the last animation that the game played on the entity on reset.
-            /*
-            if (currentAnimation != lastManuallyPlayedAnimation)
-                originalAnimation = currentAnimation;
-            lastManuallyPlayedAnimation = overridingAnimation;
-            */
+            lastCurrentAnimation = currentAnimation;
         }
 
         public void FavAnimation(IAnimationClip animation){
