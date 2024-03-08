@@ -33,8 +33,8 @@ namespace UnityExplorer.UI.Panels
             ButtonRef moveToCameraButton = UIFactory.CreateButton(UIRoot, "Copy Camera pos and rot", "Copy Camera pos and rot");
             UIFactory.SetLayoutElement(moveToCameraButton.GameObject, minWidth: 130, minHeight: 25, flexibleWidth: 9999);
             moveToCameraButton.OnClick += () => {
-                point.position = GetCamPathsPanel().followObject != null ? FreeCamPanel.ourCamera.transform.localPosition : FreeCamPanel.ourCamera.transform.position;
-                point.rotation = GetCamPathsPanel().followObject != null ? FreeCamPanel.ourCamera.transform.localRotation : FreeCamPanel.ourCamera.transform.rotation;
+                point.rotation = FreeCamPanel.GetCameraRotation();
+                point.position = FreeCamPanel.GetCameraPosition();
                 GetCamPathsPanel().controlPoints[index] = point;
 
                 GetCamPathsPanel().MaybeRedrawPath();
@@ -50,13 +50,8 @@ namespace UnityExplorer.UI.Panels
             ButtonRef moveToPointButton = UIFactory.CreateButton(UIRoot, "Move Cam to Node", "Move Cam to Node");
             UIFactory.SetLayoutElement(moveToPointButton.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
             moveToPointButton.OnClick += () => {
-                if (GetCamPathsPanel().followObject != null){
-                    FreeCamPanel.ourCamera.transform.localPosition = point.position;
-                    FreeCamPanel.ourCamera.transform.localRotation = point.rotation;
-                } else {
-                    FreeCamPanel.ourCamera.transform.position = point.position;
-                    FreeCamPanel.ourCamera.transform.rotation = point.rotation;
-                }
+                FreeCamPanel.SetCameraRotation(point.rotation);
+                FreeCamPanel.SetCameraPosition(point.position);
                 FreeCamPanel.ourCamera.fieldOfView = point.fov;
             };
 

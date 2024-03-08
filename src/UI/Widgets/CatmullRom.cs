@@ -109,8 +109,6 @@ namespace UnityExplorer.CatmullRom
         // Current position in the path, from 0 to 1
         float delta;
 
-        bool arePointsLocal;
-
         float tension = 0;
         float alpha = 0.5f;
 
@@ -161,9 +159,6 @@ namespace UnityExplorer.CatmullRom
             closedLoop = newClosedLoop;
         }
 
-        public void setLocalPoints(bool newArePointsLocal){
-            arePointsLocal = newArePointsLocal;
-        }
 #if CPP
         [HideFromIl2Cpp]
 #endif
@@ -185,8 +180,8 @@ namespace UnityExplorer.CatmullRom
         }
 
         private CatmullRomPoint GetCurrentPoint(){
-            Vector3 camPos = arePointsLocal ? FreeCamPanel.ourCamera.transform.localPosition : FreeCamPanel.ourCamera.transform.position;
-            Quaternion camRot = arePointsLocal ? FreeCamPanel.ourCamera.transform.localRotation : FreeCamPanel.ourCamera.transform.rotation;
+            Vector3 camPos = FreeCamPanel.GetCameraPosition();
+            Quaternion camRot = FreeCamPanel.GetCameraRotation();
 
             return new CatmullRomPoint(camPos, camRot, FreeCamPanel.ourCamera.fieldOfView);
         }
@@ -216,7 +211,7 @@ namespace UnityExplorer.CatmullRom
                 // While ends, need another lookaheadDelta for the next Update
                 // It will do, at most, 2 iterations
                 // We check a very small number instead of zero because if not it can get stuck in an infinite loop
-                while (room <= 0.0001f) {
+                while (room <= 0.0002f) {
                     // If the camera reached the last lookAhead we stop it
                     if (delta >= 1){
                         PathFinished();
@@ -241,25 +236,14 @@ namespace UnityExplorer.CatmullRom
             Vector4 newRot = ra + rb;
             newRot.Normalize();
 
-            if (arePointsLocal){
-                FreeCamPanel.ourCamera.transform.localPosition += direction.position;
-                FreeCamPanel.ourCamera.transform.localRotation = CatmullRomPoint.Vector4ToQuaternion(newRot);
-            } else {
-                FreeCamPanel.ourCamera.transform.position += direction.position;
-                FreeCamPanel.ourCamera.transform.rotation = CatmullRomPoint.Vector4ToQuaternion(newRot);
-            }
-
+            FreeCamPanel.SetCameraRotation(CatmullRomPoint.Vector4ToQuaternion(newRot));
+            FreeCamPanel.SetCameraPosition(FreeCamPanel.GetCameraPosition() + direction.position);
             FreeCamPanel.ourCamera.fieldOfView += direction.fov * actual / room;
         }
 
         public void MoveCameraToPoint(CatmullRomPoint newPoint){
-            if (arePointsLocal){
-                FreeCamPanel.ourCamera.transform.localPosition = newPoint.position;
-                FreeCamPanel.ourCamera.transform.localRotation = newPoint.rotation;
-            } else {
-                FreeCamPanel.ourCamera.transform.position = newPoint.position;
-                FreeCamPanel.ourCamera.transform.rotation = newPoint.rotation;
-            }
+            FreeCamPanel.SetCameraRotation(newPoint.rotation);
+            FreeCamPanel.SetCameraPosition(newPoint.position);
 
             FreeCamPanel.ourCamera.fieldOfView = newPoint.fov;
         }

@@ -134,7 +134,9 @@ The original Unity Explorer had a Freecam feature, but even if it was useful at 
 - Blocked rotation from going further when looking directly up or directly down.
 
 ### Follow Object
-You can click on the "Follow object" button on the panel and select the object you want to follow on screen or click on the "Follow object" button in the inspector screen for more granularity. Should be useful for creating motion blur, or to use alongside the [camera paths](#camera-paths).
+You can click on the "Follow object" button on the panel and select the object you want the camera to follow or click on the "Follow object" button in the inspector screen for more granularity. This can be used as it is, but it's even more useful when playing with [camera paths](#camera-paths), as you can create a path for the camera to walk relative to the object
+
+By default the camera only follows the object's position, but you can also make it follow its rotation as if the camera was physically bound to the object by checking the "Follow Object Rotation" toggle. Should be useful for mimicking a car camera, a character POV, or creating motion blur.
 
 ### Game input block for Unity's legacy system
 Added game input block for Unity's legacy system. You can now block (or unblock) the game's input when using the freecam, as long as the game is using the Unity Legacy Input system. If the game uses a custom solution or the latest Unity system then this won't work. Implementing this for Unity's new system is in the backlog, so if you find a game using it (should say "Initialized new InputSystem support." on the logs) then please let me know so I can implement it using that game!
@@ -321,6 +323,10 @@ Building individual configurations from your IDE is fine, though note that the i
 * [yukieiji](https://github.com/yukieiji/) for their awesome work on mainting [their fork](https://github.com/yukieiji/UnityExplorer) of UnityExplorer giving support to new versions of the engine.
 * [ManlyMarco](https://github.com/ManlyMarco) for [Runtime Unity Editor](https://github.com/ManlyMarco/RuntimeUnityEditor) \[[license](THIRDPARTY_LICENSES.md#runtimeunityeditor-license)\], the ScriptEvaluator from RUE's REPL console was used as the base for UnityExplorer's C# console.
 * [Geoffrey Horsington](https://github.com/ghorsington) for [mcs-unity](https://github.com/sinai-dev/mcs-unity) \[no license\], used as the `Mono.CSharp` reference for the C# Console.
+
+# Crediting
+
+Even tho it's not necessary, if you happen to use this mod in the marketing campaign of a game and find it useful please consider including it in the credits!
 
 # Support
 

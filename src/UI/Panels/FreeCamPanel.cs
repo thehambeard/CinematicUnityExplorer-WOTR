@@ -57,6 +57,7 @@ namespace UnityExplorer.UI.Panels
         static InputFieldRef moveSpeedInput;
         static Text followObjectLabel;
         static ButtonRef inspectButton;
+        public static Toggle followRotationToggle;
         static bool disabledCinemachine;
 
         public static bool supportedInput => InputManager.CurrentType == InputType.Legacy;
@@ -70,6 +71,8 @@ namespace UnityExplorer.UI.Panels
         static float farClipPlaneValue;
 
         public static GameObject followObject = null;
+        public static Vector3 followObjectLastPosition = Vector3.zero;
+        public static Quaternion followObjectLastRotation = Quaternion.identity;
 
         private static FreecamCursorUnlocker freecamCursorUnlocker = null;
 
@@ -225,7 +228,7 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        static void SetCameraPosition(Vector3 pos)
+        static void SetCameraPositionInput(Vector3 pos)
         {
             if (!ourCamera || lastSetCameraPosition == pos)
                 return;
@@ -285,6 +288,22 @@ namespace UnityExplorer.UI.Panels
 
             AddSpacer(5);
 
+            GameObject togglesRow = UIFactory.CreateHorizontalGroup(ContentRoot, "TogglesRow", false, false, true, true, 3, default, new(1, 1, 1, 0));
+
+            GameObject blockFreecamMovement = UIFactory.CreateToggle(togglesRow, "blockFreecamMovement", out blockFreecamMovementToggle, out Text blockFreecamMovementText);
+            UIFactory.SetLayoutElement(blockFreecamMovement, minHeight: 25, flexibleWidth: 9999);
+            blockFreecamMovementToggle.isOn = false;
+            blockFreecamMovementText.text = "Block Freecam movement";
+
+            if (supportedInput){
+                GameObject blockGamesInputOnFreecam = UIFactory.CreateToggle(togglesRow, "blockGamesInputOnFreecam", out blockGamesInputOnFreecamToggle, out Text blockGamesInputOnFreecamText);
+                UIFactory.SetLayoutElement(blockGamesInputOnFreecam, minHeight: 25, flexibleWidth: 9999);
+                blockGamesInputOnFreecamToggle.isOn = true;
+                blockGamesInputOnFreecamText.text = "Block games input on Freecam";
+            }
+
+            AddSpacer(5);
+
             GameObject nearCameraClipGroup = AddInputField("NearClipPlane", "Near clip plane:", "0", out nearClipPlaneInput, NearClipInput_OnEndEdit);
             nearClipPlaneInput.Text = nearClipPlaneValue.ToString();
 
@@ -325,7 +344,6 @@ namespace UnityExplorer.UI.Panels
 
             AddSpacer(5);
 
-
             followObjectLabel = UIFactory.CreateLabel(ContentRoot, "CurrentFollowObject", "Not following any object.");
             UIFactory.SetLayoutElement(followObjectLabel.gameObject, minWidth: 100, minHeight: 25);
 
@@ -339,23 +357,25 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(releaseFollowButton.GameObject, minWidth: 150, minHeight: 25, flexibleWidth: 9999);
             releaseFollowButton.OnClick += ReleaseFollowButton_OnClick;
 
+            GameObject followRotationGameObject = UIFactory.CreateToggle(ContentRoot, "followRotationToggle", out followRotationToggle, out Text followRotationText);
+            UIFactory.SetLayoutElement(followRotationGameObject, minHeight: 25, flexibleWidth: 9999);
+            followRotationToggle.isOn = false;
+            followRotationText.text = "Follow Object Rotation";
+            followRotationToggle.onValueChanged.AddListener((value) => {
+                if (followObject != null){
+                    CamPaths CamPathsPanel = UIManager.GetPanel<CamPaths>(UIManager.Panels.CamPaths);
+                    if (value){
+                        CamPathsPanel.TranslatePointsRotationToLocal();
+                    }
+                    else {
+                        CamPathsPanel.TranslatePointsRotationToGlobal();
+                    }
+                                        
+                    CamPathsPanel.MaybeRedrawPath();
+                }
+            });
+
             AddSpacer(5);
-
-            GameObject togglesRow = UIFactory.CreateHorizontalGroup(ContentRoot, "TogglesRow", false, false, true, true, 3, default, new(1, 1, 1, 0));
-
-            GameObject blockFreecamMovement = UIFactory.CreateToggle(togglesRow, "blockFreecamMovement", out blockFreecamMovementToggle, out Text blockFreecamMovementText);
-            UIFactory.SetLayoutElement(blockFreecamMovement, minHeight: 25, flexibleWidth: 9999);
-            blockFreecamMovementToggle.isOn = false;
-            blockFreecamMovementText.text = "Block Freecam movement";
-
-            if (supportedInput){
-                GameObject blockGamesInputOnFreecam = UIFactory.CreateToggle(togglesRow, "blockGamesInputOnFreecam", out blockGamesInputOnFreecamToggle, out Text blockGamesInputOnFreecamText);
-                UIFactory.SetLayoutElement(blockGamesInputOnFreecam, minHeight: 25, flexibleWidth: 9999);
-                blockGamesInputOnFreecamToggle.isOn = true;
-                blockGamesInputOnFreecamText.text = "Block games input on Freecam";
-
-                AddSpacer(5);
-            }
 
             string instructions = "Controls:\n" +
             $"- {ConfigManager.Forwards_1.Value},{ConfigManager.Backwards_1.Value},{ConfigManager.Left_1.Value},{ConfigManager.Right_1.Value} / {ConfigManager.Forwards_2.Value},{ConfigManager.Backwards_2.Value},{ConfigManager.Left_2.Value},{ConfigManager.Right_2.Value}: Movement\n" +
@@ -425,10 +445,24 @@ namespace UnityExplorer.UI.Panels
         }
 
         public static void FollowObjectAction(GameObject obj){
-            followObject = obj;
-            followObjectLabel.text = $"Following: {obj.name}";
             CamPaths CamPathsPanel = UIManager.GetPanel<CamPaths>(UIManager.Panels.CamPaths);
+
+            if (followObject != null){
+                if (followRotationToggle.isOn) CamPathsPanel.TranslatePointsRotationToGlobal();
+                CamPathsPanel.TranslatePointsPositionToGlobal();
+            }
+
+            followObject = obj;
+            followObjectLastPosition = followObject.transform.position;
+            followObjectLastRotation = followObject.transform.rotation;
+            followObjectLabel.text = $"Following: {obj.name}";
+            
             CamPathsPanel.UpdatedFollowObject(obj);
+
+            CamPathsPanel.TranslatePointsPositionToLocal();
+            if (followRotationToggle.isOn) CamPathsPanel.TranslatePointsRotationToLocal();
+
+            CamPathsPanel.MaybeRedrawPath();
         }
 
         void FollowButton_OnClick()
@@ -438,12 +472,17 @@ namespace UnityExplorer.UI.Panels
 
         void ReleaseFollowButton_OnClick()
         {
-            if (followObject && ourCamera.transform.IsChildOf(followObject.transform)){
-                ourCamera.transform.SetParent(null, true);
+            if (followObject){
                 followObject = null;
+                followObjectLastPosition = Vector3.zero;
+                followObjectLastRotation = Quaternion.identity;
                 followObjectLabel.text = "Not following any object";
             }
             CamPaths CamPathsPanel = UIManager.GetPanel<CamPaths>(UIManager.Panels.CamPaths);
+
+            if (followRotationToggle.isOn) CamPathsPanel.TranslatePointsRotationToGlobal();
+            CamPathsPanel.TranslatePointsPositionToGlobal();
+
             CamPathsPanel.UpdatedFollowObject(null);
         }
 
@@ -463,11 +502,6 @@ namespace UnityExplorer.UI.Panels
 
         void OnUseGameCameraToggled(bool value)
         {
-            // If the previous camera is following a game object we remove it from tis childs.
-            if (followObject && ourCamera.transform.IsChildOf(followObject.transform)){
-                ourCamera.transform.SetParent(null, true);
-            }
-
             EventSystemHelper.SetSelectedGameObject(null);
 
             if (!inFreeCamMode)
@@ -484,8 +518,8 @@ namespace UnityExplorer.UI.Panels
 
             if (inFreeCamMode && ourCamera)
             {
-                ourCamera.transform.position = (Vector3)currentUserCameraPosition;
-                ourCamera.transform.rotation = (Quaternion)currentUserCameraRotation;
+                SetCameraPosition((Vector3)currentUserCameraPosition, true);
+                SetCameraRotation((Quaternion)currentUserCameraRotation, true);
                 ourCamera.fieldOfView = originalCameraFOV;
             }
 
@@ -503,7 +537,7 @@ namespace UnityExplorer.UI.Panels
                 return;
             }
 
-            SetCameraPosition(parsed);
+            SetCameraPositionInput(parsed);
         }
 
         void MoveSpeedInput_OnEndEdit(string input)
@@ -557,6 +591,55 @@ namespace UnityExplorer.UI.Panels
         public static bool ShouldOverrideInput(){
             return inFreeCamMode && blockGamesInputOnFreecamToggle.isOn;
         }
+
+        // Getters and Setters for camera position and rotation
+        public static Vector3 GetCameraPosition(bool isAbsolute = false){
+            if (isAbsolute) return ourCamera.transform.position;
+            if (followObject){
+                if (followRotationToggle.isOn){
+                    return Quaternion.Inverse(followObject.transform.rotation) * (ourCamera.transform.position - followObject.transform.position);
+                }
+                else {
+                    return ourCamera.transform.position - followObject.transform.position;
+                }
+            }
+            return ourCamera.transform.position;
+        }
+
+        public static Quaternion GetCameraRotation(bool isAbsolute = false){
+            if (isAbsolute) return ourCamera.transform.rotation;
+            if (followObject && followRotationToggle.isOn) return Quaternion.Inverse(followObjectLastRotation) * ourCamera.transform.rotation;
+            return ourCamera.transform.rotation;
+        }
+
+        public static void SetCameraPosition(Vector3 newPosition, bool isAbsolute = false){
+            if (isAbsolute){
+                ourCamera.transform.position = newPosition;
+            }
+            else if (followObject){
+                if (followRotationToggle.isOn){
+                    ourCamera.transform.position = followObject.transform.rotation * newPosition + followObject.transform.position;
+                }
+                else {
+                    ourCamera.transform.position = newPosition + followObject.transform.position;
+                }
+            }
+            else {
+                ourCamera.transform.position = newPosition;
+            }
+        }
+
+        public static void SetCameraRotation(Quaternion newRotation, bool isAbsolute = false){
+            if (isAbsolute){
+                ourCamera.transform.rotation = newRotation;
+            }
+            else if (followObject && followRotationToggle.isOn){
+                ourCamera.transform.rotation = followObjectLastRotation * newRotation;
+            }
+            else {
+                ourCamera.transform.rotation = newRotation;
+            }
+        }
     }
 
     internal class FreeCamBehaviour : MonoBehaviour
@@ -580,112 +663,124 @@ namespace UnityExplorer.UI.Panels
                     return;
                 }
 
-                if (FreeCamPanel.followObject && !FreeCamPanel.ourCamera.transform.IsChildOf(FreeCamPanel.followObject.transform)){
-                    FreeCamPanel.ourCamera.transform.SetParent(FreeCamPanel.followObject.transform, true);
-                }
-
-                // ------------- Handle input ----------------
-
-                if (FreeCamPanel.blockFreecamMovementToggle.isOn || FreeCamPanel.cameraPathMover.playingPath){
-                    return;
-                }
-
                 Transform transform = FreeCamPanel.ourCamera.transform;
 
-                FreeCamPanel.currentUserCameraPosition = transform.position;
-                FreeCamPanel.currentUserCameraRotation = transform.rotation;
-
-                float moveSpeed = FreeCamPanel.desiredMoveSpeed * 0.01665f; //"0.01665f" (60fps) in place of Time.DeltaTime. DeltaTime causes issues when game is paused.
-                float speedModifier = 1;
-                if (IInputManager.GetKey(ConfigManager.Speed_Up_Movement.Value))
-                    speedModifier = 10f;
-
-                if (IInputManager.GetKey(ConfigManager.Speed_Down_Movement.Value))
-                    speedModifier = 0.1f;
-
-                moveSpeed *= speedModifier;
-
-                if (IInputManager.GetKey(ConfigManager.Left_1.Value) || IInputManager.GetKey(ConfigManager.Left_2.Value))
-                    transform.position += transform.right * -1 * moveSpeed;
-
-                if (IInputManager.GetKey(ConfigManager.Right_1.Value) || IInputManager.GetKey(ConfigManager.Right_2.Value))
-                    transform.position += transform.right * moveSpeed;
-
-                if (IInputManager.GetKey(ConfigManager.Forwards_1.Value) || IInputManager.GetKey(ConfigManager.Forwards_2.Value))
-                    transform.position += transform.forward * moveSpeed;
-
-                if (IInputManager.GetKey(ConfigManager.Backwards_1.Value) || IInputManager.GetKey(ConfigManager.Backwards_2.Value))
-                    transform.position += transform.forward * -1 * moveSpeed;
-
-                if (IInputManager.GetKey(ConfigManager.Up.Value))
-                    transform.position += transform.up * moveSpeed;
-
-                if (IInputManager.GetKey(ConfigManager.Down.Value))
-                    transform.position += transform.up * -1 * moveSpeed;
-
-                if (IInputManager.GetKey(ConfigManager.Tilt_Left.Value))
-                    transform.Rotate(0, 0, moveSpeed, Space.Self);
-
-                if (IInputManager.GetKey(ConfigManager.Tilt_Right.Value))
-                    transform.Rotate(0, 0, - moveSpeed, Space.Self);
-
-                if (IInputManager.GetKey(ConfigManager.Tilt_Reset.Value)){
-                    // Extract the forward direction of the original quaternion
-                    Vector3 forwardDirection = transform.rotation * Vector3.forward;
-                    // Reset the tilt by creating a new quaternion with no tilt
-                    Quaternion newRotation = Quaternion.LookRotation(forwardDirection, Vector3.up);
-
-                    transform.rotation = newRotation;
+                if (!FreeCamPanel.blockFreecamMovementToggle.isOn && !FreeCamPanel.cameraPathMover.playingPath){
+                    ProcessInput();
                 }
 
-                if (IInputManager.GetMouseButton(1))
-                {
-                    Vector3 mouseDelta = IInputManager.MousePosition - FreeCamPanel.previousMousePosition;
-                    
-                    float newRotationX = transform.localEulerAngles.y + mouseDelta.x * 0.3f;
-                    float newRotationY = transform.localEulerAngles.x - mouseDelta.y * 0.3f;
+                if (FreeCamPanel.followObject != null){          
+                    // position update
+                    transform.position += FreeCamPanel.followObject.transform.position - FreeCamPanel.followObjectLastPosition;
 
-                    // Block the camera rotation to not go further than looking directly up or down.
-                    // We give a little extra to the [0, 90] rotation segment to not get the camera rotation stuck.
-                    // If it doesn't work in some game we should revisit this.
-                    newRotationY = newRotationY > 180f ? Mathf.Clamp(newRotationY, 270f, 360f) : Mathf.Clamp(newRotationY, -1f, 90.0f);
+                    if (FreeCamPanel.followRotationToggle.isOn){
+                        // rotation update
+                        Quaternion deltaRotation = FreeCamPanel.followObject.transform.rotation * Quaternion.Inverse(FreeCamPanel.followObjectLastRotation);
+                        Vector3 offset = transform.position - FreeCamPanel.followObject.transform.position;
+                        transform.position = transform.position - offset + deltaRotation * offset;
+                        transform.rotation = deltaRotation * transform.rotation;
+                    }
 
-                    transform.localEulerAngles = new Vector3(newRotationY, newRotationX, transform.localEulerAngles.z);
-                    
-                    // Apply the rotation changes while maintaining the camera's current roll.
-                    // Not using this method as it can easily modify the tilt, which is undesired.
-
-                    /*float pitch = -mouseDelta.y * speedModifier * Time.deltaTime;
-                    float yaw = mouseDelta.x * speedModifier * Time.deltaTime;
-
-                    Vector3 forwardDirection = transform.rotation * Vector3.forward;
-                    Vector3 rightDirection = transform.rotation * Vector3.right;
-                    Vector3 upDirection = transform.rotation * Vector3.up;
-
-                    Quaternion pitchRotation = Quaternion.AngleAxis(pitch, rightDirection);
-                    Quaternion yawRotation = Quaternion.AngleAxis(yaw, upDirection);
-
-                    transform.rotation = pitchRotation * yawRotation * transform.rotation;*/
-                }
-
-                if (IInputManager.GetKey(ConfigManager.Decrease_FOV.Value))
-                {
-                    FreeCamPanel.ourCamera.fieldOfView -= moveSpeed; 
-                }
-
-                if (IInputManager.GetKey(ConfigManager.Increase_FOV.Value))
-                {
-                    FreeCamPanel.ourCamera.fieldOfView += moveSpeed; 
-                }
-
-                if (IInputManager.GetKey(ConfigManager.Reset_FOV.Value)){
-                    FreeCamPanel.ourCamera.fieldOfView = FreeCamPanel.usingGameCamera ? FreeCamPanel.originalCameraFOV : 60;
+                    FreeCamPanel.followObjectLastPosition = FreeCamPanel.followObject.transform.position;
+                    FreeCamPanel.followObjectLastRotation = FreeCamPanel.followObject.transform.rotation;
                 }
 
                 FreeCamPanel.UpdatePositionInput();
-
-                FreeCamPanel.previousMousePosition = IInputManager.MousePosition;
             }
+        }
+
+        internal void ProcessInput(){
+            FreeCamPanel.currentUserCameraPosition = transform.position;
+            FreeCamPanel.currentUserCameraRotation = transform.rotation;
+
+            float moveSpeed = FreeCamPanel.desiredMoveSpeed * 0.01665f; //"0.01665f" (60fps) in place of Time.DeltaTime. DeltaTime causes issues when game is paused.
+            float speedModifier = 1;
+            if (IInputManager.GetKey(ConfigManager.Speed_Up_Movement.Value))
+                speedModifier = 10f;
+
+            if (IInputManager.GetKey(ConfigManager.Speed_Down_Movement.Value))
+                speedModifier = 0.1f;
+
+            moveSpeed *= speedModifier;
+
+            if (IInputManager.GetKey(ConfigManager.Left_1.Value) || IInputManager.GetKey(ConfigManager.Left_2.Value))
+                transform.position += transform.right * -1 * moveSpeed;
+
+            if (IInputManager.GetKey(ConfigManager.Right_1.Value) || IInputManager.GetKey(ConfigManager.Right_2.Value))
+                transform.position += transform.right * moveSpeed;
+
+            if (IInputManager.GetKey(ConfigManager.Forwards_1.Value) || IInputManager.GetKey(ConfigManager.Forwards_2.Value))
+                transform.position += transform.forward * moveSpeed;
+
+            if (IInputManager.GetKey(ConfigManager.Backwards_1.Value) || IInputManager.GetKey(ConfigManager.Backwards_2.Value))
+                transform.position += transform.forward * -1 * moveSpeed;
+
+            if (IInputManager.GetKey(ConfigManager.Up.Value))
+                transform.position += transform.up * moveSpeed;
+
+            if (IInputManager.GetKey(ConfigManager.Down.Value))
+                transform.position += transform.up * -1 * moveSpeed;
+
+            if (IInputManager.GetKey(ConfigManager.Tilt_Left.Value))
+                transform.Rotate(0, 0, moveSpeed, Space.Self);
+
+            if (IInputManager.GetKey(ConfigManager.Tilt_Right.Value))
+                transform.Rotate(0, 0, - moveSpeed, Space.Self);
+
+            if (IInputManager.GetKey(ConfigManager.Tilt_Reset.Value)){
+                // Extract the forward direction of the original quaternion
+                Vector3 forwardDirection = transform.rotation * Vector3.forward;
+                // Reset the tilt by creating a new quaternion with no tilt
+                Quaternion newRotation = Quaternion.LookRotation(forwardDirection, Vector3.up);
+
+                transform.rotation = newRotation;
+            }
+
+            if (IInputManager.GetMouseButton(1))
+            {
+                Vector3 mouseDelta = IInputManager.MousePosition - FreeCamPanel.previousMousePosition;
+                
+                float newRotationX = transform.localEulerAngles.y + mouseDelta.x * 0.3f;
+                float newRotationY = transform.localEulerAngles.x - mouseDelta.y * 0.3f;
+
+                // Block the camera rotation to not go further than looking directly up or down.
+                // We give a little extra to the [0, 90] rotation segment to not get the camera rotation stuck.
+                // If it doesn't work in some game we should revisit this.
+                newRotationY = newRotationY > 180f ? Mathf.Clamp(newRotationY, 270f, 360f) : Mathf.Clamp(newRotationY, -1f, 90.0f);
+
+                transform.localEulerAngles = new Vector3(newRotationY, newRotationX, transform.localEulerAngles.z);
+                
+                // Apply the rotation changes while maintaining the camera's current roll.
+                // Not using this method as it can easily modify the tilt, which is undesired.
+
+                /*float pitch = -mouseDelta.y * speedModifier * Time.deltaTime;
+                float yaw = mouseDelta.x * speedModifier * Time.deltaTime;
+
+                Vector3 forwardDirection = transform.rotation * Vector3.forward;
+                Vector3 rightDirection = transform.rotation * Vector3.right;
+                Vector3 upDirection = transform.rotation * Vector3.up;
+
+                Quaternion pitchRotation = Quaternion.AngleAxis(pitch, rightDirection);
+                Quaternion yawRotation = Quaternion.AngleAxis(yaw, upDirection);
+
+                transform.rotation = pitchRotation * yawRotation * transform.rotation;*/
+            }
+
+            if (IInputManager.GetKey(ConfigManager.Decrease_FOV.Value))
+            {
+                FreeCamPanel.ourCamera.fieldOfView -= moveSpeed; 
+            }
+
+            if (IInputManager.GetKey(ConfigManager.Increase_FOV.Value))
+            {
+                FreeCamPanel.ourCamera.fieldOfView += moveSpeed; 
+            }
+
+            if (IInputManager.GetKey(ConfigManager.Reset_FOV.Value)){
+                FreeCamPanel.ourCamera.fieldOfView = FreeCamPanel.usingGameCamera ? FreeCamPanel.originalCameraFOV : 60;
+            }
+
+            FreeCamPanel.previousMousePosition = IInputManager.MousePosition;
         }
     }
 
