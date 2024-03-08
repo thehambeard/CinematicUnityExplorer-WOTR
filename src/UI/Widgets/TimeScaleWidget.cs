@@ -86,10 +86,11 @@ namespace UnityExplorer.UI.Widgets
 
         void OnOverrideValueChanged(bool value)
         {
-            if (!pressedPauseHotkey) previousOverride = overrideTimeScaleToggle.isOn;
-
-            // If the game was paused we consider this an unpause
-            if (pause) pause = false;
+            if (!pressedPauseHotkey){
+                previousOverride = overrideTimeScaleToggle.isOn;
+                // If the game was paused we consider this an unpause
+                if (pause) pause = false;
+            }
 
             if (value){
                 SetTimeScale(desiredTime);

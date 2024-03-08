@@ -404,7 +404,6 @@ namespace UnityExplorer.UI.Panels
             if (obj != null){
                 // create the component on the object itself
                 camPointsUpdater = RuntimeHelper.AddComponent<CamPointsUpdater>(obj, typeof(CamPointsUpdater));
-                //camPointsUpdater = obj.AddComponent<CamPointsUpdater>();
 
                 camPointsUpdater.SetFollowObject(obj);
             }
