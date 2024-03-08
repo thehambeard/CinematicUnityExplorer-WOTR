@@ -146,6 +146,7 @@ namespace UnityExplorer.UI.Panels
                 string check = animatorPlayer.animator.name;
             }
             catch {
+                FindAllAnimators();
                 return;
             }
 

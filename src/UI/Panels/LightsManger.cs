@@ -66,6 +66,18 @@ namespace UnityExplorer.UI.Panels
             }
 
             GameObject light = CreatedLights[index];
+
+            // Check if the light was deleted because we switched scenes, and delete it from the list if that's the case
+            try {
+                string check = light.name;
+            }
+            catch {
+                ExplorerCore.LogWarning("Light was deleted by the game!");
+                CreatedLights.RemoveAt(index);
+                lightsScrollPool.Refresh(true, false);
+                return;
+            }
+
             cell.light = light;
             cell.label.text = light.name;
         }
@@ -132,7 +144,7 @@ namespace UnityExplorer.UI.Panels
 
         private void CreateLight(LightType requestedType){
             GameObject obj = new($"CUE - Light {lightCounter}");
-            //DontDestroyOnLoad(obj);
+            GameObject.DontDestroyOnLoad(obj);
             obj.hideFlags = HideFlags.HideAndDontSave;
             Light lightComponent = obj.AddComponent<UnityEngine.Light>();
             lightComponent.type = requestedType;
