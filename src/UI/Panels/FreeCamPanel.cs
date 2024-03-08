@@ -336,11 +336,11 @@ namespace UnityExplorer.UI.Panels
                 UpdateClippingPlanes();
             });
             // Default value
-            farClipPlaneValue = 1000;
+            farClipPlaneValue = 2000;
             farClipPlaneSlider.m_FillImage.color = Color.clear;
             farClipPlaneSlider.minValue = 100;
             farClipPlaneSlider.maxValue = 2000;
-            farClipPlaneSlider.value = 1000; // doesn't take farClipPlaneValue for some reason??
+            farClipPlaneSlider.value = 2000; // doesn't take farClipPlaneValue for some reason??
 
             AddSpacer(5);
 
@@ -722,10 +722,10 @@ namespace UnityExplorer.UI.Panels
                 transform.position += transform.up * -1 * moveSpeed;
 
             if (IInputManager.GetKey(ConfigManager.Tilt_Left.Value))
-                transform.Rotate(0, 0, moveSpeed, Space.Self);
+                transform.Rotate(0, 0, moveSpeed * 10, Space.Self);
 
             if (IInputManager.GetKey(ConfigManager.Tilt_Right.Value))
-                transform.Rotate(0, 0, - moveSpeed, Space.Self);
+                transform.Rotate(0, 0, - moveSpeed * 10, Space.Self);
 
             if (IInputManager.GetKey(ConfigManager.Tilt_Reset.Value)){
                 // Extract the forward direction of the original quaternion
