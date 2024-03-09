@@ -1,5 +1,7 @@
+# Cinematic Unity Explorer
+
 <p align="center">
-  <img align="center" src="img/icon.png">
+  <img align="center" src="img/icon.png" width="300" height="300">
 </p>
 
 <p align="center">
@@ -317,16 +319,23 @@ The inspector is used to see detailed information on objects of any type and man
 
 Building individual configurations from your IDE is fine, though note that the intial build process builds into `Release/<version>/...` instead of the subfolders that the powershell script uses. Batch building is not currently supported with the project.
 
+# Showcase
+
+A non-exhaustive list of games that have used this project for making marketing material:
+
+- [My Time at Sandrock](https://store.steampowered.com/app/1084600/My_Time_at_Sandrock/)
+- [Void Crew](https://store.steampowered.com/app/1063420/Void_Crew/)
+
+Did you use this mod for your project? Hit me up and let me know! I would love to check it out!
+
+Even tho it's not necessary, if you happen to use this mod in the marketing campaign of a commercial project and find it useful please consider including it in the credits!
+
 # Acknowledgments
 
 * [sinai-dev](https://github.com/sinai-dev/) for their incredible work on the original UnityExplorer.
 * [yukieiji](https://github.com/yukieiji/) for their awesome work on mainting [their fork](https://github.com/yukieiji/UnityExplorer) of UnityExplorer giving support to new versions of the engine.
 * [ManlyMarco](https://github.com/ManlyMarco) for [Runtime Unity Editor](https://github.com/ManlyMarco/RuntimeUnityEditor) \[[license](THIRDPARTY_LICENSES.md#runtimeunityeditor-license)\], the ScriptEvaluator from RUE's REPL console was used as the base for UnityExplorer's C# console.
 * [Geoffrey Horsington](https://github.com/ghorsington) for [mcs-unity](https://github.com/sinai-dev/mcs-unity) \[no license\], used as the `Mono.CSharp` reference for the C# Console.
-
-# Crediting
-
-Even tho it's not necessary, if you happen to use this mod in the marketing campaign of a game and find it useful please consider including it in the credits!
 
 # Support
 
