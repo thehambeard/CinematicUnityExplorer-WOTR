@@ -424,7 +424,17 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        public void TranslatePointsPositionToGlobal(){
+        public void TranslatePointsToGlobal(bool isFollowingRotation){
+            if (isFollowingRotation) TranslatePointsRotationToGlobal();
+            TranslatePointsPositionToGlobal();
+        }
+
+        public void TranslatePointsToLocal(bool isFollowingRotation){
+            TranslatePointsPositionToLocal();
+            if (isFollowingRotation) TranslatePointsRotationToLocal();
+        }
+
+        private void TranslatePointsPositionToGlobal(){
             List<CatmullRom.CatmullRomPoint> newControlPoints = new List<CatmullRom.CatmullRomPoint>();
             foreach(CatmullRom.CatmullRomPoint point in controlPoints){
                 Vector3 newPos = point.position + followObject.transform.position;
@@ -450,7 +460,7 @@ namespace UnityExplorer.UI.Panels
             controlPoints = newControlPoints;
         }
 
-        public void TranslatePointsPositionToLocal(){
+        private void TranslatePointsPositionToLocal(){
             List<CatmullRom.CatmullRomPoint> newControlPoints = new List<CatmullRom.CatmullRomPoint>();
             foreach(CatmullRom.CatmullRomPoint point in controlPoints){
                 Vector3 newPos = point.position - followObject.transform.position;

@@ -448,8 +448,7 @@ namespace UnityExplorer.UI.Panels
             CamPaths CamPathsPanel = UIManager.GetPanel<CamPaths>(UIManager.Panels.CamPaths);
 
             if (followObject != null){
-                if (followRotationToggle.isOn) CamPathsPanel.TranslatePointsRotationToGlobal();
-                CamPathsPanel.TranslatePointsPositionToGlobal();
+                CamPathsPanel.TranslatePointsToGlobal(followRotationToggle.isOn);
             }
 
             followObject = obj;
@@ -459,8 +458,7 @@ namespace UnityExplorer.UI.Panels
             
             CamPathsPanel.UpdatedFollowObject(obj);
 
-            CamPathsPanel.TranslatePointsPositionToLocal();
-            if (followRotationToggle.isOn) CamPathsPanel.TranslatePointsRotationToLocal();
+            CamPathsPanel.TranslatePointsToLocal(followRotationToggle.isOn);
 
             CamPathsPanel.MaybeRedrawPath();
         }
@@ -480,8 +478,7 @@ namespace UnityExplorer.UI.Panels
             }
             CamPaths CamPathsPanel = UIManager.GetPanel<CamPaths>(UIManager.Panels.CamPaths);
 
-            if (followRotationToggle.isOn) CamPathsPanel.TranslatePointsRotationToGlobal();
-            CamPathsPanel.TranslatePointsPositionToGlobal();
+            CamPathsPanel.TranslatePointsToGlobal(followRotationToggle.isOn);
 
             CamPathsPanel.UpdatedFollowObject(null);
         }
