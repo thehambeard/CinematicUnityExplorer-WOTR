@@ -25,7 +25,7 @@ namespace UnityExplorer.UI.Widgets
 
         Toggle overrideTimeScaleToggle;
         InputFieldRef timeInput;
-        float desiredTime = 1;
+        float desiredTime;
         bool settingTimeScale;
         bool pause;
         Slider slider;
@@ -117,6 +117,10 @@ namespace UnityExplorer.UI.Widgets
 
             GameObject sliderObj = UIFactory.CreateSlider(parent, "Slider_time_scale", out slider);
             UIFactory.SetLayoutElement(sliderObj, minHeight: 25, minWidth: 75, flexibleWidth: 0);
+            slider.value = 1;
+            desiredTime = 1;
+            previousDesiredTime = 1;
+
             slider.onValueChanged.AddListener((newTimeScale) => {
                 desiredTime = newTimeScale;
                 timeInput.Text = desiredTime.ToString("0.00");
@@ -136,8 +140,6 @@ namespace UnityExplorer.UI.Widgets
             overrideTimeScaleToggle.isOn = false;
             overrideTimeScaleToggle.onValueChanged.AddListener(OnOverrideValueChanged);
             overrideTimeScaleText.text = "Override";
-
-            slider.value = 1;
         }
 
         static void InitPatch()
