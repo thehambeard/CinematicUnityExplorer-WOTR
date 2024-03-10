@@ -13,29 +13,65 @@ namespace UnityExplorer
     public class ArrowGenerator
     {
         public static GameObject CreateArrow(Vector3 arrowPosition, Quaternion arrowRotation, Color color){
+            try {
+                GameObject cylinder = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                cylinder.GetComponent<Collider>().enabled = false;
+                cylinder.GetComponent<MeshFilter>().mesh = CreateCylinderMesh(0.01f, 20, 2);
+                cylinder.transform.rotation = Quaternion.LookRotation(Vector3.down, Vector3.up);
+                Renderer rendCylinder = cylinder.GetComponent<Renderer> ();
+                rendCylinder.material = new Material(Shader.Find("Sprites/Default"));
+                rendCylinder.material.color = color;
+
+                GameObject cone = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                cone.GetComponent<Collider>().enabled = false;
+                cone.GetComponent<MeshFilter>().mesh = CreateConeMesh(10, 0.05f, 0.1f);
+                cone.transform.SetParent(cylinder.transform, true);
+                Renderer rendCone = cone.GetComponent<Renderer>();
+                rendCone.material = new Material(Shader.Find("Sprites/Default"));
+                rendCone.material.color = color;
+
+                cylinder.transform.rotation = Quaternion.LookRotation(Vector3.back, Vector3.up);
+
+                GameObject arrow = new GameObject("CUE-Arrow");
+                cylinder.transform.SetParent(arrow.transform, true);
+                arrow.transform.position = arrowPosition;
+                arrow.transform.rotation = arrowRotation;
+                arrow.transform.position += 0.5f * arrow.transform.forward; // Move the arrow forward so the cylinder starts on the wanted position
+
+                return arrow;
+            }
+            catch {
+                return FallbackArrow(arrowPosition, arrowRotation, color);
+            }
+        }
+
+        private static GameObject FallbackArrow(Vector3 arrowPosition, Quaternion arrowRotation, Color color){
             GameObject cylinder = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             cylinder.GetComponent<Collider>().enabled = false;
-            cylinder.GetComponent<MeshFilter>().mesh = CreateCylinderMesh(0.01f, 20, 2);
-            cylinder.transform.rotation = Quaternion.LookRotation(Vector3.down, Vector3.up);
             Renderer rendCylinder = cylinder.GetComponent<Renderer> ();
             rendCylinder.material = new Material(Shader.Find("Sprites/Default"));
             rendCylinder.material.color = color;
+            cylinder.transform.localScale = new Vector3(0.025f, 0.15f, 0.025f);
 
-            GameObject cone = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            cone.GetComponent<Collider>().enabled = false;
-            cone.GetComponent<MeshFilter>().mesh = CreateConeMesh(10, 0.05f, 0.1f);
-            cone.transform.SetParent(cylinder.transform, true);
-            Renderer rendCone = cone.GetComponent<Renderer>();
-            rendCone.material = new Material(Shader.Find("Sprites/Default"));
-            rendCone.material.color = color;
-
-            cylinder.transform.rotation = Quaternion.LookRotation(Vector3.back, Vector3.up);
+            GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            sphere.GetComponent<Collider>().enabled = false;
+            
+            sphere.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
+            sphere.transform.position = new Vector3(0, 0.15f, 0);
+            sphere.transform.SetParent(cylinder.transform, true);
+            Renderer rendSphere = sphere.GetComponent<Renderer>();
+            rendSphere.material = new Material(Shader.Find("Sprites/Default"));
+            rendSphere.material.color = color;
 
             GameObject arrow = new GameObject("CUE-Arrow");
             cylinder.transform.SetParent(arrow.transform, true);
             arrow.transform.position = arrowPosition;
-            arrow.transform.rotation = arrowRotation;
-            arrow.transform.position += 0.5f * arrow.transform.forward; // Move the arrow forward so the cylinder starts on the wanted position
+
+            Vector3 arrowRotEulerAngles = arrowRotation.eulerAngles;
+            arrowRotEulerAngles.x += 90f;
+            arrow.transform.rotation = Quaternion.Euler(arrowRotEulerAngles);
+
+            arrow.transform.position += 0.15f * arrow.transform.up; // Move the arrow forward so the cylinder starts on the wanted position
 
             return arrow;
         }

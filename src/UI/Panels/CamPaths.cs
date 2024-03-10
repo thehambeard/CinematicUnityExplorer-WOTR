@@ -276,12 +276,9 @@ namespace UnityExplorer.UI.Panels
                         Quaternion arrowRot = lookaheadPoints[i].rotation;
                         if (followObject != null && FreeCamPanel.followRotationToggle.isOn) arrowRot = followObject.transform.rotation * arrowRot;
 
-                        try {
-                            // We could expose the color of the arrow to a setting
-                            GameObject arrow = ArrowGenerator.CreateArrow(arrowPos, arrowRot, Color.green);
-                            arrow.transform.SetParent(pathVisualizer.transform, true);
-                        }
-                        catch { ExplorerCore.LogWarning("Couldn't create campath visualizer."); }
+                        // We could expose the color of the arrow to a setting
+                        GameObject arrow = ArrowGenerator.CreateArrow(arrowPos, arrowRot, Color.green);
+                        arrow.transform.SetParent(pathVisualizer.transform, true);
                         n = 0;
                     }
                 }
