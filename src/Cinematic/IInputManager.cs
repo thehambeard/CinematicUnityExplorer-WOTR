@@ -88,7 +88,10 @@ namespace UniverseLib.Input
             }
         }
 
-        public static Vector3 MousePosition => currentInputType == InputType.Legacy ? (Vector3)ILegacyInput.MousePosition : (Vector3)InputManager.MousePosition;
+        // We won't mock this as it made it impossible to drag the mod panels across the screen in some games for some reason.
+        // It might affect some games that use custom classes to control the camera, but those would still probably need to be
+        // manually disabled because of the camera position control override. Should try it out with more games.
+        public static Vector3 MousePosition => (Vector3)InputManager.MousePosition;
     }
 
     public static class ILegacyInput {
@@ -98,8 +101,6 @@ namespace UniverseLib.Input
 
         public static Dictionary<int, bool> getMouseButton = new Dictionary<int, bool>();
         public static Dictionary<int, bool> getMouseButtonDown = new Dictionary<int, bool>();
-
-        public static Vector3 MousePosition;
         
         // Wrapped methods
 
@@ -243,19 +244,6 @@ namespace UniverseLib.Input
                     postfix: new(AccessTools.Method(typeof(ILegacyInput), nameof(OverrideMouseButtonDown))));
             }
             catch {  }
-
-            try
-            {
-                MethodInfo getMousePositionMethod = t_Input.GetProperty("mousePosition").GetGetMethod();
-                //ExplorerCore.LogWarning(getMousePositionMethod);
-#if CPP
-                if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getMousePositionMethod) == null)
-                    throw new Exception();
-#endif
-                ExplorerCore.Harmony.Patch(getMousePositionMethod,
-                    postfix: new(AccessTools.Method(typeof(ILegacyInput), nameof(OverrideMousePosition))));
-            }
-            catch { }
         }
 
         // Postfix functions
@@ -334,15 +322,6 @@ namespace UniverseLib.Input
             // Therefore, if we still want to interact with the Unity Explorer menu we would need to let the button action pass through when it's open.
             if (FreeCamPanel.ShouldOverrideInput() && !(button == 0 && UIManager.ShowMenu)){
                 __result = false;
-            }
-        }
-
-        public static void OverrideMousePosition(ref Vector3 __result)
-        {
-            MousePosition = __result;
-
-            if (FreeCamPanel.ShouldOverrideInput() && !UIManager.ShowMenu){
-                __result = Vector3.zero;
             }
         }
     }
