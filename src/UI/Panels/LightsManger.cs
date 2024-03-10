@@ -158,9 +158,12 @@ namespace UnityExplorer.UI.Panels
             switch(requestedType){
                 case LightType.Spot:
                     lightComponent.range = 10;
-                    GameObject arrow = ArrowGenerator.CreateArrow(Vector3.zero, Quaternion.identity, lightComponent.color);
-                    arrow.SetActive(false);
-                    arrow.transform.SetParent(obj.transform, true);
+                    try {
+                        GameObject arrow = ArrowGenerator.CreateArrow(Vector3.zero, Quaternion.identity, lightComponent.color);
+                        arrow.SetActive(false);
+                        arrow.transform.SetParent(obj.transform, true);
+                    }
+                    catch { ExplorerCore.LogWarning("Couldn't create spotlight visualizer."); }
                     break;
                 case LightType.Point:
                     GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);

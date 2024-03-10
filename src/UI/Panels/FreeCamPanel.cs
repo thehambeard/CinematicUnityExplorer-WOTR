@@ -270,7 +270,7 @@ namespace UnityExplorer.UI.Panels
             GameObject toggleObj = UIFactory.CreateToggle(ContentRoot, "UseGameCameraToggle", out useGameCameraToggle, out Text useGameCameraText);
             UIFactory.SetLayoutElement(toggleObj, minHeight: 25, flexibleWidth: 9999);
             useGameCameraToggle.onValueChanged.AddListener(OnUseGameCameraToggled);
-            useGameCameraToggle.isOn = false;
+            useGameCameraToggle.isOn = ConfigManager.Default_Gameplay_Freecam.Value;
             useGameCameraText.text = "Use Game Camera?";
 
             AddSpacer(5);
@@ -499,6 +499,7 @@ namespace UnityExplorer.UI.Panels
 
         void OnUseGameCameraToggled(bool value)
         {
+            // TODO: Change the value on ConfigManager.Default_Gameplay_Freecam and save it
             EventSystemHelper.SetSelectedGameObject(null);
 
             if (!inFreeCamMode)
