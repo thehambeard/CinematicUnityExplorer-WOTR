@@ -64,7 +64,7 @@ namespace UnityExplorer.UI.Panels
             Type searchType = ReflectionUtility.GetTypeByName("UnityEngine.Animator");
             searchType = searchType is Type type ? type : searchType.GetActualType();
             List<AnimatorPlayer> newAnimators = RuntimeHelper.FindObjectsOfTypeAll(searchType).Select(obj => obj.TryCast<Behaviour>())
-            .Where(a => a.GetComponentsInChildren<SkinnedMeshRenderer>(false).Length != 0 && a.enabled && a.GetComponentsInChildren<Rigidbody>(false).Length != 0)
+            .Where(a => a.isActiveAndEnabled && (a.GetComponentsInChildren<Rigidbody>(false).Length != 0 || a.GetComponentsInChildren<SkinnedMeshRenderer>(false).Length != 0))
             .OrderBy(x=>x.name)
             .Select(a => new AnimatorPlayer(a))
             .ToList();

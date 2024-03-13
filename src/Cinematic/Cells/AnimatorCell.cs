@@ -65,14 +65,16 @@ namespace UnityExplorer.UI.Panels
 
         private void PlayButton_OnClick(){
             animatorPlayer.PlayOverridingAnimation();
-            // Turn the toggle on to play the animation
-            if (!AnimatorToggle.isOn) AnimatorToggle.isOn = true;
+            // Needed for the new animation to play for some reason
+            EnableAnimation(false);
+            EnableAnimation(true);
         }
 
         public virtual GameObject CreateContent(GameObject parent)
         {
             GameObject AnimatorToggleObj = UIFactory.CreateToggle(parent, $"AnimatorToggle", out AnimatorToggle, out Text animatorToggleText);
             UIFactory.SetLayoutElement(AnimatorToggleObj, minHeight: 25);
+            AnimatorToggle.isOn = animatorPlayer != null && animatorPlayer.animator.speed == 1;
             AnimatorToggle.onValueChanged.AddListener(EnableAnimation);
 
             UIRoot = AnimatorToggleObj;

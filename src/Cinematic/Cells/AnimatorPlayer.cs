@@ -54,6 +54,8 @@ namespace UnityExplorer.UI.Panels
         }
 
         public void ResetAnimation(){
+            // Let the game change animations again
+            animator.StopPlayback();
             if (originalAnimatorController != null && animator.wrappedObject != null){
                 if (animator.runtimeAnimatorController != null && originalAnimatorController != null){
                     animator.runtimeAnimatorController = originalAnimatorController;
@@ -64,20 +66,24 @@ namespace UnityExplorer.UI.Panels
         }
 
         public void PlayOverridingAnimation(){
+            ResetAnimation();
             if (animatorOverrideController == null){
                 animatorOverrideController = new IAnimatorOverrideController();
                 animatorOverrideController.runtimeAnimatorController = originalAnimatorController;
                 // Actually uses runtimeAnimatorController on the original object, should make the wrapper class a child of the runtimeAnimatorController instead
                 animator.runtimeAnimatorControllerOverride = animatorOverrideController;
+
+                // Block the game from changing animations
+                animator.StartPlayback();
             }
 
             // Restore previous animation
             if (lastCurrentAnimation != null){
-                animatorOverrideController[lastCurrentAnimation.name] = lastCurrentAnimation;
+                animatorOverrideController[lastCurrentAnimation] = lastCurrentAnimation;
             }
 
             IAnimationClip currentAnimation = animator.GetCurrentAnimatorClipInfo(0)[0].clip;
-            animatorOverrideController[currentAnimation.name] = overridingAnimation;
+            animatorOverrideController[currentAnimation] = overridingAnimation;
             animator.Play(currentAnimation.name);
 
             lastCurrentAnimation = currentAnimation;
@@ -239,12 +245,22 @@ namespace UnityExplorer.UI.Panels
                 return (GameObject) animatorGameObject.GetValue(_animator.TryCast(), null);
             }
         }
+
+        public void StopPlayback(){
+            MethodInfo StopPlayBackMethod = realType.GetMethod("StopPlayback", Type.EmptyTypes);
+            StopPlayBackMethod.Invoke(_animator.TryCast(), null);
+        }
+
+        public void StartPlayback(){
+            MethodInfo StartPlaybackMethod = realType.GetMethod("StartPlayback", Type.EmptyTypes);
+            StartPlaybackMethod.Invoke(_animator.TryCast(), null);
+        }
     }
 
     public class IAnimationClip : IEquatable<IAnimationClip>
     {
         object _animationClip;
-        Type realType;
+        public Type realType;
         public object wrappedObject => _animationClip;
 
         public IAnimationClip(object animationClip){
@@ -414,17 +430,35 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        public IAnimationClip this[string key]
+        public IAnimationClip this[IAnimationClip clip]
         {
             get
             {
                 PropertyInfo indexerProperty = realType.GetProperty("Item", new[] { typeof(string) });
-                return new IAnimationClip(indexerProperty.GetValue(_animatorOverrideController.TryCast(), new object[] { key }));
+                if (indexerProperty != null){
+                    return new IAnimationClip(indexerProperty.GetValue(_animatorOverrideController.TryCast(), new object[] { clip.name }));
+                }
+
+                indexerProperty = realType.GetProperty("Item", new[] { clip.realType });
+                if (indexerProperty != null){
+                    return new IAnimationClip(indexerProperty.GetValue(_animatorOverrideController.TryCast(), new object[] { clip.wrappedObject }));
+                }
+
+                return null;
             }
             set
             {
                 PropertyInfo indexerProperty = realType.GetProperty("Item", new[] { typeof(string) });
-                indexerProperty.SetValue(_animatorOverrideController.TryCast(), value.wrappedObject.TryCast(), new object[] { key });
+                if (indexerProperty != null){
+                    indexerProperty.SetValue(_animatorOverrideController.TryCast(), value.wrappedObject.TryCast(), new object[] { clip.name });
+                    return;
+                }
+
+                indexerProperty = realType.GetProperty("Item", new[] { clip.realType });
+                if (indexerProperty != null){
+                    indexerProperty.SetValue(_animatorOverrideController.TryCast(), value.wrappedObject.TryCast(), new object[] { clip.wrappedObject });
+                    return;
+                }
             }
         }
     }
