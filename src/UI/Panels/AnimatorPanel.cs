@@ -53,13 +53,7 @@ namespace UnityExplorer.UI.Panels
 
         private void FindAllAnimators(){
             // Enable all animators on refresh
-            if (animators.Count != 0) {
-                foreach (AnimatorPlayer animatorPlayer in animators)
-                {
-                    animatorPlayer.ResetAnimation();
-                }
-                masterAnimatorToggle.isOn = true; // Will also trigger "MasterToggleAnimators(true)"
-            }
+            masterAnimatorToggle.isOn = true; // Will also trigger "MasterToggleAnimators(true)"
 
             Type searchType = ReflectionUtility.GetTypeByName("UnityEngine.Animator");
             searchType = searchType is Type type ? type : searchType.GetActualType();
@@ -81,6 +75,14 @@ namespace UnityExplorer.UI.Panels
             animators = newAnimators;
 
             animatorScrollPool.Refresh(true, false);
+        }
+
+        
+        private void ResetAllAnimators(){
+            foreach (AnimatorPlayer animatorPlayer in animators)
+            {
+                animatorPlayer.ResetAnimation();
+            }
         }
 
         public void MasterToggleAnimators(bool enable){
@@ -113,6 +115,10 @@ namespace UnityExplorer.UI.Panels
             ButtonRef updateAnimators = UIFactory.CreateButton(firstGroup, "RefreshAnimators", "Refresh Animators");
             UIFactory.SetLayoutElement(updateAnimators.GameObject, minWidth: 150, minHeight: 25);
             updateAnimators.OnClick += FindAllAnimators;
+
+            ButtonRef resetAnimators = UIFactory.CreateButton(firstGroup, "ResetAnimators", "Reset Animators");
+            UIFactory.SetLayoutElement(resetAnimators.GameObject, minWidth: 150, minHeight: 25);
+            resetAnimators.OnClick += ResetAllAnimators;
 
             GameObject animatorObj = UIFactory.CreateToggle(firstGroup, $"Master Animation Toggle", out masterAnimatorToggle, out Text masterAnimatorText);
             UIFactory.SetLayoutElement(animatorObj, minHeight: 25);
