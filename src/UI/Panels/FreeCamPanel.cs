@@ -127,6 +127,15 @@ namespace UnityExplorer.UI.Panels
                     usingGameCamera = true;
                     ourCamera = lastMainCamera;
                     MaybeToggleCinemachine(false);
+
+                    // If the farClipPlaneValue is the default one try to use the one from the gameplay camera
+                    if (farClipPlaneValue == 2000){
+                        farClipPlaneValue = ourCamera.farClipPlane;
+                        farClipPlaneInput.Text = farClipPlaneValue.ToString();
+                        // Let the default farClipPlane value exceed the slider max value
+                        if (farClipPlaneValue <= farClipPlaneSlider.maxValue)
+                            farClipPlaneSlider.value = farClipPlaneValue;
+                    }
                 }
             }
 
@@ -316,11 +325,11 @@ namespace UnityExplorer.UI.Panels
                 UpdateClippingPlanes();
             });
             // Default value
-            nearClipPlaneValue = 0.001f;
+            nearClipPlaneValue = 0.1f;
             nearClipPlaneSlider.m_FillImage.color = Color.clear;
             nearClipPlaneSlider.minValue = 0.001f;
             nearClipPlaneSlider.maxValue = 100;
-            nearClipPlaneSlider.value = nearClipPlaneValue;
+            nearClipPlaneSlider.value = 0.1f; // doesn't take nearClipPlaneValue for some reason??
 
             AddSpacer(5);
 
