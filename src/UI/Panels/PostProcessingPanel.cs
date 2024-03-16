@@ -117,11 +117,53 @@ namespace UnityExplorer.UI.Panels
                 "AmbientOcclusion",
                 "AutoExposure",
                 "ScreenSpaceReflections"
-                };
+            };
 
             foreach (string effect in postProcessingClassEffects){
                 try {
                     AddEffect("UnityEngine.Rendering.PostProcessing", effect);
+                }
+                catch {}
+            }
+
+            string[] highDefinitionClassEffects = {
+                "Vignette",
+                "Bloom",
+                "Grain",
+                "Fog",
+                "DepthOfField",
+                "Tonemapping",
+                "LensDistortion",
+                "ChromaticAberration",
+                "AmbientOcclusion",
+                "AutoExposure",
+                "ScreenSpaceReflections"
+            };
+
+            foreach (string effect in highDefinitionClassEffects){
+                try {
+                    AddEffect("UnityEngine.Rendering.HighDefinition", effect);
+                }
+                catch {}
+            }
+
+            string[] volumeClassEffects = {
+                "Vignette",
+                "Bloom",
+                "Grain",
+                "Fog",
+                "DepthOfField",
+                "Tonemapping",
+                "LensDistortion",
+                "ChromaticAberration",
+                "AmbientOcclusion",
+                "AutoExposure",
+                "ScreenSpaceReflections"
+            };
+
+            foreach (string effect in volumeClassEffects){
+                try {
+                    AddEffect("UnityEngine.Rendering.Volume", effect);
                 }
                 catch {}
             }
