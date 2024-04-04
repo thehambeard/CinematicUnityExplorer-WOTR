@@ -21,6 +21,13 @@
 
 [![](https://img.shields.io/github/release/originalnicodr/CinematicUnityExplorer.svg?label=version)](../../releases/latest) [![](https://img.shields.io/github/actions/workflow/status/originalnicodr/CinematicUnityExplorer/dotnet.yml)](https://github.com/originalnicodr/CinematicUnityExplorer/actions) [![](https://img.shields.io/github/downloads/originalnicodr/CinematicUnityExplorer/latest/total.svg)](../../releases/latest)
 
+<p align="center">
+<a href="https://www.youtube.com/watch?v=--8DOKWzGJ4" target="_blank">
+  <img src="https://i.ytimg.com/vi_webp/--8DOKWzGJ4/maxresdefault.webp">
+</a>
+<i>Trailer showcasing the fork features</i>
+</p>
+
 ## Release schedule
 
 Nightly builds can be found [here](https://github.com/originalnicodr/CinematicUnityExplorer/actions).
@@ -222,7 +229,7 @@ Alongside all of this, you can also open each character game object by clicking 
 
 # Why a fork instead of making a new mod?
 
-It wasn't the original intention to develop this fork to its current state. I just wanted to make it easier for me and my friends to take screenshots of Unity games and it rolled from there. It is in fact true that me modifying an already existing generic mod streamlined things instead of doing everything from zero, but it's also true that some of UnityExplorer vanilla functionality is useful for doing marketing-related stuff as well.
+It wasn't the original intention to develop this fork to its current state. I just wanted to make it easier for me and my friends to take screenshots of Unity games and it rolled from there. It is in fact true that me modifying an already existing generic mod streamlined things instead of doing everything from zero, but it's also true that some of UnityExplorer vanilla functionality is useful for doing marketing-related stuff as well (as well as allowing some features to work by letting the user get their hands dirty, e.g. unlocking the gameplay freecam).
 
 Maybe I would make a separate version one day, but for now, it is what it is.
 
