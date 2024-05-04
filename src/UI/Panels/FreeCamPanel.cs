@@ -4,6 +4,9 @@ using UnityExplorer.Inspectors;
 using UniverseLib.Input;
 using UniverseLib.UI;
 using UniverseLib.UI.Models;
+using System.Runtime.InteropServices;
+using CinematicUnityExplorer.Cinematic;
+
 #if UNHOLLOWER
 using UnhollowerRuntimeLib;
 #endif
@@ -76,9 +79,12 @@ namespace UnityExplorer.UI.Panels
 
         private static FreecamCursorUnlocker freecamCursorUnlocker = null;
 
+        public static UnityIGCSConnector connector = new();
+
         internal static void BeginFreecam()
         {
             inFreeCamMode = true;
+            connector.UpdateFreecamStatus(true);
 
             previousMousePosition = IInputManager.MousePosition;
 
@@ -177,6 +183,7 @@ namespace UnityExplorer.UI.Panels
         internal static void EndFreecam()
         {
             inFreeCamMode = false;
+            connector.UpdateFreecamStatus(false);
 
             if (usingGameCamera)
             {
@@ -252,6 +259,9 @@ namespace UnityExplorer.UI.Panels
                 return;
 
             if (positionInput.Component.isFocused)
+                return;
+
+            if (connector.IsActive)
                 return;
 
             lastSetCameraPosition = ourCamera.transform.position;
@@ -672,7 +682,7 @@ namespace UnityExplorer.UI.Panels
 
                 Transform transform = FreeCamPanel.ourCamera.transform;
 
-                if (!FreeCamPanel.blockFreecamMovementToggle.isOn && !FreeCamPanel.cameraPathMover.playingPath){
+                if (!FreeCamPanel.blockFreecamMovementToggle.isOn && !FreeCamPanel.cameraPathMover.playingPath && !FreeCamPanel.connector.IsActive) {
                     ProcessInput();
                 }
 
@@ -691,6 +701,8 @@ namespace UnityExplorer.UI.Panels
                     FreeCamPanel.followObjectLastPosition = FreeCamPanel.followObject.transform.position;
                     FreeCamPanel.followObjectLastRotation = FreeCamPanel.followObject.transform.rotation;
                 }
+
+                FreeCamPanel.connector.ExecuteCameraCommand(FreeCamPanel.ourCamera);
 
                 FreeCamPanel.UpdatePositionInput();
             }
