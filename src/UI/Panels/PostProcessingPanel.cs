@@ -31,6 +31,7 @@ namespace UnityExplorer.UI.Panels
         public static Dictionary<string,List<PPEffect>> postProcessingEffects = null;
         static ButtonRef updateEffects;
         List<GameObject> UIElements = new List<GameObject>();
+        public bool foundAnyEffect;
 
         public class PPEffect
         {
@@ -46,8 +47,6 @@ namespace UnityExplorer.UI.Panels
                 List<CacheMember> members = CacheMemberFactory.GetCacheMembers(objType, inspector);
                 
                 foreach (CacheMember member in members){
-                    //ExplorerCore.LogWarning(entry.NameForFiltering);
-
                     if (member.NameForFiltering.EndsWith(".active")){
                         member.Evaluate();
                         Active = member;
@@ -68,6 +67,8 @@ namespace UnityExplorer.UI.Panels
         }
 
         public void UpdatePPElements(){
+            foundAnyEffect = false;
+
             if(postProcessingEffects != null){
                 // We turn the effects we had back on so they get captured again on refresh
                 foreach (List<PPEffect> effects in postProcessingEffects.Values){
@@ -168,6 +169,10 @@ namespace UnityExplorer.UI.Panels
                 catch {}
             }
 
+            if (!foundAnyEffect){
+                ExplorerCore.Log("Couldn't find any standard post-processing effect classes.");
+            }
+
             BuildEffectTogglers();
         }
 
@@ -189,8 +194,12 @@ namespace UnityExplorer.UI.Panels
                         postProcessingEffects[effect].Add(entry);
                     }
                 }
+
+                foundAnyEffect = true;
             }
-            catch { ExplorerCore.Log($"Couldn't find {baseClass}.{effect}");}
+            catch {
+                // ExplorerCore.Log($"Couldn't find {baseClass}.{effect}");
+            }
         }
 
         private void SetEffect(bool value, List<PPEffect> effects){

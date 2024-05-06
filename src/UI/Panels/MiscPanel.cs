@@ -41,13 +41,13 @@ namespace UnityExplorer.UI.Panels
         List<Canvas> disabledCanvases;
         Toggle HUDToggle;
 
-        CacheMethod captureScreenshotFunction = null;
+        MethodInfo captureScreenshotFunction = null;
         int superSizeValue = 2;
         public ScreenshotState screenshotStatus;
 
         Toggle HighLodToggle;
         object qualitySettings = null;
-        CacheProperty lodBias = null;
+        PropertyInfo lodBias = null;
 
         // We save the current properties of the Renderers and Lights to restore them after editing them with togglers
         internal Dictionary<Renderer, bool> renderersReceiveShadows = new();
@@ -92,56 +92,39 @@ namespace UnityExplorer.UI.Panels
         }
 
         private void TakeScreenshot(){
-            MethodInfo methodInfo = captureScreenshotFunction.MethodInfo;
             string filename = DateTime.Now.ToString("yyyy-M-d HH-mm-ss");
 
             string screenshotsPath = Path.Combine(ExplorerCore.ExplorerFolder, "Screenshots");
             System.IO.Directory.CreateDirectory(screenshotsPath);
             
             object[] args = {$"{screenshotsPath}\\{filename}.png", superSizeValue};
-
-            methodInfo.Invoke(captureScreenshotFunction.DeclaringInstance, args);
+            try {
+                captureScreenshotFunction.Invoke(qualitySettings, args);
+            }
+            catch { ExplorerCore.LogWarning("Failed to take a screenshot. Chances are the method has been stripped."); }
         }
-        
+
         private void FindCaptureScreenshotFunction(){
             try {
                 object screenCaptureClass = ReflectionUtility.GetTypeByName("UnityEngine.ScreenCapture");
                 Type screenCaptureType = screenCaptureClass is Type type ? type : screenCaptureClass.GetActualType();
-                ReflectionInspector inspector = Pool<ReflectionInspector>.Borrow();
-                List<CacheMember> members = CacheMemberFactory.GetCacheMembers(screenCaptureType, inspector);
-                foreach (CacheMember member in members){
-                    if (member is CacheMethod methodMember){
-                        if (methodMember.NameForFiltering == "ScreenCapture.CaptureScreenshot(string, int)"){
-                            captureScreenshotFunction = methodMember;
-                            break;
-                        }
-                    }
-                }
+                captureScreenshotFunction = screenCaptureType.GetMethod("CaptureScreenshot", new Type[] {typeof(string), typeof(int)});
             }
-            catch { ExplorerCore.Log("Couldn't find the ScreenCapture class.");}
+            catch { ExplorerCore.Log("Couldn't find the ScreenCapture class."); }
         }
 
         private void FindQualitySettings(){
             qualitySettings = ReflectionUtility.GetTypeByName("UnityEngine.QualitySettings");
         }
 
-        private void FindLodBias(){
-            Type qualitySettingsType = qualitySettings is Type type ? type : qualitySettings.GetActualType();
-            ReflectionInspector inspector = Pool<ReflectionInspector>.Borrow();
-            List<CacheMember> members = CacheMemberFactory.GetCacheMembers(qualitySettingsType, inspector);
-            foreach (CacheMember member in members){
-                if (member is CacheProperty propertyMember && propertyMember.NameForFiltering == "QualitySettings.lodBias"){
-                    lodBias = propertyMember;
-                    break;
-                }
-            }
-        }
-
         private void ToogleHighLods(bool areHighLodsOn){
             if (qualitySettings == null) FindQualitySettings();
-            if (lodBias == null) FindLodBias();
+            if (lodBias == null){
+                Type qualitySettingsType = qualitySettings is Type type ? type : qualitySettings.GetActualType();
+                lodBias = qualitySettingsType.GetProperty("lodBias");
+            }
 
-            lodBias.TrySetUserValue(areHighLodsOn ? 10000 : 1);
+            lodBias.SetValue(null, areHighLodsOn ? 10000 : 1, null);
         }
 
         private void ToggleAllMeshesCastAndRecieveShadows(bool enable){
