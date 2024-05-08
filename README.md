@@ -1,7 +1,7 @@
 # Cinematic Unity Explorer
 
 <p align="center">
-  <img align="center" src="img/icon.png" width="300" height="300">
+  <img align="center" src="img/icon.jpg" width="300" height="300">
 </p>
 
 <p align="center">
@@ -226,6 +226,29 @@ Alongside all of this, you can also open each character game object by clicking 
 - Frameskip. Once the game is paused you can press the frameskip hotkey to skip one frame, to get just the right animation for your action shots.
 - Added assignable hotkeys on the Options panel, all of which are displayed on the freecam panel.
 - Made the mod UI scale with higher resolutions.
+
+# IGCSDOF Support
+
+The mod also supports [IGCSConnector](https://github.com/FransBouma/IgcsConnector/releases), and therefore [IGCSDOF](https://opm.fransbouma.com/igcsdof.htm), the best modded DOF available. This is an accumulated DOF solution similar to Forza Horizon's or other offline rendering software. This accumulated solution brings some advantages compared to real-time solutions, such as:
+- Accurate near-plane bleed.
+- Particle & alpha effects in DOF.
+- Depth-accurate reflections.
+- Layered defocusing of transparent and translucent materials.
+
+![IGCSDOF demo](img/igcsdof_demo.gif)
+
+[Before and after](https://framedsc.com/ReshadeGuides/Addons/MSADOF.htm#advantages) showing the advantages of accumulated DOFs over real-time DOFs.
+
+You can download it, read how to install it, and how to use it [here](https://opm.fransbouma.com/igcsdof.htm).
+
+>[!IMPORTANT]
+> To be able to use IGCSDOF, besides following the instructions above, make sure to download [UnityIGCSConnector.dll](https://github.com/originalnicodr/CinematicUnityExplorer/releases/latest/download/UnityIGCSConnector.dll) and put it in the same folder as the games .exe.
+> This is a necessary middleware so the Reshade add-on can communicate with the mod.
+
+>[!IMPORTANT]
+> Be sure to select `Classic (slower)` mode instead of `Fast`, as the latter one seems to render the image out of focus. However `Fast` might still work in some games.
+
+Huge shout out to [etra0](https://github.com/etra0) for implementing this!
 
 # Why a fork instead of making a new mod?
 

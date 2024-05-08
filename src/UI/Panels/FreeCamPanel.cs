@@ -20,6 +20,12 @@ namespace UnityExplorer.UI.Panels
     {
         public FreeCamPanel(UIBase owner) : base(owner)
         {
+            try {
+                connector = new();
+            }
+            catch (Exception ex) {
+                ExplorerCore.LogWarning($"Failed to initialize UnityIGCSConnector: {ex}");
+            }
         }
 
         public override string Name => "Freecam";
@@ -79,12 +85,12 @@ namespace UnityExplorer.UI.Panels
 
         private static FreecamCursorUnlocker freecamCursorUnlocker = null;
 
-        public static UnityIGCSConnector connector = new();
+        public static UnityIGCSConnector connector = null;
 
         internal static void BeginFreecam()
         {
             inFreeCamMode = true;
-            connector.UpdateFreecamStatus(true);
+            connector?.UpdateFreecamStatus(true);
 
             previousMousePosition = IInputManager.MousePosition;
 
@@ -183,7 +189,7 @@ namespace UnityExplorer.UI.Panels
         internal static void EndFreecam()
         {
             inFreeCamMode = false;
-            connector.UpdateFreecamStatus(false);
+            connector?.UpdateFreecamStatus(false);
 
             if (usingGameCamera)
             {
@@ -261,7 +267,7 @@ namespace UnityExplorer.UI.Panels
             if (positionInput.Component.isFocused)
                 return;
 
-            if (connector.IsActive)
+            if (connector != null && connector.IsActive)
                 return;
 
             lastSetCameraPosition = ourCamera.transform.position;
@@ -682,7 +688,7 @@ namespace UnityExplorer.UI.Panels
 
                 Transform transform = FreeCamPanel.ourCamera.transform;
 
-                if (!FreeCamPanel.blockFreecamMovementToggle.isOn && !FreeCamPanel.cameraPathMover.playingPath && !FreeCamPanel.connector.IsActive) {
+                if (!FreeCamPanel.blockFreecamMovementToggle.isOn && !FreeCamPanel.cameraPathMover.playingPath && FreeCamPanel.connector?.IsActive != true) {
                     ProcessInput();
                 }
 
@@ -702,7 +708,7 @@ namespace UnityExplorer.UI.Panels
                     FreeCamPanel.followObjectLastRotation = FreeCamPanel.followObject.transform.rotation;
                 }
 
-                FreeCamPanel.connector.ExecuteCameraCommand(FreeCamPanel.ourCamera);
+                FreeCamPanel.connector?.ExecuteCameraCommand(FreeCamPanel.ourCamera);
 
                 FreeCamPanel.UpdatePositionInput();
             }
