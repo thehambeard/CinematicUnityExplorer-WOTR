@@ -1,7 +1,7 @@
 # Cinematic Unity Explorer
 
 <p align="center">
-  <img align="center" src="img/icon.jpg" width="300" height="300">
+  <img align="center" src="img/icon.png" width="300" height="300">
 </p>
 
 <p align="center">
