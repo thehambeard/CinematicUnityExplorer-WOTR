@@ -29,6 +29,9 @@ namespace CinematicUnityExplorer.Cinematic
         // Store the initial position when a session start in IGCSDof.
         Mono.CSharp.Tuple<Vector3, Quaternion> position = null;
 
+        // When we end a session, we need to make sure to go back to the position when the session ends.
+        private Mono.CSharp.Tuple<Vector3, Quaternion> endSessionPosition = null;
+
         private readonly bool isValid = false;
         private bool _isActive = false;
         public bool IsActive => isValid && _isActive;
@@ -42,21 +45,21 @@ namespace CinematicUnityExplorer.Cinematic
         private readonly Queue<StepCommand> commands = new();
 
         private IntPtr CameraStatus = IntPtr.Zero;
-        // In order to avoid allocations on every Update call, we create this buffer to allocate once
-        // and copy from here the CameraStatus (because Marshal.Copy requires a buffer, urgh).
-        private readonly byte[] CameraStatusBuffer = new byte[] { 0x0 };
 
         public void UpdateFreecamStatus(bool enabled)
         {
             if (CameraStatus == IntPtr.Zero) return;
-
-            CameraStatusBuffer[0] = enabled ? (byte)0x1 : (byte)0x0;
-            Marshal.Copy(CameraStatusBuffer, 0, CameraStatus, 1);
+            
+            Marshal.WriteByte(CameraStatus, enabled ? (byte)0x1 : (byte)0x0);
         }
 
         public void ExecuteCameraCommand(Camera cam)
         {
             var transform = cam.transform;
+
+            // Check whether we should go back to the original position despite being active or not
+            this.ShouldMoveToOriginalPosition(transform);
+
             if (!_isActive || position == null)
             {
                 position = new(transform.position, transform.rotation);
@@ -89,8 +92,23 @@ namespace CinematicUnityExplorer.Cinematic
             _isActive = true;
         }
 
+        // At the EndSession, since we have a queue system, we have to have a special check when the session ends and
+        // then move the camera back to the original position, because the queue gets cleaned as soon as the session
+        // ends.
+        public void ShouldMoveToOriginalPosition(Transform transform)
+        {
+            if (!isValid) return;
+            if (endSessionPosition == null) return;
+
+            transform.position = endSessionPosition.Item1;
+            transform.rotation = endSessionPosition.Item2;
+
+            endSessionPosition = null;
+        }
+
         private void EndSession()
         {
+            endSessionPosition = position;
             position = null;
             _isActive = false;
 
