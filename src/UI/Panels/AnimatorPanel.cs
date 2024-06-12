@@ -68,8 +68,16 @@ namespace UnityExplorer.UI.Panels
             {
                 if (animators[i].animator.wrappedObject != null){
                     int newAnimatorsIndex = newAnimators.FindIndex(a => a.animator.wrappedObject == animators[i].animator.wrappedObject);
-                    if (newAnimatorsIndex != -1)
+                    if (newAnimatorsIndex != -1) {
+                        // If refreshing the animator gives us new animations, add them to the already existing ones.
+                        // Might break stuff.
+                        foreach (IAnimationClip animationClip in newAnimators[newAnimatorsIndex].animations) {
+                            // TODO: Refactor AnimatorPlayer.animations from List<IAnimationClip> to HashSet<IAnimationClip> to avoid checking this
+                            if (!animators[i].animations.Contains(animationClip))
+                                animators[i].animations.Add(animationClip);
+                        }
                         newAnimators[newAnimatorsIndex] = animators[i];
+                    }
                 }
             }
             animators = newAnimators;
