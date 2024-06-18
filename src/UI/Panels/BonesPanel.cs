@@ -65,7 +65,7 @@ namespace UnityExplorer.UI.Panels
             }
 
             Transform bone = bones[index];
-            cell.SetBone(bone);
+            cell.SetBone(bone, this);
             cell.UpdateTransformControlValues(true);
         }
 

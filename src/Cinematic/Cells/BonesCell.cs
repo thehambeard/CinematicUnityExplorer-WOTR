@@ -16,6 +16,7 @@ namespace UnityExplorer.UI.Panels
         ComponentControl rotationControl;
         ComponentControl scaleControl;
         public AxisComponentControl CurrentSlidingAxisControl { get; set; }
+        public BonesManager Owner;
 
         // ICell
         public float DefaultHeight => 25f;
@@ -26,9 +27,10 @@ namespace UnityExplorer.UI.Panels
         public void Enable() => UIRoot.SetActive(true);
         public void Disable() => UIRoot.SetActive(false);
 
-        public void SetBone(Transform bone){
+        public void SetBone(Transform bone, BonesManager bonesManager){
             this.bone = bone;
             boneName.text = bone.name;
+            Owner = bonesManager;
         }
 
         public virtual GameObject CreateContent(GameObject parent)
@@ -70,6 +72,8 @@ namespace UnityExplorer.UI.Panels
             }
 
             AxisControlOperation(control.slider.value, control.parent, control.axis);
+
+            if (Owner.turnOffAnimatorToggle.isOn) Owner.turnOffAnimatorToggle.isOn = false;
         }
 
         public void AxisControlOperation(float value, ComponentControl parent, int axis)
@@ -189,6 +193,7 @@ namespace UnityExplorer.UI.Panels
             }
 
             Owner.UpdateTransformControlValues(true);
+            if (Owner.Owner.turnOffAnimatorToggle.isOn) Owner.Owner.turnOffAnimatorToggle.isOn = false;
         }
 
         void IncrementInput_OnEndEdit(string value)
