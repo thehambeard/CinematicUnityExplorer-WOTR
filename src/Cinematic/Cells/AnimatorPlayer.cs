@@ -20,6 +20,9 @@ namespace UnityExplorer.UI.Panels
         public List<IAnimationClip> animations = new List<IAnimationClip>();
         public bool shouldIgnoreMasterToggle = false;
 
+        BonesManager bonesManager;
+        private List<Transform> bones = new List<Transform>();
+
         public IAnimationClip overridingAnimation;
         private IAnimationClip lastCurrentAnimation;
         private IRuntimeAnimatorController originalAnimatorController;
@@ -54,6 +57,7 @@ namespace UnityExplorer.UI.Panels
         }
 
         public void ResetAnimation(){
+            if (bonesManager != null) bonesManager.turnOffAnimatorToggle.isOn = true;
             // Let the game change animations again
             animator.StopPlayback();
             if (originalAnimatorController != null && animator.wrappedObject != null){
@@ -114,6 +118,20 @@ namespace UnityExplorer.UI.Panels
             set {
                 animator.enabled = value;
             }
+        }
+
+        private void FindBones(){
+            GameObject parentObj = animator.wrappedObject.gameObject;
+            SkinnedMeshRenderer skeleton = parentObj.GetComponentInChildren<SkinnedMeshRenderer>();
+            bones = new List<Transform>(skeleton.bones);
+        }
+
+        public void OpenBonesPanel(){
+            if (!bones.Any()) FindBones();
+            if (bonesManager == null){
+                bonesManager = new BonesManager(UIManager.GetPanel<UnityExplorer.UI.Panels.AnimatorPanel>(UIManager.Panels.AnimatorPanel).Owner, bones, animator);
+            }
+            bonesManager.SetActive(true);
         }
     }
 

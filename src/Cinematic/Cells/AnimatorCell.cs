@@ -25,6 +25,7 @@ namespace UnityExplorer.UI.Panels
         ButtonRef playButton;
         public Dropdown animatorDropdown;
         ButtonRef favAnimation;
+        ButtonRef openBonesPanelButton;
 
         // ICell
         public float DefaultHeight => 25f;
@@ -154,6 +155,11 @@ namespace UnityExplorer.UI.Panels
             playButton = UIFactory.CreateButton(UIRoot, "PlayButton", "Play", new Color(0.2f, 0.26f, 0.2f));
             UIFactory.SetLayoutElement(playButton.Component.gameObject, minHeight: 25, minWidth: 90);
             playButton.OnClick += PlayButton_OnClick;
+
+            openBonesPanelButton = UIFactory.CreateButton(UIRoot, "OpenBonesPanelButton", "Open bones panel");
+            UIFactory.SetLayoutElement(openBonesPanelButton.Component.gameObject, minWidth: 125, minHeight: 25, flexibleWidth: 0, flexibleHeight: 0);
+
+            openBonesPanelButton.OnClick += () => { animatorPlayer.OpenBonesPanel(); };
 
             return UIRoot;
         }
