@@ -43,9 +43,9 @@ namespace UnityExplorer.UI.Panels
             boneName = UIFactory.CreateLabel(UIRoot, $"BoneLabel", "");
             UIFactory.SetLayoutElement(boneName.gameObject, minWidth: 100, minHeight: 25);
 
-            positionControl = ComponentControl.Create(this, UIRoot, "Local Position", TransformType.LocalPosition);
-            rotationControl = ComponentControl.Create(this, UIRoot, "Rotation", TransformType.Rotation);
-            scaleControl = ComponentControl.Create(this, UIRoot, "Scale", TransformType.Scale);
+            positionControl = ComponentControl.Create(this, UIRoot, "Local Position", TransformType.LocalPosition, 0.01f);
+            rotationControl = ComponentControl.Create(this, UIRoot, "Rotation", TransformType.Rotation, 10f);
+            scaleControl = ComponentControl.Create(this, UIRoot, "Scale", TransformType.Scale, 0.1f);
 
             return UIRoot;
         }
@@ -211,7 +211,7 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        public static ComponentControl Create(BonesCell cell, GameObject transformGroup, string title, TransformType type)
+        public static ComponentControl Create(BonesCell cell, GameObject transformGroup, string title, TransformType type, float increment)
         {
             GameObject rowObj = UIFactory.CreateUIObject($"Row_{title}", transformGroup);
             UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(rowObj, false, false, true, true, 5, 0, 0, 0, 0, default);
@@ -226,13 +226,14 @@ namespace UnityExplorer.UI.Panels
             ComponentControl control = new(cell, type, inputField);
 
             inputField.Component.GetOnEndEdit().AddListener((string value) => { control.OnTransformInputEndEdit(type, value); });
+            control.Increment = increment;
 
             control.axisComponentControl[0] = AxisComponentControl.Create(rowObj, "X", 0, control);
             control.axisComponentControl[1] = AxisComponentControl.Create(rowObj, "Y", 1, control);
             control.axisComponentControl[2] = AxisComponentControl.Create(rowObj, "Z", 2, control);
 
             control.IncrementInput = UIFactory.CreateInputField(rowObj, "IncrementInput", "...");
-            control.IncrementInput.Text = "0.1";
+            control.IncrementInput.Text = increment.ToString();
             UIFactory.SetLayoutElement(control.IncrementInput.GameObject, minWidth: 30, flexibleWidth: 0, minHeight: 25);
             control.IncrementInput.Component.GetOnEndEdit().AddListener(control.IncrementInput_OnEndEdit);
 
@@ -295,8 +296,8 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(sliderObj, minHeight: 25, minWidth: 75, flexibleWidth: 0);
             slider.m_FillImage.color = Color.clear;
 
-            slider.minValue = -0.1f;
-            slider.maxValue = 0.1f;
+            slider.minValue = -owner.Increment;
+            slider.maxValue = owner.Increment;
 
             AxisComponentControl sliderControl = new(axis, slider, owner);
 
