@@ -20,7 +20,7 @@ namespace UnityExplorer
     public static class ExplorerCore
     {
         public const string NAME = "CinematicUnityExplorer";
-        public const string VERSION = "1.1.0";
+        public const string VERSION = "1.2.0";
         public const string AUTHOR = "originalnicodr, Sinai, yukieiji";
         public const string GUID = "com.originalnicodr.cinematicunityexplorer";
 
