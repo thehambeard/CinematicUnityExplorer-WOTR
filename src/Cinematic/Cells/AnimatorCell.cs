@@ -22,9 +22,10 @@ namespace UnityExplorer.UI.Panels
         public Toggle IgnoreMasterToggle;
         public Toggle AnimatorToggle;
         public ButtonRef inspectButton;
-        ButtonRef playButton;
         public Dropdown animatorDropdown;
         ButtonRef favAnimation;
+        Slider animationTimeline;
+        ButtonRef playButton;
         ButtonRef openBonesPanelButton;
 
         // ICell
@@ -65,7 +66,7 @@ namespace UnityExplorer.UI.Panels
         }
 
         private void PlayButton_OnClick(){
-            animatorPlayer.PlayOverridingAnimation();
+            animatorPlayer.PlayOverridingAnimation(0);
             // Needed for the new animation to play for some reason
             EnableAnimation(false);
             EnableAnimation(true);
@@ -151,6 +152,15 @@ namespace UnityExplorer.UI.Panels
                 favAnimation.ButtonText.text = !isAnimationFaved ? "★" : "☆";
                 //UpdateDropdownOptions();
             };
+
+            GameObject animationTimelineObj = UIFactory.CreateSlider(UIRoot, "AnimationTimelineSlider", out animationTimeline);
+            UIFactory.SetLayoutElement(animationTimelineObj, minHeight: 25, minWidth: 200, flexibleHeight: 0);
+            animationTimeline.minValue = 0;
+            animationTimeline.maxValue = 1;
+            animationTimeline.onValueChanged.AddListener((float val) => {
+                animatorPlayer.PlayOverridingAnimation(val);
+                AnimatorToggle.isOn = false;
+            });
 
             playButton = UIFactory.CreateButton(UIRoot, "PlayButton", "Play", new Color(0.2f, 0.26f, 0.2f));
             UIFactory.SetLayoutElement(playButton.Component.gameObject, minHeight: 25, minWidth: 90);

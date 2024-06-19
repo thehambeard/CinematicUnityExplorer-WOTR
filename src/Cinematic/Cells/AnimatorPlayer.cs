@@ -69,7 +69,7 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        public void PlayOverridingAnimation(){
+        public void PlayOverridingAnimation(float normalizedTime){
             ResetAnimation();
             if (animatorOverrideController == null){
                 animatorOverrideController = new IAnimatorOverrideController();
@@ -88,7 +88,7 @@ namespace UnityExplorer.UI.Panels
 
             IAnimationClip currentAnimation = animator.GetCurrentAnimatorClipInfo(0)[0].clip;
             animatorOverrideController[currentAnimation] = overridingAnimation;
-            animator.Play(currentAnimation.name);
+            animator.Play(currentAnimation.name, normalizedTime);
 
             lastCurrentAnimation = currentAnimation;
         }
@@ -227,9 +227,9 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        public void Play(string animatorClip){
+        public void Play(string animatorClip, float normalizedTime){
             MethodInfo play = realType.GetMethod("Play", new Type[] {typeof(string), typeof(int), typeof(float)});
-            play.Invoke(_animator.TryCast(), new object[] {animatorClip, -1, 0f});
+            play.Invoke(_animator.TryCast(), new object[] {animatorClip, -1, normalizedTime});
         }
 
         public float speed

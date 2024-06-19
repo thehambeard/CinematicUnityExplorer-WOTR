@@ -23,7 +23,7 @@ namespace UnityExplorer.UI.Panels
 
         public override string Name => "Animator";
         public override UIManager.Panels PanelType => UIManager.Panels.AnimatorPanel;
-        public override int MinWidth => 1050;
+        public override int MinWidth => 1250;
         public override int MinHeight => 200;
         public override Vector2 DefaultAnchorMin => new(0.4f, 0.4f);
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
