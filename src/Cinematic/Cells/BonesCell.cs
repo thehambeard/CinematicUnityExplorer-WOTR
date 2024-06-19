@@ -40,14 +40,30 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutGroup<VerticalLayoutGroup>(UIRoot, false, false, true, true, 3);
             UIFactory.SetLayoutElement(UIRoot, minHeight: 25, minWidth: 50, flexibleWidth: 9999);
 
-            boneName = UIFactory.CreateLabel(UIRoot, $"BoneLabel", "");
+            GameObject header = UIFactory.CreateUIObject("BoneHeader", UIRoot);
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(header, false, false, true, true, 4, childAlignment: TextAnchor.MiddleLeft);
+            UIFactory.SetLayoutElement(header, minHeight: 25, flexibleWidth: 9999, flexibleHeight: 800);
+
+            boneName = UIFactory.CreateLabel(header, $"BoneLabel", "");
             UIFactory.SetLayoutElement(boneName.gameObject, minWidth: 100, minHeight: 25);
+
+            GameObject headerButtons = UIFactory.CreateUIObject("BoneHeader", header);
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(headerButtons, false, false, true, true, 4, childAlignment: TextAnchor.MiddleRight);
+            UIFactory.SetLayoutElement(headerButtons, minHeight: 25, flexibleWidth: 9999, flexibleHeight: 800);
+
+            ButtonRef restoreBoneStateButton = UIFactory.CreateButton(headerButtons, "RestoreBoneState", "Restore State");
+            UIFactory.SetLayoutElement(restoreBoneStateButton.GameObject, minWidth: 125, minHeight: 25);
+            restoreBoneStateButton.OnClick += RestoreBoneState;
 
             positionControl = ComponentControl.Create(this, UIRoot, "Local Position", TransformType.LocalPosition, 0.01f);
             rotationControl = ComponentControl.Create(this, UIRoot, "Rotation", TransformType.Rotation, 10f);
             scaleControl = ComponentControl.Create(this, UIRoot, "Scale", TransformType.Scale, 0.1f);
 
             return UIRoot;
+        }
+
+        private void RestoreBoneState(){
+            Owner.RestoreBoneState(bone.name);
         }
 
         // TransformControls-like functions

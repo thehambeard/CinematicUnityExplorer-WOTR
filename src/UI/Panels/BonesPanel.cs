@@ -16,6 +16,7 @@ namespace UnityExplorer.UI.Panels
         private IAnimator animator;
         private Text skeletonName;
         private List<Transform> bones = new List<Transform>();
+        private Dictionary<string, CachedBonesTransform> bonesOriginalState = new();
 
         private ScrollPool<BonesCell> boneScrollPool;
         public int ItemCount => bones.Count;
@@ -48,12 +49,36 @@ namespace UnityExplorer.UI.Panels
 
             GameObject turnOffAnimatorToggleObj = UIFactory.CreateToggle(ContentRoot, "Animator toggle", out turnOffAnimatorToggle, out Text turnOffAnimatorToggleText);
             UIFactory.SetLayoutElement(turnOffAnimatorToggleObj, minHeight: 25, flexibleWidth: 9999);
-            turnOffAnimatorToggle.onValueChanged.AddListener(value => { animator.enabled = value; });
+            turnOffAnimatorToggle.onValueChanged.AddListener(OnTurnOffAnimatorToggle);
             turnOffAnimatorToggleText.text = "Toggle animator (needs to be off to move bones)";
 
             boneScrollPool = UIFactory.CreateScrollPool<BonesCell>(ContentRoot, "BonesList", out GameObject scrollObj,
                 out GameObject scrollContent, new Color(0.06f, 0.06f, 0.06f));
             UIFactory.SetLayoutElement(scrollObj, flexibleWidth: 9999, flexibleHeight: 9999);
+        }
+
+        private void OnTurnOffAnimatorToggle(bool value)
+        {
+            if (!value){
+                bonesOriginalState.Clear();
+                foreach (Transform bone in bones){
+                    bonesOriginalState[bone.name] = new CachedBonesTransform(bone.localPosition, bone.localEulerAngles, bone.localScale);
+                }
+            }
+            animator.enabled = value;
+        }
+
+        public void RestoreBoneState(string boneName)
+        {
+            foreach (Transform bone in bones){
+                if (bone.name == boneName){
+                    CachedBonesTransform CachedBonesTransform = bonesOriginalState[boneName];
+                    bone.localPosition = CachedBonesTransform.position;
+                    bone.localEulerAngles = CachedBonesTransform.angles;
+                    bone.localScale = CachedBonesTransform.scale;
+                    return;
+                }
+            }
         }
 
         public void SetCell(BonesCell cell, int index)
@@ -81,5 +106,19 @@ namespace UnityExplorer.UI.Panels
                 boneCell.UpdateVectorSlider();
             }
         }
+    }
+
+    struct CachedBonesTransform
+    {
+        public CachedBonesTransform(Vector3 position, Vector3 angles, Vector3 scale)
+        {
+            this.position = position;
+            this.angles = angles;
+            this.scale = scale;
+        }
+
+        public readonly Vector3 position;
+        public readonly Vector3 angles;
+        public readonly Vector3 scale;
     }
 }
