@@ -29,7 +29,7 @@ namespace UnityExplorer.UI.Panels
         ButtonRef openBonesPanelButton;
 
         // ICell
-        public float DefaultHeight => 25f;
+        public float DefaultHeight => 30f;
         public GameObject UIRoot { get; set; }
         public RectTransform Rect { get; set; }
 
@@ -75,7 +75,7 @@ namespace UnityExplorer.UI.Panels
         public virtual GameObject CreateContent(GameObject parent)
         {
             GameObject AnimatorToggleObj = UIFactory.CreateToggle(parent, $"AnimatorToggle", out AnimatorToggle, out Text animatorToggleText);
-            UIFactory.SetLayoutElement(AnimatorToggleObj, minHeight: 25);
+            UIFactory.SetLayoutElement(AnimatorToggleObj, minHeight: 30);
             AnimatorToggle.isOn = animatorPlayer != null && animatorPlayer.animator.speed == 1;
             AnimatorToggle.onValueChanged.AddListener(EnableAnimation);
 
@@ -86,9 +86,9 @@ namespace UnityExplorer.UI.Panels
             Rect.anchorMin = new Vector2(0, 1);
             Rect.anchorMax = new Vector2(0, 1);
             Rect.pivot = new Vector2(0.5f, 1);
-            Rect.sizeDelta = new Vector2(25, 25);
+            Rect.sizeDelta = new Vector2(30, 30);
             
-            UIFactory.SetLayoutElement(UIRoot, minWidth: 100, flexibleWidth: 9999, minHeight: 25, flexibleHeight: 0);
+            UIFactory.SetLayoutElement(UIRoot, minWidth: 100, flexibleWidth: 9999, minHeight: 30, flexibleHeight: 0);
 
             inspectButton = UIFactory.CreateButton(UIRoot, "InspectButton", "");
             UIFactory.SetLayoutElement(inspectButton.GameObject, minWidth: 200, minHeight: 25);
