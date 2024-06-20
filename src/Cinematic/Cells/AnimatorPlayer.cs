@@ -145,13 +145,12 @@ namespace UnityExplorer.UI.Panels
         }
 
         public void SetMeshesEnabled(bool value){
-            PropertyInfo enabledProperty = typeof(SkinnedMeshRenderer).GetProperty("enabled");
             foreach (SkinnedMeshRenderer skinnedMesh in skinnedMeshes) {
-                enabledProperty.SetValue(skinnedMesh, value, null);
+                skinnedMesh.TryCast<Renderer>().enabled = value;
             }
 
             foreach (MeshRenderer meshRenderer in extraMeshes) {
-                meshRenderer.enabled = value;
+                meshRenderer.gameObject.SetActive(value);
             }
         }
     }

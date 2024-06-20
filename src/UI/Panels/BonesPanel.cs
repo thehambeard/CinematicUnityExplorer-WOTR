@@ -68,7 +68,7 @@ namespace UnityExplorer.UI.Panels
                     bone.localEulerAngles = CachedBonesTransform.angles;
                     bone.localScale = CachedBonesTransform.scale;
                     // We assume these were on before. If not we should save its state beforehand.
-                    bone.gameObject.SetEnabled(true);
+                    bone.gameObject.SetActive(true);
                 }
             } else {
                 bonesOriginalState.Clear();
