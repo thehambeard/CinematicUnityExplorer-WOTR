@@ -22,6 +22,7 @@ namespace UnityExplorer.UI.Panels
 
         BonesManager bonesManager;
         private List<Transform> bones = new List<Transform>();
+        public SkinnedMeshRenderer skinnedMesh;
 
         public IAnimationClip overridingAnimation;
         private IAnimationClip lastCurrentAnimation;
@@ -45,6 +46,7 @@ namespace UnityExplorer.UI.Panels
             this.overridingAnimation = lastCurrentAnimation != null ? lastCurrentAnimation : (animations.Count > 0 ? animations[0] : null);
 
             this.favAnimations = new List<IAnimationClip>();
+            this.skinnedMesh = this.animator.wrappedObject.gameObject.GetComponentInChildren<SkinnedMeshRenderer>();
         }
 
         // Include the animations being played in other layers
@@ -120,16 +122,10 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        private void FindBones(){
-            GameObject parentObj = animator.wrappedObject.gameObject;
-            SkinnedMeshRenderer skeleton = parentObj.GetComponentInChildren<SkinnedMeshRenderer>();
-            bones = new List<Transform>(skeleton.bones);
-        }
-
         public void OpenBonesPanel(){
-            if (!bones.Any()) FindBones();
+            if (skinnedMesh == null) return;
             if (bonesManager == null){
-                bonesManager = new BonesManager(UIManager.GetPanel<UnityExplorer.UI.Panels.AnimatorPanel>(UIManager.Panels.AnimatorPanel).Owner, bones, animator);
+                bonesManager = new BonesManager(UIManager.GetPanel<UnityExplorer.UI.Panels.AnimatorPanel>(UIManager.Panels.AnimatorPanel).Owner, new List<Transform>(skinnedMesh.bones), animator);
             }
             bonesManager.SetActive(true);
         }

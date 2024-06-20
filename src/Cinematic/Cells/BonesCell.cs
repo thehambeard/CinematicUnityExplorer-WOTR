@@ -44,7 +44,7 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(header, false, false, true, true, 4, childAlignment: TextAnchor.MiddleLeft);
             UIFactory.SetLayoutElement(header, minHeight: 25, flexibleWidth: 9999, flexibleHeight: 800);
 
-            boneName = UIFactory.CreateLabel(header, $"BoneLabel", "");
+            boneName = UIFactory.CreateLabel(header, "BoneLabel", "");
             UIFactory.SetLayoutElement(boneName.gameObject, minWidth: 100, minHeight: 25);
 
             GameObject headerButtons = UIFactory.CreateUIObject("BoneHeader", header);
@@ -254,7 +254,7 @@ namespace UnityExplorer.UI.Panels
             control.IncrementInput.Component.GetOnEndEdit().AddListener(control.IncrementInput_OnEndEdit);
 
             if (type == TransformType.Scale){
-                GameObject extraRowObj = UIFactory.CreateUIObject($"Row_UniformScale", transformGroup);
+                GameObject extraRowObj = UIFactory.CreateUIObject("Row_UniformScale", transformGroup);
                 UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(extraRowObj, false, false, true, true, 5, 0, 0, 0, 0, default);
                 UIFactory.SetLayoutElement(extraRowObj, minHeight: 25, flexibleWidth: 9999);
 

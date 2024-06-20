@@ -21,6 +21,7 @@ namespace UnityExplorer.UI.Panels
 
         public Toggle IgnoreMasterToggle;
         public Toggle AnimatorToggle;
+        public Toggle MeshToggle;
         public ButtonRef inspectButton;
         public Dropdown animatorDropdown;
         ButtonRef favAnimation;
@@ -42,6 +43,7 @@ namespace UnityExplorer.UI.Panels
             inspectButton.ButtonText.text = animatorPlayer.animator.name;
             IgnoreMasterToggle.isOn = animatorPlayer.shouldIgnoreMasterToggle;
             AnimatorToggle.isOn = animatorPlayer.animator.speed != 0;
+            MeshToggle.isOn = animatorPlayer.skinnedMesh.enabled;
 
             UpdateDropdownOptions();
         }
@@ -74,13 +76,13 @@ namespace UnityExplorer.UI.Panels
 
         public virtual GameObject CreateContent(GameObject parent)
         {
-            GameObject AnimatorToggleObj = UIFactory.CreateToggle(parent, $"AnimatorToggle", out AnimatorToggle, out Text animatorToggleText);
-            UIFactory.SetLayoutElement(AnimatorToggleObj, minHeight: 30);
-            AnimatorToggle.isOn = animatorPlayer != null && animatorPlayer.animator.speed == 1;
-            AnimatorToggle.onValueChanged.AddListener(EnableAnimation);
+            UIRoot = UIFactory.CreateUIObject("AnimatorCell", parent);
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(UIRoot, false, false, true, true, 4, childAlignment: TextAnchor.MiddleLeft);
+            UIFactory.SetLayoutElement(UIRoot, minHeight: 25, flexibleWidth: 9999);
 
-            UIRoot = AnimatorToggleObj;
-            UIRoot.SetActive(false);
+            GameObject MeshToggleObj = UIFactory.CreateToggle(UIRoot, "MeshToggle", out MeshToggle, out Text MeshToggleText);
+            UIFactory.SetLayoutElement(MeshToggleObj, minHeight: 30);
+            MeshToggle.onValueChanged.AddListener(EnableMesh);
 
             Rect = UIRoot.GetComponent<RectTransform>();
             Rect.anchorMin = new Vector2(0, 1);
@@ -94,11 +96,16 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(inspectButton.GameObject, minWidth: 200, minHeight: 25);
             inspectButton.OnClick += () => InspectorManager.Inspect(animatorPlayer.animator.gameObject);
 
+            GameObject AnimatorToggleObj = UIFactory.CreateToggle(UIRoot, "AnimatorToggle", out AnimatorToggle, out Text animatorToggleText);
+            UIFactory.SetLayoutElement(AnimatorToggleObj, minHeight: 30);
+            AnimatorToggle.isOn = animatorPlayer != null && animatorPlayer.animator.speed == 1;
+            AnimatorToggle.onValueChanged.AddListener(EnableAnimation);
+
             ButtonRef resetAnimation = UIFactory.CreateButton(UIRoot, "Reset Animation", "Reset");
             UIFactory.SetLayoutElement(resetAnimation.GameObject, minWidth: 50, minHeight: 25);
             resetAnimation.OnClick += ResetAnimation;
 
-            GameObject ignoresMasterTogglerObj = UIFactory.CreateToggle(UIRoot, $"AnimatorIgnoreMasterToggle", out IgnoreMasterToggle, out Text ignoreMasterToggleText);
+            GameObject ignoresMasterTogglerObj = UIFactory.CreateToggle(UIRoot, "AnimatorIgnoreMasterToggle", out IgnoreMasterToggle, out Text ignoreMasterToggleText);
             UIFactory.SetLayoutElement(ignoresMasterTogglerObj, minHeight: 25, minWidth: 155);
             IgnoreMasterToggle.isOn = false;
             IgnoreMasterToggle.onValueChanged.AddListener(IgnoreMasterToggle_Clicked);
@@ -114,7 +121,7 @@ namespace UnityExplorer.UI.Panels
                 favAnimation.ButtonText.text = animatorPlayer.IsAnimationFaved(animatorPlayer.overridingAnimation) ? "★" : "☆";
             };
 
-            GameObject overridingAnimationObj = UIFactory.CreateDropdown(UIRoot, $"Animations_Dropdown", out animatorDropdown, null, 14, (idx) => {
+            GameObject overridingAnimationObj = UIFactory.CreateDropdown(UIRoot, "Animations_Dropdown", out animatorDropdown, null, 14, (idx) => {
                 if (animatorPlayer.animator.wrappedObject == null)
                     return;
                 animatorPlayer.overridingAnimation = idx < animatorDropdown.options.Count ? animatorPlayer.animations.Find(a => a.name == animatorDropdown.options[idx].text) : animatorPlayer.overridingAnimation;
@@ -166,8 +173,8 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(playButton.Component.gameObject, minHeight: 25, minWidth: 90);
             playButton.OnClick += PlayButton_OnClick;
 
-            openBonesPanelButton = UIFactory.CreateButton(UIRoot, "OpenBonesPanelButton", "Open bones panel");
-            UIFactory.SetLayoutElement(openBonesPanelButton.Component.gameObject, minWidth: 125, minHeight: 25, flexibleWidth: 0, flexibleHeight: 0);
+            openBonesPanelButton = UIFactory.CreateButton(UIRoot, "OpenBonesPanelButton", "Open Bones Panel");
+            UIFactory.SetLayoutElement(openBonesPanelButton.Component.gameObject, minWidth: 150, minHeight: 25, flexibleWidth: 0, flexibleHeight: 0);
 
             openBonesPanelButton.OnClick += () => { animatorPlayer.OpenBonesPanel(); };
 
@@ -185,6 +192,10 @@ namespace UnityExplorer.UI.Panels
         internal void EnableAnimation(bool value){
             if (animatorPlayer.animator.wrappedObject != null)
                 animatorPlayer.animator.speed = value ? 1 : 0;
+        }
+
+        internal void EnableMesh(bool value){
+            animatorPlayer.skinnedMesh.enabled = value;
         }
     }
 }

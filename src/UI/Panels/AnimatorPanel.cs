@@ -23,14 +23,15 @@ namespace UnityExplorer.UI.Panels
 
         public override string Name => "Animator";
         public override UIManager.Panels PanelType => UIManager.Panels.AnimatorPanel;
-        public override int MinWidth => 1250;
+        public override int MinWidth => 1300;
         public override int MinHeight => 200;
         public override Vector2 DefaultAnchorMin => new(0.4f, 0.4f);
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
         public override bool NavButtonWanted => true;
         public override bool ShouldSaveActiveState => true;
 
-        Toggle masterAnimatorToggle = new Toggle();
+        Toggle masterAnimatorToggle;
+        Toggle masterMeshToggle;
 
         private static ScrollPool<AnimatorCell> animatorScrollPool;
         internal List<AnimatorPlayer> animators = new List<AnimatorPlayer>();
@@ -105,6 +106,19 @@ namespace UnityExplorer.UI.Panels
             animatorScrollPool.Refresh(true, false);
         }
 
+        public void MasterToggleMeshes(bool enable){
+            // Load animators for the first time if there are not any
+            if (animators.Count == 0) FindAllAnimators();
+
+            foreach (AnimatorPlayer animatorPlayer in animators){
+                if (!animatorPlayer.shouldIgnoreMasterToggle){
+                    animatorPlayer.skinnedMesh.enabled = enable;
+                }
+            }
+
+            animatorScrollPool.Refresh(true, false);
+        }
+
         public void HotkeyToggleAnimators(){
             masterAnimatorToggle.isOn = !masterAnimatorToggle.isOn;
         }
@@ -116,25 +130,37 @@ namespace UnityExplorer.UI.Panels
             GameObject firstGroup = UIFactory.CreateHorizontalGroup(ContentRoot, "MainOptions", false, false, true, true, 3,
                 default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
             UIFactory.SetLayoutElement(firstGroup, minHeight: 25, flexibleWidth: 9999);
-            //UIElements.Add(horiGroup);
 
-            ButtonRef updateAnimators = UIFactory.CreateButton(firstGroup, "RefreshAnimators", "Refresh Animators");
-            UIFactory.SetLayoutElement(updateAnimators.GameObject, minWidth: 150, minHeight: 25);
-            updateAnimators.OnClick += FindAllAnimators;
+            GameObject headerSpace1 = UIFactory.CreateUIObject("HeaderSpace1", firstGroup);
+            UIFactory.SetLayoutElement(headerSpace1, minWidth: 0, flexibleWidth: 0);
+
+            GameObject meshObj = UIFactory.CreateToggle(firstGroup, "Master Mesh Toggle", out masterMeshToggle, out Text masterMeshText);
+            UIFactory.SetLayoutElement(meshObj, minHeight: 25, minWidth: 230);
+            masterMeshToggle.onValueChanged.AddListener(value => MasterToggleMeshes(value));
+            masterMeshText.text = "Master Mesh Toggler";
+
+            GameObject animatorObj = UIFactory.CreateToggle(firstGroup, "Master Animation Toggle", out masterAnimatorToggle, out Text masterAnimatorText);
+            UIFactory.SetLayoutElement(animatorObj, minHeight: 25);
+            masterAnimatorToggle.onValueChanged.AddListener(value => MasterToggleAnimators(value));
+            masterAnimatorText.text = "Master Animator Toggler";
+
+            GameObject headerSpace2 = UIFactory.CreateUIObject("HeaderSpace2", firstGroup);
+            UIFactory.SetLayoutElement(headerSpace2, minWidth: 10, flexibleWidth: 0);
 
             ButtonRef resetAnimators = UIFactory.CreateButton(firstGroup, "ResetAnimators", "Reset Animators");
             UIFactory.SetLayoutElement(resetAnimators.GameObject, minWidth: 150, minHeight: 25);
             resetAnimators.OnClick += ResetAllAnimators;
 
-            GameObject animatorObj = UIFactory.CreateToggle(firstGroup, $"Master Animation Toggle", out masterAnimatorToggle, out Text masterAnimatorText);
-            UIFactory.SetLayoutElement(animatorObj, minHeight: 25);
-            masterAnimatorToggle.isOn = true;
-            masterAnimatorToggle.onValueChanged.AddListener(value => MasterToggleAnimators(value));
-            masterAnimatorText.text = "Master Toggler";
+            GameObject secondGroup = UIFactory.CreateHorizontalGroup(firstGroup, "HeaderRight", false, false, true, true, 3,
+            default, new Color(1, 1, 1, 0), TextAnchor.MiddleRight);
+            UIFactory.SetLayoutElement(secondGroup, minHeight: 25, flexibleWidth: 9999);
 
-            GameObject secondGroup = UIFactory.CreateHorizontalGroup(ContentRoot, "MainOptions", false, false, true, true, 3,
-            default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
-            UIFactory.SetLayoutElement(firstGroup, minHeight: 25, flexibleWidth: 9999);
+            ButtonRef updateAnimators = UIFactory.CreateButton(secondGroup, "RefreshAnimators", "Refresh Animators");
+            UIFactory.SetLayoutElement(updateAnimators.GameObject, minWidth: 150, minHeight: 25);
+            updateAnimators.OnClick += FindAllAnimators;
+
+            GameObject headerSpaceRight = UIFactory.CreateUIObject("HeaderSpaceRight", firstGroup);
+            UIFactory.SetLayoutElement(headerSpaceRight, minWidth: 25, flexibleWidth: 0);
 
             animatorScrollPool = UIFactory.CreateScrollPool<AnimatorCell>(ContentRoot, "AnimatorsList", out GameObject scrollObj,
                 out GameObject scrollContent, new Color(0.03f, 0.03f, 0.03f));
