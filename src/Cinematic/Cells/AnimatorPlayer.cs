@@ -22,7 +22,8 @@ namespace UnityExplorer.UI.Panels
 
         BonesManager bonesManager;
         private List<Transform> bones = new List<Transform>();
-        public SkinnedMeshRenderer skinnedMesh;
+        private List<SkinnedMeshRenderer> skinnedMeshes = new();
+        private List<MeshRenderer> extraMeshes = new();
 
         public IAnimationClip overridingAnimation;
         private IAnimationClip lastCurrentAnimation;
@@ -46,7 +47,9 @@ namespace UnityExplorer.UI.Panels
             this.overridingAnimation = lastCurrentAnimation != null ? lastCurrentAnimation : (animations.Count > 0 ? animations[0] : null);
 
             this.favAnimations = new List<IAnimationClip>();
-            this.skinnedMesh = this.animator.wrappedObject.gameObject.GetComponentInChildren<SkinnedMeshRenderer>();
+
+            this.skinnedMeshes.AddRange(this.animator.wrappedObject.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>(false));
+            this.extraMeshes.AddRange(this.animator.wrappedObject.gameObject.GetComponentsInChildren<MeshRenderer>(false));
         }
 
         // Include the animations being played in other layers
@@ -122,12 +125,34 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
+        private List<Transform> GetMeshes(){
+            List<Transform> meshes = new List<Transform>();
+
+            foreach (SkinnedMeshRenderer skinnedMesh in skinnedMeshes) {
+                meshes.AddRange(skinnedMesh.bones);
+            }
+            meshes.AddRange(extraMeshes.Select(m => m.transform));
+
+            return meshes.GroupBy(b => b.name).Select(b => b.First()).ToList().OrderBy(b => b.name).ToList();
+        }
+
         public void OpenBonesPanel(){
-            if (skinnedMesh == null) return;
+            if (skinnedMeshes.Count == 0 && extraMeshes.Count == 0) return;
             if (bonesManager == null){
-                bonesManager = new BonesManager(UIManager.GetPanel<UnityExplorer.UI.Panels.AnimatorPanel>(UIManager.Panels.AnimatorPanel).Owner, new List<Transform>(skinnedMesh.bones), animator);
+                bonesManager = new BonesManager(UIManager.GetPanel<UnityExplorer.UI.Panels.AnimatorPanel>(UIManager.Panels.AnimatorPanel).Owner, GetMeshes(), animator);
             }
             bonesManager.SetActive(true);
+        }
+
+        public void SetMeshesEnabled(bool value){
+            PropertyInfo enabledProperty = typeof(SkinnedMeshRenderer).GetProperty("enabled");
+            foreach (SkinnedMeshRenderer skinnedMesh in skinnedMeshes) {
+                enabledProperty.SetValue(skinnedMesh, value, null);
+            }
+
+            foreach (MeshRenderer meshRenderer in extraMeshes) {
+                meshRenderer.enabled = value;
+            }
         }
     }
 

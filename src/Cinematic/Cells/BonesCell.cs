@@ -11,12 +11,12 @@ namespace UnityExplorer.UI.Panels
         public Transform bone;
         public TransformControls transformControls;
 
-        Text boneName;
         ComponentControl positionControl;
         ComponentControl rotationControl;
         ComponentControl scaleControl;
         public AxisComponentControl CurrentSlidingAxisControl { get; set; }
         public BonesManager Owner;
+        private ButtonRef inspectButton;
 
         // ICell
         public float DefaultHeight => 25f;
@@ -29,7 +29,7 @@ namespace UnityExplorer.UI.Panels
 
         public void SetBone(Transform bone, BonesManager bonesManager){
             this.bone = bone;
-            boneName.text = bone.name;
+            inspectButton.ButtonText.text = bone.name;
             Owner = bonesManager;
         }
 
@@ -44,8 +44,13 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(header, false, false, true, true, 4, childAlignment: TextAnchor.MiddleLeft);
             UIFactory.SetLayoutElement(header, minHeight: 25, flexibleWidth: 9999, flexibleHeight: 800);
 
-            boneName = UIFactory.CreateLabel(header, "BoneLabel", "");
-            UIFactory.SetLayoutElement(boneName.gameObject, minWidth: 100, minHeight: 25);
+            GameObject MeshToggleObj = UIFactory.CreateToggle(header, "MeshToggle", out Toggle MeshToggle, out Text MeshToggleText);
+            UIFactory.SetLayoutElement(MeshToggleObj, minHeight: 30);
+            MeshToggle.onValueChanged.AddListener(SetBoneEnabled);
+
+            inspectButton = UIFactory.CreateButton(header, "InspectButton", "");
+            UIFactory.SetLayoutElement(inspectButton.GameObject, minWidth: 150, minHeight: 25);
+            inspectButton.OnClick += () => InspectorManager.Inspect(bone.gameObject);
 
             GameObject headerButtons = UIFactory.CreateUIObject("BoneHeader", header);
             UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(headerButtons, false, false, true, true, 4, childAlignment: TextAnchor.MiddleRight);
@@ -64,6 +69,10 @@ namespace UnityExplorer.UI.Panels
 
         private void RestoreBoneState(){
             Owner.RestoreBoneState(bone.name);
+        }
+
+        private void SetBoneEnabled(bool value){
+            bone.gameObject.SetActive(value);
         }
 
         // TransformControls-like functions

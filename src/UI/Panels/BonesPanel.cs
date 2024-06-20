@@ -59,7 +59,18 @@ namespace UnityExplorer.UI.Panels
 
         private void OnTurnOffAnimatorToggle(bool value)
         {
-            if (!value){
+            if (value){
+                // Restore meshes manually in case some are not part of a skeleton and won't get restored automatically.
+                // Besides, this restores the scale, which the animator doesn't.
+                foreach (Transform bone in bones){
+                    CachedBonesTransform CachedBonesTransform = bonesOriginalState[bone.name];
+                    bone.localPosition = CachedBonesTransform.position;
+                    bone.localEulerAngles = CachedBonesTransform.angles;
+                    bone.localScale = CachedBonesTransform.scale;
+                    // We assume these were on before. If not we should save its state beforehand.
+                    bone.gameObject.SetEnabled(true);
+                }
+            } else {
                 bonesOriginalState.Clear();
                 foreach (Transform bone in bones){
                     bonesOriginalState[bone.name] = new CachedBonesTransform(bone.localPosition, bone.localEulerAngles, bone.localScale);

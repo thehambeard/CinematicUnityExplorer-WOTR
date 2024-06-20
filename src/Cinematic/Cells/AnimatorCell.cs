@@ -43,7 +43,6 @@ namespace UnityExplorer.UI.Panels
             inspectButton.ButtonText.text = animatorPlayer.animator.name;
             IgnoreMasterToggle.isOn = animatorPlayer.shouldIgnoreMasterToggle;
             AnimatorToggle.isOn = animatorPlayer.animator.speed != 0;
-            MeshToggle.isOn = animatorPlayer.skinnedMesh.enabled;
 
             UpdateDropdownOptions();
         }
@@ -195,7 +194,7 @@ namespace UnityExplorer.UI.Panels
         }
 
         internal void EnableMesh(bool value){
-            animatorPlayer.skinnedMesh.enabled = value;
+            animatorPlayer.SetMeshesEnabled(value);
         }
     }
 }

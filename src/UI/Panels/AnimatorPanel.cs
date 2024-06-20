@@ -112,7 +112,7 @@ namespace UnityExplorer.UI.Panels
 
             foreach (AnimatorPlayer animatorPlayer in animators){
                 if (!animatorPlayer.shouldIgnoreMasterToggle){
-                    animatorPlayer.skinnedMesh.enabled = enable;
+                    animatorPlayer.SetMeshesEnabled(enable);
                 }
             }
 
