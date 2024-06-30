@@ -122,6 +122,20 @@ Frameskip | `PageDown`
 HUD Toggle | `Delete`
 Freeze NPC animations | `Numpad 0`
 
+The mod also allows controller input.
+
+Feature | Key
+-|-
+Move the camera forward/left/right/backward | `Left stick`
+Move the camera upwards/downwards | `Left trigger`/`Right trigger`
+Speed up/down movement | `Y`/`X`
+Change freecam orientation | `Right stick`
+Tilt left/right | `Dpad left`/`Dpad right`
+Increase/Decrease FOV | `Dpad up`/`Dpad down`
+Reset FOV | `B`
+
+Do keep in mind that controller support has yet to block the game's input, which only works for mouse and keyboard as of the time of writing.
+
 # Features
 
 The following are the features I developed for this fork. All focused on making things easier for capture artists to get marketing material for studios.
@@ -204,9 +218,13 @@ Allows you to manually play characters and NPC animations in a scene. This shoul
 
 Favorite animations so they appear first on the dropdown list by clicking on the star button with the animation selected.
 
-The Animator Panel also allows you to freeze all characters in a scene all at once, alongside giving you control over which characters should ignore the master toggler. That way you can make the playable character avoid getting frozen, or avoid un-freezing NPCs or enemies that already have the animations you want them to have.
+The Animator Panel also allows you to freeze all characters in a scene all at once, alongside giving you control over which characters should ignore the master toggler. Each animator also comes with a toggle to be able to hide a character meshes from a scene.
 
 Alongside all of this, you can also open each character game object by clicking on their names, so you can move, rotate, scale them around, disable them, or further edit their properties and child objects.
+
+### Bones Panel
+
+For each animator, you can also spawn a Bones Panel. This panel will list all of the character's bones and meshes, and provide easy-to-access toggles to disable them and sliders to move them around, allowing you to pose a character to your liking.
 
 ## Misc Panel
 - HUD toggle.
