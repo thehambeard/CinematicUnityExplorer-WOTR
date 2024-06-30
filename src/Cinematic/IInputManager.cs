@@ -244,6 +244,67 @@ namespace UniverseLib.Input
                     postfix: new(AccessTools.Method(typeof(ILegacyInput), nameof(OverrideMouseButtonDown))));
             }
             catch {  }
+
+            // The following patches should allow us to block controller input, but they don't seem to be doing anything.
+            try
+            {
+                MethodInfo getAxisTarget = t_Input.GetMethod("GetAxis", new Type[] {typeof(string)});
+#if CPP
+                if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getAxisTarget) == null)
+                    throw new Exception();
+#endif
+                ExplorerCore.Harmony.Patch(getAxisTarget,
+                    postfix: new(AccessTools.Method(typeof(ILegacyInput), nameof(OverrideGetAxis))));
+            }
+            catch {  }
+
+            try
+            {
+                MethodInfo getAxisRawTarget = t_Input.GetMethod("GetAxisRaw", new Type[] {typeof(string)});
+#if CPP
+                if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getAxisRawTarget) == null)
+                    throw new Exception();
+#endif
+                ExplorerCore.Harmony.Patch(getAxisRawTarget,
+                    postfix: new(AccessTools.Method(typeof(ILegacyInput), nameof(OverrideGetAxis))));
+            }
+            catch {  }
+
+            try
+            {
+                MethodInfo getButtonTarget = t_Input.GetMethod("GetButton", new Type[] {typeof(string)});
+#if CPP
+                if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getButtonTarget) == null)
+                    throw new Exception();
+#endif
+                ExplorerCore.Harmony.Patch(getButtonTarget,
+                    postfix: new(AccessTools.Method(typeof(ILegacyInput), nameof(OverrideGetButton))));
+            }
+            catch {  }
+
+            try
+            {
+                MethodInfo getButtonDownTarget = t_Input.GetMethod("GetButtonDown", new Type[] {typeof(string)});
+#if CPP
+                if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getButtonDownTarget) == null)
+                    throw new Exception();
+#endif
+                ExplorerCore.Harmony.Patch(getButtonDownTarget,
+                    postfix: new(AccessTools.Method(typeof(ILegacyInput), nameof(OverrideGetButton))));
+            }
+            catch {  }
+
+            try
+            {
+                MethodInfo getButtonUpTarget = t_Input.GetMethod("GetButtonUp", new Type[] {typeof(string)});
+#if CPP
+                if (IL2CPPUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(getButtonUpTarget) == null)
+                    throw new Exception();
+#endif
+                ExplorerCore.Harmony.Patch(getButtonUpTarget,
+                    postfix: new(AccessTools.Method(typeof(ILegacyInput), nameof(OverrideGetButton))));
+            }
+            catch {  }
         }
 
         // Postfix functions
@@ -321,6 +382,20 @@ namespace UniverseLib.Input
             // Since CinematicUnityExplorer uses Unity's native UI for its menu, we can't switch off the mouse interaction with it on this wrapper.
             // Therefore, if we still want to interact with the Unity Explorer menu we would need to let the button action pass through when it's open.
             if (FreeCamPanel.ShouldOverrideInput() && !(button == 0 && UIManager.ShowMenu)){
+                __result = false;
+            }
+        }
+
+        public static void OverrideGetAxis(ref float __result)
+        {
+            if (FreeCamPanel.ShouldOverrideInput()){
+                __result = 0f;
+            }
+        }
+
+        public static void OverrideGetButton(ref bool __result)
+        {
+            if (FreeCamPanel.ShouldOverrideInput()){
                 __result = false;
             }
         }

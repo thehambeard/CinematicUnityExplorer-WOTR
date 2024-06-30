@@ -14,6 +14,8 @@ using UnhollowerRuntimeLib;
 using Il2CppInterop.Runtime.Injection;
 #endif
 
+using System.Linq;
+
 namespace UnityExplorer.UI.Panels
 {
     public class FreeCamPanel : UEPanel
@@ -60,6 +62,7 @@ namespace UnityExplorer.UI.Panels
 
         static ButtonRef startStopButton;
         public static Toggle useGameCameraToggle;
+        public static Dropdown controllerDropdown;
         public static Toggle blockFreecamMovementToggle;
         public static Toggle blockGamesInputOnFreecamToggle;
         static InputFieldRef positionInput;
@@ -293,11 +296,27 @@ namespace UnityExplorer.UI.Panels
 
             AddSpacer(5);
 
-            GameObject toggleObj = UIFactory.CreateToggle(ContentRoot, "UseGameCameraToggle", out useGameCameraToggle, out Text useGameCameraText);
+            GameObject firstRow = UIFactory.CreateHorizontalGroup(ContentRoot, "FirstFreecamPanelRow", false, false, true, true, 3, default, new(1, 1, 1, 0));
+
+            GameObject toggleObj = UIFactory.CreateToggle(firstRow, "UseGameCameraToggle", out useGameCameraToggle, out Text useGameCameraText);
             UIFactory.SetLayoutElement(toggleObj, minHeight: 25, flexibleWidth: 9999);
             useGameCameraToggle.onValueChanged.AddListener(OnUseGameCameraToggled);
             useGameCameraToggle.isOn = ConfigManager.Default_Gameplay_Freecam.Value;
             useGameCameraText.text = "Use Game Camera?";
+
+            Text controllerText = UIFactory.CreateLabel(firstRow, "Controller_Dropdown_Label", "Controller:", TextAnchor.MiddleRight);
+            UIFactory.SetLayoutElement(controllerText.gameObject, minHeight: 25, flexibleWidth: 9999);
+
+            GameObject controllerDropdownGameObject = UIFactory.CreateDropdown(firstRow, $"Controller_Dropdown", out controllerDropdown, null, 14, (idx) =>{
+                if (freeCamScript != null) freeCamScript.SetupController(idx);
+            }
+            );
+            UIFactory.SetLayoutElement(controllerDropdownGameObject, minHeight: 25, flexibleHeight: 0, flexibleWidth: 9999);
+            controllerDropdown.options.Add(new Dropdown.OptionData("1"));
+            controllerDropdown.options.Add(new Dropdown.OptionData("2"));
+            controllerDropdown.options.Add(new Dropdown.OptionData("3"));
+            controllerDropdown.options.Add(new Dropdown.OptionData("4"));
+            controllerDropdown.value = 0;
 
             AddSpacer(5);
 
@@ -677,8 +696,24 @@ namespace UnityExplorer.UI.Panels
         public FreeCamBehaviour(IntPtr ptr) : base(ptr) { }
 #endif
 
+        private JoystickHandler joystick;
+
+        public void SetupController(int newControllerNumber)
+        {
+            // Delete the current joystick object
+            joystick = null;
+            joystick = new JoystickHandler();
+            joystick.SetupController(newControllerNumber);
+        }
+
         internal void Update()
         {
+            if (joystick == null){
+                joystick = new JoystickHandler();
+                joystick.SetupController(FreeCamPanel.controllerDropdown.value);
+            }
+            joystick.UpdateState();
+
             if (FreeCamPanel.inFreeCamMode)
             {
                 if (!FreeCamPanel.ourCamera)
@@ -720,36 +755,46 @@ namespace UnityExplorer.UI.Panels
 
             float moveSpeed = FreeCamPanel.desiredMoveSpeed * 0.01665f; //"0.01665f" (60fps) in place of Time.DeltaTime. DeltaTime causes issues when game is paused.
             float speedModifier = 1;
-            if (IInputManager.GetKey(ConfigManager.Speed_Up_Movement.Value))
+            if (IInputManager.GetKey(ConfigManager.Speed_Up_Movement.Value) || joystick.GetButton(JoystickButtons.Y))
                 speedModifier = 10f;
 
-            if (IInputManager.GetKey(ConfigManager.Speed_Down_Movement.Value))
+            if (IInputManager.GetKey(ConfigManager.Speed_Down_Movement.Value) || joystick.GetButton(JoystickButtons.X))
                 speedModifier = 0.1f;
 
             moveSpeed *= speedModifier;
 
-            if (IInputManager.GetKey(ConfigManager.Left_1.Value) || IInputManager.GetKey(ConfigManager.Left_2.Value))
-                transform.position += transform.right * -1 * moveSpeed;
+            if (joystick.GetLeftThumbX() != 0 || joystick.GetLeftThumbY() != 0){
+                transform.position += transform.right * joystick.GetLeftThumbX() * moveSpeed + transform.forward * joystick.GetLeftThumbY() * moveSpeed;
+            }
+            else {
+                if (IInputManager.GetKey(ConfigManager.Left_1.Value) || IInputManager.GetKey(ConfigManager.Left_2.Value))
+                    transform.position += transform.right * -1 * moveSpeed;
 
-            if (IInputManager.GetKey(ConfigManager.Right_1.Value) || IInputManager.GetKey(ConfigManager.Right_2.Value))
-                transform.position += transform.right * moveSpeed;
+                if (IInputManager.GetKey(ConfigManager.Right_1.Value) || IInputManager.GetKey(ConfigManager.Right_2.Value))
+                    transform.position += transform.right * moveSpeed;
 
-            if (IInputManager.GetKey(ConfigManager.Forwards_1.Value) || IInputManager.GetKey(ConfigManager.Forwards_2.Value))
-                transform.position += transform.forward * moveSpeed;
+                if (IInputManager.GetKey(ConfigManager.Forwards_1.Value) || IInputManager.GetKey(ConfigManager.Forwards_2.Value))
+                    transform.position += transform.forward * moveSpeed;
 
-            if (IInputManager.GetKey(ConfigManager.Backwards_1.Value) || IInputManager.GetKey(ConfigManager.Backwards_2.Value))
-                transform.position += transform.forward * -1 * moveSpeed;
+                if (IInputManager.GetKey(ConfigManager.Backwards_1.Value) || IInputManager.GetKey(ConfigManager.Backwards_2.Value))
+                    transform.position += transform.forward * -1 * moveSpeed;
+            }
 
-            if (IInputManager.GetKey(ConfigManager.Up.Value))
-                transform.position += transform.up * moveSpeed;
+            if (joystick.GetTriggers() != 0){
+                transform.position += transform.up * joystick.GetTriggers() * moveSpeed;
+            }
+            else {
+                if (IInputManager.GetKey(ConfigManager.Up.Value))
+                    transform.position += transform.up * moveSpeed;
 
-            if (IInputManager.GetKey(ConfigManager.Down.Value))
-                transform.position += transform.up * -1 * moveSpeed;
+                if (IInputManager.GetKey(ConfigManager.Down.Value))
+                    transform.position += transform.up * -1 * moveSpeed;
+            }
 
-            if (IInputManager.GetKey(ConfigManager.Tilt_Left.Value))
+            if (IInputManager.GetKey(ConfigManager.Tilt_Left.Value) || joystick.GetDPad(JoystickDPad.Left))
                 transform.Rotate(0, 0, moveSpeed * 10, Space.Self);
 
-            if (IInputManager.GetKey(ConfigManager.Tilt_Right.Value))
+            if (IInputManager.GetKey(ConfigManager.Tilt_Right.Value) || joystick.GetDPad(JoystickDPad.Right))
                 transform.Rotate(0, 0, - moveSpeed * 10, Space.Self);
 
             if (IInputManager.GetKey(ConfigManager.Tilt_Reset.Value)){
@@ -761,10 +806,17 @@ namespace UnityExplorer.UI.Panels
                 transform.rotation = newRotation;
             }
 
-            if (IInputManager.GetMouseButton(1))
+            Vector3 mouseDelta = Vector3.zero;
+
+            if (joystick.GetRightThumbX() != 0 || joystick.GetRightThumbY() != 0){
+                mouseDelta = new Vector3(joystick.GetRightThumbX() * 5 * speedModifier, joystick.GetRightThumbY() * 5 * speedModifier);
+            }
+            else if (IInputManager.GetMouseButton(1)){
+                mouseDelta = IInputManager.MousePosition - FreeCamPanel.previousMousePosition;
+            }
+
+            if (mouseDelta != Vector3.zero)
             {
-                Vector3 mouseDelta = IInputManager.MousePosition - FreeCamPanel.previousMousePosition;
-                
                 float newRotationX = transform.localEulerAngles.y + mouseDelta.x * 0.3f;
                 float newRotationY = transform.localEulerAngles.x - mouseDelta.y * 0.3f;
 
@@ -791,17 +843,17 @@ namespace UnityExplorer.UI.Panels
                 transform.rotation = pitchRotation * yawRotation * transform.rotation;*/
             }
 
-            if (IInputManager.GetKey(ConfigManager.Decrease_FOV.Value))
+            if (IInputManager.GetKey(ConfigManager.Decrease_FOV.Value) || joystick.GetDPad(JoystickDPad.Down))
             {
-                FreeCamPanel.ourCamera.fieldOfView -= moveSpeed; 
+                FreeCamPanel.ourCamera.fieldOfView -= moveSpeed;
             }
 
-            if (IInputManager.GetKey(ConfigManager.Increase_FOV.Value))
+            if (IInputManager.GetKey(ConfigManager.Increase_FOV.Value) || joystick.GetDPad(JoystickDPad.Up))
             {
-                FreeCamPanel.ourCamera.fieldOfView += moveSpeed; 
+                FreeCamPanel.ourCamera.fieldOfView += moveSpeed;
             }
 
-            if (IInputManager.GetKey(ConfigManager.Reset_FOV.Value)){
+            if (IInputManager.GetKey(ConfigManager.Reset_FOV.Value) || joystick.GetButton(JoystickButtons.B)){
                 FreeCamPanel.ourCamera.fieldOfView = FreeCamPanel.usingGameCamera ? FreeCamPanel.originalCameraFOV : 60;
             }
 
