@@ -122,20 +122,6 @@ Frameskip | `PageDown`
 HUD Toggle | `Delete`
 Freeze NPC animations | `Numpad 0`
 
-The mod also allows controller input.
-
-Feature | Key
--|-
-Move the camera forward/left/right/backward | `Left stick`
-Move the camera upwards/downwards | `Left trigger`/`Right trigger`
-Speed up/down movement | `Y`/`X`
-Change freecam orientation | `Right stick`
-Tilt left/right | `Dpad left`/`Dpad right`
-Increase/Decrease FOV | `Dpad up`/`Dpad down`
-Reset FOV | `B`
-
-Do keep in mind that controller support has yet to block the game's input, which only works for mouse and keyboard as of the time of writing.
-
 # Features
 
 The following are the features I developed for this fork. All focused on making things easier for capture artists to get marketing material for studios.
