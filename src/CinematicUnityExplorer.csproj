@@ -170,21 +170,6 @@
     </Reference>
   </ItemGroup>
 
-  <!-- SharpDX net35 -->
-  <ItemGroup Condition="'$(Configuration)'=='ML_Mono' or '$(Configuration)'=='BIE6_Mono' or '$(Configuration)'=='BIE6_Unity_Mono' or '$(Configuration)'=='BIE5_Mono' or '$(Configuration)'=='STANDALONE_Mono'">
-    <PackageReference Include="SharpDX.DirectInput" Version="2.5.0" />
-  </ItemGroup>
-
-  <!-- SharpDX net472 -->
-  <ItemGroup Condition="'$(Configuration)'=='ML_Cpp_net472' or '$(Configuration)'=='BIE_Cpp' or '$(Configuration)'=='STANDALONE_Cpp'">
-    <PackageReference Include="SharpDX.DirectInput" Version="4.2.0" />
-  </ItemGroup>
-
-  <!-- SharpDX net6 -->
-  <ItemGroup Condition="'$(Configuration)'=='ML_Cpp_net6' or '$(Configuration)'=='ML_Cpp_CoreCLR' or '$(Configuration)'=='BIE_Cpp_CoreCLR' or '$(Configuration)'=='BIE_Unity_Cpp_CoreCLR'">
-    <PackageReference Include="SharpDX.DirectInput" Version="4.2.0" />
-  </ItemGroup>
-
   <!-- ~~~~~ ASSEMBLY REFERENCES ~~~~~ -->
   <!-- net6 -->
   <ItemGroup Condition="'$(TargetFramework)'=='net6'">
