@@ -29,6 +29,7 @@ namespace UnityExplorer.Config
         public static ConfigElement<string> CSConsole_Assembly_Blacklist;
         public static ConfigElement<string> Reflection_Signature_Blacklist;
         public static ConfigElement<bool> Reflection_Hide_NativeInfoPtrs;
+        public static ConfigElement<bool> Auto_Scale_UI;
 
         public static ConfigElement<bool> Default_Gameplay_Freecam;
         public static ConfigElement<KeyCode> Pause;
@@ -179,6 +180,10 @@ namespace UnityExplorer.Config
                 "Use this to blacklist NativeMethodPtr_s and NativeFieldInfoPtrs_s from the class inspector, mainly to reduce clutter.\r\n" +
                 "For example, this will hide 'Class.NativeFieldInfoPtr_value' for the field 'Class.value'.",
                 false);
+
+            Auto_Scale_UI = new("Make the mod UI automatically scale with resolution",
+                "Especially useful when running games in high resolutions and you are having a hard time reading the mods menu (requires restart).",
+                true);
 
             Default_Gameplay_Freecam = new("Default Gameplay Freecam",
                 "Turn this on if you want the default gameplay freecam toggle on the Freecam panel to be on on startup.",

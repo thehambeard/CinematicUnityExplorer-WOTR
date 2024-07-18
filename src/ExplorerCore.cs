@@ -80,7 +80,7 @@ namespace UnityExplorer
 
             KeypressListener.Setup();
 
-            MakeUEUIScale();
+            if (ConfigManager.Auto_Scale_UI.Value) MakeUEUIScale();
         }
 
         internal static void Update()

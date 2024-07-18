@@ -74,13 +74,21 @@ namespace UnityExplorer.UI.Widgets
         {
             if (float.TryParse(val, out float f))
             {
-                if (f < slider.minValue || f > slider.maxValue){
+                if (f < slider.minValue){
                     ExplorerCore.LogWarning("Error, new time scale value outside of margins.");
                     timeInput.Text = desiredTime.ToString("0.00");
                     return;
                 }
 
-                slider.value = f; // Will update the desiredTime value and extra things
+                // Allow registering timescale values above the slider max value
+                if (f > slider.maxValue) {
+                    desiredTime = f;
+                    pause = false;
+                    previousDesiredTime = desiredTime;
+                }
+                else {
+                    slider.value = f; // Will update the desiredTime value and extra things
+                }
             }
         }
 
