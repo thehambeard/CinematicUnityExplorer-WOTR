@@ -81,7 +81,10 @@ namespace UnityExplorer.UI.Widgets
                 }
 
                 // Allow registering timescale values above the slider max value
-                if (f > slider.maxValue) {
+                if (f >= slider.maxValue) {
+                    // Move the slider to the right
+                    slider.value = slider.maxValue;
+
                     desiredTime = f;
                     pause = false;
                     previousDesiredTime = desiredTime;
@@ -89,6 +92,8 @@ namespace UnityExplorer.UI.Widgets
                 else {
                     slider.value = f; // Will update the desiredTime value and extra things
                 }
+
+                timeInput.Text = f.ToString("0.00");
             }
         }
 
