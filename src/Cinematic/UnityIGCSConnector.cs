@@ -139,7 +139,8 @@ namespace CinematicUnityExplorer.Cinematic
 
             CameraStatus = initFunc((MoveCameraCallback)delegates[0], (SessionCallback)delegates[1], (SessionCallback)delegates[2]);
             if (CameraStatus == IntPtr.Zero){
-                throw new InvalidDataException("IGCSDof returned an invalid pointer which means something went wrong");
+                // This is actually a InvalidDataException, but some games dont allow you to throw that.
+                throw new Exception("IGCSDof returned an invalid pointer which means something went wrong");
             }
 
             isValid = true;
