@@ -10,6 +10,7 @@ namespace UnityExplorer.UI.Panels
     {
         public Transform bone;
         public TransformControls transformControls;
+        private BoneTree boneTree;
 
         ComponentControl positionControl;
         ComponentControl rotationControl;
@@ -17,6 +18,9 @@ namespace UnityExplorer.UI.Panels
         public AxisComponentControl CurrentSlidingAxisControl { get; set; }
         public BonesManager Owner;
         private ButtonRef inspectButton;
+        private ButtonRef expandBones;
+        private LayoutElement spaceLayout;
+        static private int TREE_LEVEL_IDENTATION = 20;
 
         // ICell
         public float DefaultHeight => 25f;
@@ -27,20 +31,66 @@ namespace UnityExplorer.UI.Panels
         public void Enable() => UIRoot.SetActive(true);
         public void Disable() => UIRoot.SetActive(false);
 
-        public void SetBone(Transform bone, BonesManager bonesManager){
-            this.bone = bone;
-            inspectButton.ButtonText.text = bone.name;
+        public void SetBoneTree(BoneTree boneTree, BonesManager bonesManager){
+            this.boneTree = boneTree;
+            this.bone = boneTree.obj.transform;
+            inspectButton.ButtonText.text = boneTree.obj.name;
             Owner = bonesManager;
+
+            if (boneTree.childTrees.Count == 0){
+                expandBones.Component.gameObject.SetActive(false);
+            } else {
+                expandBones.Component.gameObject.SetActive(true);
+                expandBones.ButtonText.text = IsTreeExpanded() ? "▼" : "▶";
+            }
+
+            spaceLayout.minWidth = TREE_LEVEL_IDENTATION * boneTree.level;
+        }
+
+        private void ExpandOrCollapseBoneTree(){
+            if (IsTreeExpanded()){
+                // Collapse
+                List<BoneTree> treesToRemove = boneTree.childTrees.Select(t => t.flatten()).SelectMany(l => l).ToList();
+                Owner.boneTrees = Owner.boneTrees.Except(treesToRemove).ToList();
+                expandBones.ButtonText.text = "▶";
+            }
+            else {
+                // Expand
+                int index = Owner.boneTrees.FindIndex(t => t == boneTree);
+                if (index == -1) return;
+
+                Owner.boneTrees.InsertRange(index + 1, boneTree.childTrees);
+                expandBones.ButtonText.text = "▼";
+            }
+
+            Owner.boneScrollPool.Refresh(true, false);
+        }
+
+        private bool IsTreeExpanded(){
+            if (boneTree == null) return true;
+            return boneTree.childTrees.Any(t1 => Owner.boneTrees.Any(t2 => t2 == t1));
         }
 
         public virtual GameObject CreateContent(GameObject parent)
         {
-            UIRoot = UIFactory.CreateUIObject("BoneCell", parent, new Vector2(25, 25));
-            Rect = UIRoot.GetComponent<RectTransform>();
-            UIFactory.SetLayoutGroup<VerticalLayoutGroup>(UIRoot, false, false, true, true, 3);
-            UIFactory.SetLayoutElement(UIRoot, minHeight: 25, minWidth: 50, flexibleWidth: 9999);
+            UIRoot = UIFactory.CreateUIObject("CellRoot", parent, new Vector2(25, 25));
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(UIRoot, false, false, true, true, 4, childAlignment: TextAnchor.MiddleRight);
+            UIFactory.SetLayoutElement(UIRoot, minHeight: 25, flexibleWidth: 9999, flexibleHeight: 800);
 
-            GameObject header = UIFactory.CreateUIObject("BoneHeader", UIRoot);
+            Rect = UIRoot.GetComponent<RectTransform>();
+            Rect.anchorMin = new Vector2(0, 1);
+            Rect.anchorMax = new Vector2(0, 1);
+            Rect.pivot = new Vector2(0.5f, 1);
+            Rect.sizeDelta = new Vector2(30, 30);
+
+            GameObject spacer = UIFactory.CreateUIObject("Spacer", UIRoot);
+            spaceLayout = UIFactory.SetLayoutElement(spacer, minWidth: 0, flexibleWidth: 0);
+
+            GameObject baseCell = UIFactory.CreateUIObject("BaseCell", UIRoot);
+            UIFactory.SetLayoutGroup<VerticalLayoutGroup>(baseCell, false, false, true, true, 3);
+            UIFactory.SetLayoutElement(baseCell, minHeight: 25, minWidth: 50, flexibleWidth: 9999);
+
+            GameObject header = UIFactory.CreateUIObject("BoneHeader", baseCell);
             UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(header, false, false, true, true, 4, childAlignment: TextAnchor.MiddleLeft);
             UIFactory.SetLayoutElement(header, minHeight: 25, flexibleWidth: 9999, flexibleHeight: 800);
 
@@ -60,9 +110,13 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(restoreBoneStateButton.GameObject, minWidth: 125, minHeight: 25);
             restoreBoneStateButton.OnClick += RestoreBoneState;
 
-            positionControl = ComponentControl.Create(this, UIRoot, "Local Position", TransformType.LocalPosition, 0.01f);
-            rotationControl = ComponentControl.Create(this, UIRoot, "Rotation", TransformType.Rotation, 10f);
-            scaleControl = ComponentControl.Create(this, UIRoot, "Scale", TransformType.Scale, 0.1f);
+            positionControl = ComponentControl.Create(this, baseCell, "Local Position", TransformType.LocalPosition, 0.01f);
+            rotationControl = ComponentControl.Create(this, baseCell, "Rotation", TransformType.Rotation, 10f);
+            scaleControl = ComponentControl.Create(this, baseCell, "Scale", TransformType.Scale, 0.1f);
+
+            expandBones = UIFactory.CreateButton(baseCell, "ExpandBones", IsTreeExpanded() ? "⯆" : "▶", new Color(0.05f, 0.05f, 0.05f));
+            UIFactory.SetLayoutElement(expandBones.Component.gameObject, minHeight: 25, minWidth: 25);
+            expandBones.OnClick += ExpandOrCollapseBoneTree; 
 
             return UIRoot;
         }

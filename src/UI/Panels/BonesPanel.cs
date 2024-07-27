@@ -1,4 +1,5 @@
 ﻿using UniverseLib.UI;
+using UniverseLib.UI.Models;
 using UniverseLib.UI.Panels;
 using UniverseLib.UI.Widgets.ScrollView;
 
@@ -18,8 +19,9 @@ namespace UnityExplorer.UI.Panels
         private List<Transform> bones = new List<Transform>();
         private Dictionary<string, CachedBonesTransform> bonesOriginalState = new();
 
-        private ScrollPool<BonesCell> boneScrollPool;
-        public int ItemCount => bones.Count;
+        public List<BoneTree> boneTrees = new();
+        public ScrollPool<BonesCell> boneScrollPool;
+        public int ItemCount => boneTrees.Count;
         private bool DoneScrollPoolInit;
 
         public BonesManager(UIBase owner, List<Transform> bones, IAnimator animator) : base(owner)
@@ -27,6 +29,40 @@ namespace UnityExplorer.UI.Panels
             this.bones = bones;
             this.animator = animator;
             skeletonName.text = $"Skeleton: {animator?.name}";
+            BuildBoneTrees();
+        }
+
+        private void BuildBoneTrees(){
+            BoneTree root = new BoneTree(animator.wrappedObject.gameObject, bones);
+            if (root.obj != null){
+                root.AssignLevels();
+                boneTrees.Add(root);
+            } else {
+                foreach(BoneTree childTree in root.childTrees){
+                    childTree.AssignLevels();
+                    boneTrees.Add(childTree);
+                }
+            }
+        }
+
+        private void CollapseBoneTrees(){
+            boneTrees.Clear();
+            BuildBoneTrees();
+            boneScrollPool.Refresh(true, true);
+        }
+
+        private void ExpandBoneTrees(){
+            // We collapse before expanding to start from scratch and dont duplicate nodes
+            CollapseBoneTrees();
+
+            List<BoneTree> newBoneTrees = new();
+
+            foreach(BoneTree childTree in boneTrees){
+                newBoneTrees.AddRange(childTree.flatten());
+            }
+
+            boneTrees = newBoneTrees;
+            boneScrollPool.Refresh(true, false);
         }
 
         public override void SetActive(bool active)
@@ -47,10 +83,22 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(skeletonName.gameObject, minWidth: 100, minHeight: 25);
             skeletonName.fontSize = 16;
 
-            GameObject turnOffAnimatorToggleObj = UIFactory.CreateToggle(ContentRoot, "Animator toggle", out turnOffAnimatorToggle, out Text turnOffAnimatorToggleText);
+            GameObject header = UIFactory.CreateUIObject("Header", ContentRoot, new Vector2(25, 25));
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(header, false, false, true, true, 4, childAlignment: TextAnchor.MiddleLeft);
+            UIFactory.SetLayoutElement(header, minHeight: 25, flexibleWidth: 9999, flexibleHeight: 800);
+
+            GameObject turnOffAnimatorToggleObj = UIFactory.CreateToggle(header, "Animator toggle", out turnOffAnimatorToggle, out Text turnOffAnimatorToggleText);
             UIFactory.SetLayoutElement(turnOffAnimatorToggleObj, minHeight: 25, flexibleWidth: 9999);
             turnOffAnimatorToggle.onValueChanged.AddListener(OnTurnOffAnimatorToggle);
             turnOffAnimatorToggleText.text = "Toggle animator (needs to be off to move bones)";
+
+            ButtonRef collapseAllButton = UIFactory.CreateButton(header, "CollapseAllButton", "Collapse all");
+            UIFactory.SetLayoutElement(collapseAllButton.GameObject, minWidth: 150, minHeight: 25);
+            collapseAllButton.OnClick += CollapseBoneTrees;
+
+            ButtonRef expandAllButton = UIFactory.CreateButton(header, "ExpandAllButton", "Expand all");
+            UIFactory.SetLayoutElement(expandAllButton.GameObject, minWidth: 150, minHeight: 25);
+            expandAllButton.OnClick += ExpandBoneTrees;
 
             boneScrollPool = UIFactory.CreateScrollPool<BonesCell>(ContentRoot, "BonesList", out GameObject scrollObj,
                 out GameObject scrollContent, new Color(0.06f, 0.06f, 0.06f));
@@ -94,14 +142,14 @@ namespace UnityExplorer.UI.Panels
 
         public void SetCell(BonesCell cell, int index)
         {
-            if (index >= bones.Count)
+            if (index >= boneTrees.Count)
             {
                 cell.Disable();
                 return;
             }
 
-            Transform bone = bones[index];
-            cell.SetBone(bone, this);
+            BoneTree boneTree = boneTrees[index];
+            cell.SetBoneTree(boneTree, this);
             cell.UpdateTransformControlValues(true);
         }
 
@@ -131,5 +179,103 @@ namespace UnityExplorer.UI.Panels
         public readonly Vector3 position;
         public readonly Vector3 angles;
         public readonly Vector3 scale;
+    }
+
+    public class BoneTree
+    {
+        public GameObject obj;
+        public int level;
+        public List<BoneTree> childTrees = new();
+
+        public BoneTree(GameObject obj, List<Transform> bones){
+            // For some reason comparing GameObjects isn't working as intended in IL2CPP games, therefore we use their instance hash.
+#if CPP
+            if (bones.Any(bone => bone.gameObject.GetInstanceID() == obj.GetInstanceID())) {
+                this.obj = obj;
+            }
+#else
+            if (bones.Contains(obj.transform)) {
+                this.obj = obj;
+            }
+#endif
+            for (int i = 0; i < obj.transform.childCount; i++)
+            {
+                Transform child = obj.transform.GetChild(i);
+                if (child.gameObject.activeSelf){
+                    childTrees.Add(new BoneTree(child.gameObject, bones));
+                }
+            }
+
+            Trim();
+            childTrees = childTrees.OrderBy(b => b.obj.name).ToList();
+        }
+
+        private void Trim(){
+            List<BoneTree> newList = new();
+            foreach (BoneTree childTree in childTrees)
+            {
+                if (childTree.obj == null){
+                    newList.AddRange(childTree.childTrees);
+                } else {
+                    newList.Add(childTree);
+                }
+            }
+
+            this.childTrees = newList;
+        }
+
+        public void AssignLevels(){
+            AssignLevel(0);
+        }
+
+        private void AssignLevel(int distanceFromRoot){
+            level = distanceFromRoot;
+            foreach (BoneTree childTree in childTrees)
+            {
+                childTree.AssignLevel(distanceFromRoot + 1);
+            }
+        }
+
+        public override string ToString(){
+            string return_string = "";
+            if (obj != null){
+                return_string = $"{obj.name} lvl: {level} - ";
+            }
+
+            foreach (BoneTree childTree in childTrees)
+            {
+                return_string = return_string + childTree.ToString();
+            }
+
+            return return_string;
+        }
+
+        public List<GameObject> getGameObjects(){
+            List<GameObject> return_list = new();
+            if (obj != null){
+                return_list.Add(obj);
+            }
+
+            foreach (BoneTree childTree in childTrees)
+            {
+                return_list.AddRange(childTree.getGameObjects());
+            }
+
+            return return_list;
+        }
+
+        public List<BoneTree> flatten(){
+            List<BoneTree> return_list = new();
+            if (obj != null){
+                return_list.Add(this);
+            }
+
+            foreach (BoneTree childTree in childTrees)
+            {
+                return_list.AddRange(childTree.flatten());
+            }
+
+            return return_list;
+        }
     }
 }
