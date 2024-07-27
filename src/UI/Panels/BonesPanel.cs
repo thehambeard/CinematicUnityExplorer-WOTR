@@ -224,6 +224,7 @@ namespace UnityExplorer.UI.Panels
             this.childTrees = newList;
         }
 
+        // TODO: refactor BoneTree so we don't need to call this after creating an instance.
         public void AssignLevels(){
             AssignLevel(0);
         }

@@ -8,9 +8,8 @@ namespace UnityExplorer.UI.Panels
 {
     public class BonesCell : ICell
     {
-        public Transform bone;
+        public BoneTree boneTree;
         public TransformControls transformControls;
-        private BoneTree boneTree;
 
         ComponentControl positionControl;
         ComponentControl rotationControl;
@@ -36,7 +35,6 @@ namespace UnityExplorer.UI.Panels
 
         public void SetBoneTree(BoneTree boneTree, BonesManager bonesManager){
             this.boneTree = boneTree;
-            this.bone = boneTree.obj.transform;
             inspectButton.ButtonText.text = boneTree.obj.name;
             Owner = bonesManager;
 
@@ -107,7 +105,7 @@ namespace UnityExplorer.UI.Panels
 
             inspectButton = UIFactory.CreateButton(header, "InspectButton", "");
             UIFactory.SetLayoutElement(inspectButton.GameObject, minWidth: 150, minHeight: 25);
-            inspectButton.OnClick += () => InspectorManager.Inspect(bone.gameObject);
+            inspectButton.OnClick += () => InspectorManager.Inspect(boneTree.obj);
 
             GameObject headerButtons = UIFactory.CreateUIObject("BoneHeader", header);
             UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(headerButtons, false, false, true, true, 4, childAlignment: TextAnchor.MiddleRight);
@@ -136,11 +134,11 @@ namespace UnityExplorer.UI.Panels
         }
 
         private void RestoreBoneState(){
-            Owner.RestoreBoneState(bone.name);
+            Owner.RestoreBoneState(boneTree.obj.name);
         }
 
         private void SetBoneEnabled(bool value){
-            bone.gameObject.SetActive(value);
+            boneTree.obj.SetActive(value);
         }
 
         // TransformControls-like functions
@@ -171,7 +169,7 @@ namespace UnityExplorer.UI.Panels
 
         public void AxisControlOperation(float value, ComponentControl parent, int axis)
         {
-            Transform transform = bone;
+            Transform transform = boneTree.obj.transform;
 
             Vector3 vector = parent.Type switch
             {
@@ -214,7 +212,7 @@ namespace UnityExplorer.UI.Panels
     public class ComponentControl
     {
         public BonesCell Owner { get; }
-        public Transform Transform => Owner.bone;
+        public Transform Transform => Owner.boneTree.obj.transform;
         public TransformType Type { get; }
 
         public InputFieldRef MainInput { get; }
@@ -343,7 +341,7 @@ namespace UnityExplorer.UI.Panels
                 uniformScaleControl.minValue = 0.0001f;
                 uniformScaleControl.maxValue = 10;
                 uniformScaleControl.value = 1;
-                uniformScaleControl.onValueChanged.AddListener((float val) => { cell.bone.localScale = new Vector3(val, val, val); });
+                uniformScaleControl.onValueChanged.AddListener((float val) => { cell.boneTree.obj.transform.localScale = new Vector3(val, val, val); });
             }
 
             return control;
