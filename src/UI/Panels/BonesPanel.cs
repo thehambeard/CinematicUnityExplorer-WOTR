@@ -9,7 +9,7 @@ namespace UnityExplorer.UI.Panels
     {
         public override string Name => $"Bones Manager";
         public override int MinWidth => 1000;
-        public override int MinHeight => 400;
+        public override int MinHeight => 800;
         public override Vector2 DefaultAnchorMin => Vector2.zero;
         public override Vector2 DefaultAnchorMax => Vector2.zero;
         public Toggle turnOffAnimatorToggle;

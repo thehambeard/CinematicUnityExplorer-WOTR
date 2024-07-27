@@ -18,7 +18,10 @@ namespace UnityExplorer.UI.Panels
         public AxisComponentControl CurrentSlidingAxisControl { get; set; }
         public BonesManager Owner;
         private ButtonRef inspectButton;
-        private ButtonRef expandBones;
+
+        private GameObject expandBonesRow;
+        private ButtonRef expandBonesButton;
+        private Text expandBonesText;
         private LayoutElement spaceLayout;
         static private int TREE_LEVEL_IDENTATION = 20;
 
@@ -38,10 +41,12 @@ namespace UnityExplorer.UI.Panels
             Owner = bonesManager;
 
             if (boneTree.childTrees.Count == 0){
-                expandBones.Component.gameObject.SetActive(false);
+                expandBonesRow.SetActive(false);
             } else {
-                expandBones.Component.gameObject.SetActive(true);
-                expandBones.ButtonText.text = IsTreeExpanded() ? "▼" : "▶";
+                expandBonesRow.SetActive(true);
+                bool isTreeExpanded = IsTreeExpanded();
+                expandBonesButton.ButtonText.text = isTreeExpanded ? "▼" : "▶";
+                expandBonesText.text = isTreeExpanded ? "Collapse bones" : "Expand bones";
             }
 
             spaceLayout.minWidth = TREE_LEVEL_IDENTATION * boneTree.level;
@@ -52,7 +57,8 @@ namespace UnityExplorer.UI.Panels
                 // Collapse
                 List<BoneTree> treesToRemove = boneTree.childTrees.Select(t => t.flatten()).SelectMany(l => l).ToList();
                 Owner.boneTrees = Owner.boneTrees.Except(treesToRemove).ToList();
-                expandBones.ButtonText.text = "▶";
+                expandBonesButton.ButtonText.text = "▶";
+                expandBonesText.text = "Expand bones";
             }
             else {
                 // Expand
@@ -60,7 +66,8 @@ namespace UnityExplorer.UI.Panels
                 if (index == -1) return;
 
                 Owner.boneTrees.InsertRange(index + 1, boneTree.childTrees);
-                expandBones.ButtonText.text = "▼";
+                expandBonesButton.ButtonText.text = "▼";
+                expandBonesText.text = "Collapse bones";
             }
 
             Owner.boneScrollPool.Refresh(true, false);
@@ -114,9 +121,16 @@ namespace UnityExplorer.UI.Panels
             rotationControl = ComponentControl.Create(this, baseCell, "Rotation", TransformType.Rotation, 10f);
             scaleControl = ComponentControl.Create(this, baseCell, "Scale", TransformType.Scale, 0.1f);
 
-            expandBones = UIFactory.CreateButton(baseCell, "ExpandBones", IsTreeExpanded() ? "⯆" : "▶", new Color(0.05f, 0.05f, 0.05f));
-            UIFactory.SetLayoutElement(expandBones.Component.gameObject, minHeight: 25, minWidth: 25);
-            expandBones.OnClick += ExpandOrCollapseBoneTree; 
+            expandBonesRow = UIFactory.CreateUIObject("ExpandBonesRow", baseCell);
+            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(expandBonesRow, false, false, true, true, 4, childAlignment: TextAnchor.MiddleLeft);
+            UIFactory.SetLayoutElement(expandBonesRow, minHeight: 25, flexibleWidth: 9999, flexibleHeight: 800);
+
+            expandBonesButton = UIFactory.CreateButton(expandBonesRow, "ExpandBonesButton", IsTreeExpanded() ? "⯆" : "▶", new Color(0.05f, 0.05f, 0.05f));
+            UIFactory.SetLayoutElement(expandBonesButton.Component.gameObject, minHeight: 25, minWidth: 25);
+            expandBonesButton.OnClick += ExpandOrCollapseBoneTree; 
+
+            expandBonesText = UIFactory.CreateLabel(expandBonesRow, $"ExpandBonesText", IsTreeExpanded() ? "Collapse bones" : "Expand bones");
+            UIFactory.SetLayoutElement(expandBonesText.gameObject, minWidth: 100, minHeight: 25);
 
             return UIRoot;
         }
