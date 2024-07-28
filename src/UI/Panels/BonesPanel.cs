@@ -1,4 +1,5 @@
-﻿using UniverseLib.UI;
+﻿using UnityExplorer.Serializers;
+using UniverseLib.UI;
 using UniverseLib.UI.Models;
 using UniverseLib.UI.Panels;
 using UniverseLib.UI.Widgets.ScrollView;
@@ -16,6 +17,7 @@ namespace UnityExplorer.UI.Panels
         
         private IAnimator animator;
         private Text skeletonName;
+        private InputFieldRef saveLoadinputField;
         private List<Transform> bones = new List<Transform>();
         private Dictionary<string, CachedBonesTransform> bonesOriginalState = new();
 
@@ -28,7 +30,7 @@ namespace UnityExplorer.UI.Panels
         {
             this.bones = bones;
             this.animator = animator;
-            skeletonName.text = $"Skeleton: {animator?.name}";
+            skeletonName.text = $"Skeleton: {animator?.name}  ";
             BuildBoneTrees();
         }
 
@@ -79,13 +81,28 @@ namespace UnityExplorer.UI.Panels
 
         protected override void ConstructPanelContent()
         {
-            skeletonName = UIFactory.CreateLabel(ContentRoot, $"SkeletonName", "");
-            UIFactory.SetLayoutElement(skeletonName.gameObject, minWidth: 100, minHeight: 25);
+            GameObject bonesPanelHeader = UIFactory.CreateHorizontalGroup(ContentRoot, "BonesPanelHeader", false, false, true, true, 3,
+                default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
+            UIFactory.SetLayoutElement(bonesPanelHeader, minHeight: 25, flexibleWidth: 9999);
+
+            skeletonName = UIFactory.CreateLabel(bonesPanelHeader, $"SkeletonName", "");
+            UIFactory.SetLayoutElement(skeletonName.gameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
             skeletonName.fontSize = 16;
 
-            GameObject header = UIFactory.CreateUIObject("Header", ContentRoot, new Vector2(25, 25));
-            UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(header, false, false, true, true, 4, childAlignment: TextAnchor.MiddleLeft);
-            UIFactory.SetLayoutElement(header, minHeight: 25, flexibleWidth: 9999, flexibleHeight: 800);
+            saveLoadinputField = UIFactory.CreateInputField(bonesPanelHeader, $"FileNameInput", "File name");
+            UIFactory.SetLayoutElement(saveLoadinputField.GameObject, minWidth: 400, minHeight: 25);
+
+            ButtonRef savePose = UIFactory.CreateButton(bonesPanelHeader, "SavePoseButton", "Save pose");
+            UIFactory.SetLayoutElement(savePose.GameObject, minWidth: 100, minHeight: 25);
+            savePose.OnClick += SaveBones;
+
+            ButtonRef loadPose = UIFactory.CreateButton(bonesPanelHeader, "LoadPoseButton", "Load pose");
+            UIFactory.SetLayoutElement(loadPose.GameObject, minWidth: 100, minHeight: 25);
+            loadPose.OnClick += LoadBones;
+
+            GameObject header = UIFactory.CreateHorizontalGroup(ContentRoot, "BonesPanelHeader", false, false, true, true, 3,
+                default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
+            UIFactory.SetLayoutElement(header, minHeight: 35, flexibleWidth: 9999);
 
             GameObject turnOffAnimatorToggleObj = UIFactory.CreateToggle(header, "Animator toggle", out turnOffAnimatorToggle, out Text turnOffAnimatorToggleText);
             UIFactory.SetLayoutElement(turnOffAnimatorToggleObj, minHeight: 25, flexibleWidth: 9999);
@@ -93,11 +110,11 @@ namespace UnityExplorer.UI.Panels
             turnOffAnimatorToggleText.text = "Toggle animator (needs to be off to move bones)";
 
             ButtonRef collapseAllButton = UIFactory.CreateButton(header, "CollapseAllButton", "Collapse all");
-            UIFactory.SetLayoutElement(collapseAllButton.GameObject, minWidth: 150, minHeight: 25);
+            UIFactory.SetLayoutElement(collapseAllButton.GameObject, minWidth: 100, minHeight: 25);
             collapseAllButton.OnClick += CollapseBoneTrees;
 
             ButtonRef expandAllButton = UIFactory.CreateButton(header, "ExpandAllButton", "Expand all");
-            UIFactory.SetLayoutElement(expandAllButton.GameObject, minWidth: 150, minHeight: 25);
+            UIFactory.SetLayoutElement(expandAllButton.GameObject, minWidth: 100, minHeight: 25);
             expandAllButton.OnClick += ExpandBoneTrees;
 
             boneScrollPool = UIFactory.CreateScrollPool<BonesCell>(ContentRoot, "BonesList", out GameObject scrollObj,
@@ -131,12 +148,90 @@ namespace UnityExplorer.UI.Panels
         {
             foreach (Transform bone in bones){
                 if (bone.name == boneName){
-                    CachedBonesTransform CachedBonesTransform = bonesOriginalState[boneName];
-                    bone.localPosition = CachedBonesTransform.position;
-                    bone.localEulerAngles = CachedBonesTransform.angles;
-                    bone.localScale = CachedBonesTransform.scale;
+                    CachedBonesTransform cachedBonesTransform = bonesOriginalState[boneName];
+                    bone.localPosition = cachedBonesTransform.position;
+                    bone.localEulerAngles = cachedBonesTransform.angles;
+                    bone.localScale = cachedBonesTransform.scale;
                     return;
                 }
+            }
+        }
+
+        private void SaveBones(){
+            Dictionary<string, List<CachedBonesTransform>> bonesTreeCache = new();
+            // Get the list of bones based on the hierarchy order so we can deserialize it in the same order, instead of just using the bones list.
+            List<BoneTree> allBoneTrees = new();
+            foreach(BoneTree tree in boneTrees) {
+                allBoneTrees.AddRange(tree.flatten());
+            }
+
+            foreach(BoneTree tree in allBoneTrees){
+                if (!bonesTreeCache.ContainsKey(tree.obj.name)){
+                    bonesTreeCache.Add(tree.obj.name, new List<CachedBonesTransform>());
+                }
+                CachedBonesTransform entry = new CachedBonesTransform(tree.obj.transform.localPosition, tree.obj.transform.localEulerAngles, tree.obj.transform.localScale);
+                bonesTreeCache[tree.obj.name].Add(entry);
+            }
+
+            string filename = saveLoadinputField.Component.text;
+            if (filename.EndsWith(".xml") || filename.EndsWith(".XML")) filename = filename.Substring(filename.Length-4);
+            if (string.IsNullOrEmpty(filename)) filename = $"{animator?.name}-{DateTime.Now.ToString("yyyy-M-d HH-mm-ss")}";
+            string posesPath = Path.Combine(ExplorerCore.ExplorerFolder, "Poses");
+            System.IO.Directory.CreateDirectory(posesPath);
+
+            // Serialize
+            string serializedData = BonesSerializer.Serialize(bonesTreeCache);
+            File.WriteAllText($"{posesPath}\\{filename}.xml", serializedData);
+        }
+
+        private void LoadBones(){
+            string filename = saveLoadinputField.Component.text;
+            if (filename.EndsWith(".xml") || filename.EndsWith(".XML")) filename = filename.Substring(filename.Length-4);
+            if (string.IsNullOrEmpty(filename)){
+                ExplorerCore.LogWarning("Empty file name. Please write the name of the file to load.");
+                return;
+            }
+
+            string posesPath = Path.Combine(ExplorerCore.ExplorerFolder, "Poses");
+            string xml;
+            try {
+                xml = File.ReadAllText($"{posesPath}\\{filename}.xml");
+            }
+            catch (Exception ex) {
+                ExplorerCore.LogWarning(ex);
+                return;
+            }
+            Dictionary<string, List<CachedBonesTransform>> deserializedDict;
+            try {
+                deserializedDict = BonesSerializer.Deserialize(xml);
+            }
+            catch (Exception ex) {
+                ExplorerCore.LogWarning(ex);
+                return;
+            }
+
+            turnOffAnimatorToggle.isOn = false;
+            foreach(Transform boneTransform in bones) {
+                List<CachedBonesTransform> cachedTransformList;
+                deserializedDict.TryGetValue(boneTransform.name, out cachedTransformList);
+                if (cachedTransformList != null && cachedTransformList.Count > 0){
+                    CachedBonesTransform cachedTransform = cachedTransformList[0];
+
+                    boneTransform.localPosition = cachedTransform.position;
+                    boneTransform.localEulerAngles = cachedTransform.angles;
+                    boneTransform.localScale = cachedTransform.scale;
+
+                    cachedTransformList.RemoveAt(0);
+                    if (cachedTransformList.Count == 0) {
+                        deserializedDict.Remove(boneTransform.name);
+                    } else {
+                        deserializedDict[boneTransform.name] = cachedTransformList;
+                    }
+                }
+            }
+
+            if (deserializedDict.Count > 0) {
+                ExplorerCore.LogWarning($"Couldn't apply every bone in the pose. Wrong entity?");
             }
         }
 
@@ -165,20 +260,6 @@ namespace UnityExplorer.UI.Panels
                 boneCell.UpdateVectorSlider();
             }
         }
-    }
-
-    struct CachedBonesTransform
-    {
-        public CachedBonesTransform(Vector3 position, Vector3 angles, Vector3 scale)
-        {
-            this.position = position;
-            this.angles = angles;
-            this.scale = scale;
-        }
-
-        public readonly Vector3 position;
-        public readonly Vector3 angles;
-        public readonly Vector3 scale;
     }
 
     public class BoneTree
