@@ -128,10 +128,7 @@ namespace UnityExplorer.UI.Panels
                 // Restore meshes manually in case some are not part of a skeleton and won't get restored automatically.
                 // Besides, this restores the scale, which the animator doesn't.
                 foreach (Transform bone in bones){
-                    CachedBonesTransform CachedBonesTransform = bonesOriginalState[bone.name];
-                    bone.localPosition = CachedBonesTransform.position;
-                    bone.localEulerAngles = CachedBonesTransform.angles;
-                    bone.localScale = CachedBonesTransform.scale;
+                    bonesOriginalState[bone.name].CopyToTransform(bone);
                     // We assume these were on before. If not we should save its state beforehand.
                     bone.gameObject.SetActive(true);
                 }
@@ -148,10 +145,7 @@ namespace UnityExplorer.UI.Panels
         {
             foreach (Transform bone in bones){
                 if (bone.name == boneName){
-                    CachedBonesTransform cachedBonesTransform = bonesOriginalState[boneName];
-                    bone.localPosition = cachedBonesTransform.position;
-                    bone.localEulerAngles = cachedBonesTransform.angles;
-                    bone.localScale = cachedBonesTransform.scale;
+                    bonesOriginalState[boneName].CopyToTransform(bone);
                     return;
                 }
             }
@@ -216,10 +210,7 @@ namespace UnityExplorer.UI.Panels
                 deserializedDict.TryGetValue(boneTransform.name, out cachedTransformList);
                 if (cachedTransformList != null && cachedTransformList.Count > 0){
                     CachedBonesTransform cachedTransform = cachedTransformList[0];
-
-                    boneTransform.localPosition = cachedTransform.position;
-                    boneTransform.localEulerAngles = cachedTransform.angles;
-                    boneTransform.localScale = cachedTransform.scale;
+                    cachedTransform.CopyToTransform(boneTransform);
 
                     cachedTransformList.RemoveAt(0);
                     if (cachedTransformList.Count == 0) {

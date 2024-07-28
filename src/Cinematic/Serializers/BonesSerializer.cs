@@ -78,5 +78,11 @@ namespace UnityExplorer.Serializers
         public readonly Vector3 position;
         public readonly Vector3 angles;
         public readonly Vector3 scale;
+
+        public void CopyToTransform(Transform transform){
+            transform.localPosition = position;
+            transform.localEulerAngles = angles;
+            transform.localScale = scale;
+        }
     }
 }

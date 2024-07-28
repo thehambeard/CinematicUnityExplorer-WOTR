@@ -132,7 +132,7 @@ namespace UnityExplorer.UI.Panels
                 meshes.AddRange(skinnedMesh.bones);
             }
             meshes.AddRange(extraMeshes.Select(m => m.transform));
-
+            meshes.RemoveAll(item => item == null);
             return meshes.GroupBy(b => b.name).Select(b => b.First()).ToList().OrderBy(b => b.name).ToList();
         }
 
