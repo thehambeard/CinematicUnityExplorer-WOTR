@@ -18,6 +18,7 @@ namespace UnityExplorer.UI.Panels
         private IAnimator animator;
         private Text skeletonName;
         private InputFieldRef saveLoadinputField;
+        private InputFieldRef searchBoneNameInput;
         private List<Transform> bones = new List<Transform>();
         private Dictionary<string, CachedBonesTransform> bonesOriginalState = new();
 
@@ -67,6 +68,12 @@ namespace UnityExplorer.UI.Panels
             boneScrollPool.Refresh(true, false);
         }
 
+        private void SearchBones(){
+            ExpandBoneTrees();
+            boneTrees = boneTrees.Where(tree => tree.obj.name.IndexOf(searchBoneNameInput.Component.text, 0, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+            boneScrollPool.Refresh(true, true);
+        }
+
         public override void SetActive(bool active)
         {
             base.SetActive(active);
@@ -90,7 +97,10 @@ namespace UnityExplorer.UI.Panels
             skeletonName.fontSize = 16;
 
             saveLoadinputField = UIFactory.CreateInputField(bonesPanelHeader, $"FileNameInput", "File name");
-            UIFactory.SetLayoutElement(saveLoadinputField.GameObject, minWidth: 400, minHeight: 25);
+            UIFactory.SetLayoutElement(saveLoadinputField.GameObject, minWidth: 380, minHeight: 25);
+
+            GameObject spacer1 = UIFactory.CreateUIObject("Spacer", bonesPanelHeader);
+            LayoutElement spaceLayout1 = UIFactory.SetLayoutElement(spacer1, minWidth: 20, flexibleWidth: 0);
 
             ButtonRef savePose = UIFactory.CreateButton(bonesPanelHeader, "SavePoseButton", "Save pose");
             UIFactory.SetLayoutElement(savePose.GameObject, minWidth: 100, minHeight: 25);
@@ -108,6 +118,20 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(turnOffAnimatorToggleObj, minHeight: 25, flexibleWidth: 9999);
             turnOffAnimatorToggle.onValueChanged.AddListener(OnTurnOffAnimatorToggle);
             turnOffAnimatorToggleText.text = "Toggle animator (needs to be off to move bones)";
+
+            searchBoneNameInput = UIFactory.CreateInputField(header, $"SearchBoneInput", "Search bone name");
+            UIFactory.SetLayoutElement(searchBoneNameInput.GameObject, minWidth: 225, minHeight: 25);
+
+            ButtonRef searchButton = UIFactory.CreateButton(header, "SearchButton", "Search");
+            UIFactory.SetLayoutElement(searchButton.GameObject, minWidth: 75, minHeight: 25);
+            searchButton.OnClick += SearchBones;
+
+            ButtonRef resetButton = UIFactory.CreateButton(header, "ResetSearchButton", "Reset");
+            UIFactory.SetLayoutElement(resetButton.GameObject, minWidth: 75, minHeight: 25);
+            resetButton.OnClick += () => { CollapseBoneTrees(); searchBoneNameInput.Component.text = ""; };
+
+            GameObject spacer2 = UIFactory.CreateUIObject("Spacer", header);
+            LayoutElement spaceLayout2 = UIFactory.SetLayoutElement(spacer2, minWidth: 20, flexibleWidth: 0);
 
             ButtonRef collapseAllButton = UIFactory.CreateButton(header, "CollapseAllButton", "Collapse all");
             UIFactory.SetLayoutElement(collapseAllButton.GameObject, minWidth: 100, minHeight: 25);
