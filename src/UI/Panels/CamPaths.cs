@@ -107,14 +107,12 @@ namespace UnityExplorer.UI.Panels
                 default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
             UIFactory.SetLayoutElement(horiGroup, minHeight: 25, flexibleWidth: 9999);
 
-            ButtonRef startButton = UIFactory.CreateButton(horiGroup, "Start", "▶");
+            ButtonRef startButton = UIFactory.CreateButton(horiGroup, "Start", "►");
             UIFactory.SetLayoutElement(startButton.GameObject, minWidth: 50, minHeight: 25);
-            startButton.ButtonText.fontSize = 20;
             startButton.OnClick += StartButton_OnClick;
 
-            ButtonRef pauseContinueButton = UIFactory.CreateButton(horiGroup, "Pause/Continue", "❚❚/▶");
+            ButtonRef pauseContinueButton = UIFactory.CreateButton(horiGroup, "Pause/Continue", "❚❚/►");
             UIFactory.SetLayoutElement(pauseContinueButton.GameObject, minWidth: 50, minHeight: 25);
-            pauseContinueButton.ButtonText.fontSize = 20;
             pauseContinueButton.OnClick += TogglePause_OnClick;
 
             ButtonRef stopButton = UIFactory.CreateButton(horiGroup, "Stop", "■");
@@ -124,6 +122,7 @@ namespace UnityExplorer.UI.Panels
 
             ButtonRef AddNode = UIFactory.CreateButton(horiGroup, "AddCamNode", "+");
             UIFactory.SetLayoutElement(AddNode.GameObject, minWidth: 50, minHeight: 25);
+            AddNode.ButtonText.fontSize = 20;
             AddNode.OnClick += AddNode_OnClick;
 
             ButtonRef DeletePath = UIFactory.CreateButton(horiGroup, "DeletePath", "Clear");

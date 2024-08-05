@@ -20,7 +20,7 @@ namespace UnityExplorer.UI.Panels
         public AnimatorPlayer animatorPlayer;
 
         public Toggle IgnoreMasterToggle;
-        public Toggle AnimatorToggle;
+        public AnimatorPausePlayButton animatorToggler;
         public Toggle MeshToggle;
         public ButtonRef inspectButton;
         public Dropdown animatorDropdown;
@@ -42,7 +42,7 @@ namespace UnityExplorer.UI.Panels
             this.animatorPlayer = animatorPlayer;
             inspectButton.ButtonText.text = animatorPlayer.animator.name;
             IgnoreMasterToggle.isOn = animatorPlayer.shouldIgnoreMasterToggle;
-            AnimatorToggle.isOn = animatorPlayer.animator.speed != 0;
+            animatorToggler.isOn = animatorPlayer.animator.speed != 0;
 
             UpdateDropdownOptions();
         }
@@ -95,10 +95,8 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(inspectButton.GameObject, minWidth: 200, minHeight: 25);
             inspectButton.OnClick += () => InspectorManager.Inspect(animatorPlayer.animator.gameObject);
 
-            GameObject AnimatorToggleObj = UIFactory.CreateToggle(UIRoot, "AnimatorToggle", out AnimatorToggle, out Text animatorToggleText);
-            UIFactory.SetLayoutElement(AnimatorToggleObj, minHeight: 30);
-            AnimatorToggle.isOn = animatorPlayer != null && animatorPlayer.animator.speed == 1;
-            AnimatorToggle.onValueChanged.AddListener(EnableAnimation);
+            animatorToggler = new AnimatorPausePlayButton(UIRoot, animatorPlayer != null && animatorPlayer.animator.speed == 1);
+            animatorToggler.OnClick += ButtonEnableAnimation;
 
             ButtonRef resetAnimation = UIFactory.CreateButton(UIRoot, "Reset Animation", "Reset");
             UIFactory.SetLayoutElement(resetAnimation.GameObject, minWidth: 50, minHeight: 25);
@@ -165,7 +163,7 @@ namespace UnityExplorer.UI.Panels
             animationTimeline.maxValue = 1;
             animationTimeline.onValueChanged.AddListener((float val) => {
                 animatorPlayer.PlayOverridingAnimation(val);
-                AnimatorToggle.isOn = false;
+                animatorToggler.isOn = false;
             });
 
             playButton = UIFactory.CreateButton(UIRoot, "PlayButton", "Play", new Color(0.2f, 0.26f, 0.2f));
@@ -186,6 +184,10 @@ namespace UnityExplorer.UI.Panels
 
         internal void IgnoreMasterToggle_Clicked(bool value){
             animatorPlayer.shouldIgnoreMasterToggle = value;
+        }
+
+        internal void ButtonEnableAnimation(){
+            EnableAnimation(animatorToggler.isOn);
         }
 
         internal void EnableAnimation(bool value){

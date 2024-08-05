@@ -30,7 +30,7 @@ namespace UnityExplorer.UI.Panels
         public override bool NavButtonWanted => true;
         public override bool ShouldSaveActiveState => true;
 
-        Toggle masterAnimatorToggle;
+        AnimatorPausePlayButton masterAnimatorPlayer;
         Toggle masterMeshToggle;
 
         private static ScrollPool<AnimatorCell> animatorScrollPool;
@@ -52,7 +52,7 @@ namespace UnityExplorer.UI.Panels
 
         private void FindAllAnimators(){
             // Enable all animators on refresh
-            masterAnimatorToggle.isOn = true; // Will also trigger "MasterToggleAnimators(true)"
+            masterAnimatorPlayer.isOn = true; // Will also trigger "MasterToggleAnimators(true)"
 
             Type searchType = ReflectionUtility.GetTypeByName("UnityEngine.Animator");
             searchType = searchType is Type type ? type : searchType.GetActualType();
@@ -92,7 +92,9 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        public void MasterToggleAnimators(bool enable){
+        public void MasterToggleAnimators(){
+            bool enable = masterAnimatorPlayer.isOn;
+
             // Load animators for the first time if there are not any
             if (animators.Count == 0) FindAllAnimators();
 
@@ -120,7 +122,7 @@ namespace UnityExplorer.UI.Panels
         }
 
         public void HotkeyToggleAnimators(){
-            masterAnimatorToggle.isOn = !masterAnimatorToggle.isOn;
+            masterAnimatorPlayer.isOn = !masterAnimatorPlayer.isOn;
         }
 
         // ~~~~~~~~ UI construction / callbacks ~~~~~~~~
@@ -139,10 +141,11 @@ namespace UnityExplorer.UI.Panels
             masterMeshToggle.onValueChanged.AddListener(value => MasterToggleMeshes(value));
             masterMeshText.text = "Master Mesh Toggler";
 
-            GameObject animatorObj = UIFactory.CreateToggle(firstGroup, "Master Animation Toggle", out masterAnimatorToggle, out Text masterAnimatorText);
-            UIFactory.SetLayoutElement(animatorObj, minHeight: 25);
-            masterAnimatorToggle.onValueChanged.AddListener(value => MasterToggleAnimators(value));
-            masterAnimatorText.text = "Master Animator Toggler";
+            masterAnimatorPlayer = new AnimatorPausePlayButton(firstGroup);
+            masterAnimatorPlayer.OnClick += MasterToggleAnimators;
+
+            Text masterAnimatorPlayerText = UIFactory.CreateLabel(firstGroup, "MasterAnimatorToggleLabel", "Master Animator Toggler", TextAnchor.MiddleRight);
+            UIFactory.SetLayoutElement(masterAnimatorPlayerText.gameObject, flexibleWidth: 0, minHeight: 25);
 
             GameObject headerSpace2 = UIFactory.CreateUIObject("HeaderSpace2", firstGroup);
             UIFactory.SetLayoutElement(headerSpace2, minWidth: 10, flexibleWidth: 0);
@@ -192,5 +195,72 @@ namespace UnityExplorer.UI.Panels
         }
 
         public void OnCellBorrowed(AnimatorCell cell) { }
+    }
+
+    // ButtonRef wrapper to act as a toggle with clearer UI
+    public class AnimatorPausePlayButton
+    {
+        private ButtonRef innerButton;
+        public Button Component => innerButton.Component;
+        public GameObject GameObject => innerButton.GameObject;
+        private bool isPlaying;
+
+        public AnimatorPausePlayButton(GameObject ui, bool state = true)
+        {
+            innerButton = UIFactory.CreateButton(ui, "InnerAnimatorPlayButton", "");
+            UIFactory.SetLayoutElement(innerButton.GameObject, minHeight: 25, minWidth: 25);
+            innerButton.OnClick += SetToggleButtonState;
+            isPlaying = state;
+            UpdateButton();
+        }
+
+        void OnPlay(){
+            innerButton.ButtonText.text = "❚❚";
+            RuntimeHelper.SetColorBlockAuto(innerButton.Component, new(0.4f, 0.2f, 0.2f));
+        }
+
+        void OnPause(){
+            innerButton.ButtonText.text = "►";
+            RuntimeHelper.SetColorBlockAuto(innerButton.Component, new(0.2f, 0.4f, 0.2f));
+        }
+
+        void UpdateButton(){
+            if (isPlaying)
+            {
+                OnPlay();
+            }
+            else
+            {
+                OnPause();
+            }
+        }
+
+        void SetToggleButtonState()
+        {
+            isPlaying = !isPlaying;
+            UpdateButton();
+        }
+
+        public bool isOn
+        {
+            get {
+                return isPlaying;
+            }
+            set {
+                if (value != isPlaying){
+                    SetToggleButtonState();
+                }
+            }
+        }
+
+        public Action OnClick
+        {
+            get {
+                return innerButton.OnClick;
+            }
+            set {
+                innerButton.OnClick = value;
+            }
+        }
     }
 }
