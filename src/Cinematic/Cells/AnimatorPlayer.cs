@@ -153,6 +153,11 @@ namespace UnityExplorer.UI.Panels
                 meshRenderer.gameObject.SetActive(value);
             }
         }
+
+        public bool IsMeshHidden(){
+            // Could maybe save a variable to set on SetMeshesEnabled instead
+            return skinnedMeshes.Any( m => m.TryCast<Renderer>().enabled) || extraMeshes.Any( m => m.gameObject.activeSelf);
+        }
     }
 
     public class IAnimator

@@ -43,6 +43,7 @@ namespace UnityExplorer.UI.Panels
             inspectButton.ButtonText.text = animatorPlayer.animator.name;
             IgnoreMasterToggle.isOn = animatorPlayer.shouldIgnoreMasterToggle;
             animatorToggler.isOn = animatorPlayer.animator.speed != 0;
+            MeshToggle.isOn = animatorPlayer.IsMeshHidden();
 
             UpdateDropdownOptions();
         }
