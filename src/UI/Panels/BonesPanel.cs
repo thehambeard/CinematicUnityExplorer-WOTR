@@ -35,6 +35,13 @@ namespace UnityExplorer.UI.Panels
             BuildBoneTrees();
         }
 
+        public void RefreshBones(List<Transform> bones) {
+            this.bones = bones;
+            boneTrees.Clear();
+            BuildBoneTrees();
+            boneScrollPool.Refresh(true, true);
+        }
+
         private void BuildBoneTrees(){
             BoneTree root = new BoneTree(animator.wrappedObject.gameObject, bones);
             if (root.obj != null){

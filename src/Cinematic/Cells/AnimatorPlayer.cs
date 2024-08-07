@@ -48,8 +48,12 @@ namespace UnityExplorer.UI.Panels
 
             this.favAnimations = new List<IAnimationClip>();
 
-            this.skinnedMeshes.AddRange(this.animator.wrappedObject.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>(false));
-            this.extraMeshes.AddRange(this.animator.wrappedObject.gameObject.GetComponentsInChildren<MeshRenderer>(false));
+            SearchMeshes();
+        }
+
+        public void SearchMeshes(){
+            skinnedMeshes = new List<SkinnedMeshRenderer>(animator.wrappedObject.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>(false));
+            extraMeshes = new List<MeshRenderer>(animator.wrappedObject.gameObject.GetComponentsInChildren<MeshRenderer>(false));
         }
 
         // Include the animations being played in other layers
@@ -125,7 +129,7 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        private List<Transform> GetMeshes(){
+        private List<Transform> GetMeshesTransforms(){
             List<Transform> meshes = new List<Transform>();
 
             foreach (SkinnedMeshRenderer skinnedMesh in skinnedMeshes) {
@@ -139,9 +143,14 @@ namespace UnityExplorer.UI.Panels
         public void OpenBonesPanel(){
             if (skinnedMeshes.Count == 0 && extraMeshes.Count == 0) return;
             if (bonesManager == null){
-                bonesManager = new BonesManager(UIManager.GetPanel<UnityExplorer.UI.Panels.AnimatorPanel>(UIManager.Panels.AnimatorPanel).Owner, GetMeshes(), animator);
+                bonesManager = new BonesManager(UIManager.GetPanel<UnityExplorer.UI.Panels.AnimatorPanel>(UIManager.Panels.AnimatorPanel).Owner, GetMeshesTransforms(), animator);
             }
             bonesManager.SetActive(true);
+        }
+
+        public void MaybeResetBonesPanel(){
+            if (bonesManager == null) return;
+            bonesManager.RefreshBones(GetMeshesTransforms());
         }
 
         public void SetMeshesEnabled(bool value){

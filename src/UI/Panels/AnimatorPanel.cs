@@ -76,6 +76,10 @@ namespace UnityExplorer.UI.Panels
                                 animators[i].animations.Add(animationClip);
                         }
                         newAnimators[newAnimatorsIndex] = animators[i];
+
+                        // Reset meshes
+                        newAnimators[newAnimatorsIndex].SearchMeshes();
+                        newAnimators[newAnimatorsIndex].MaybeResetBonesPanel();
                     }
                 }
             }
