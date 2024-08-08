@@ -16,7 +16,7 @@ namespace UnityExplorer.UI.Panels
         ComponentControl scaleControl;
         public AxisComponentControl CurrentSlidingAxisControl { get; set; }
         public BonesManager Owner;
-        private ButtonRef inspectButton;
+        private Text boneName;
 
         private GameObject expandBonesRow;
         private ButtonRef expandBonesButton;
@@ -35,7 +35,7 @@ namespace UnityExplorer.UI.Panels
 
         public void SetBoneTree(BoneTree boneTree, BonesManager bonesManager){
             this.boneTree = boneTree;
-            inspectButton.ButtonText.text = boneTree.obj.name;
+            boneName.text = boneTree.obj.name;
             Owner = bonesManager;
 
             if (boneTree.childTrees.Count == 0){
@@ -103,13 +103,16 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(MeshToggleObj, minHeight: 30);
             MeshToggle.onValueChanged.AddListener(SetBoneEnabled);
 
-            inspectButton = UIFactory.CreateButton(header, "InspectButton", "");
-            UIFactory.SetLayoutElement(inspectButton.GameObject, minWidth: 150, minHeight: 25);
-            inspectButton.OnClick += () => InspectorManager.Inspect(boneTree.obj);
+            boneName = UIFactory.CreateLabel(header, $"BoneName", "", fontSize: 18);
+            UIFactory.SetLayoutElement(boneName.gameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
 
             GameObject headerButtons = UIFactory.CreateUIObject("BoneHeader", header);
             UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(headerButtons, false, false, true, true, 4, childAlignment: TextAnchor.MiddleRight);
             UIFactory.SetLayoutElement(headerButtons, minHeight: 25, flexibleWidth: 9999, flexibleHeight: 800);
+
+            ButtonRef inspectButton = UIFactory.CreateButton(headerButtons, "InspectButton", "Inspect");
+            UIFactory.SetLayoutElement(inspectButton.GameObject, minWidth: 75, minHeight: 25);
+            inspectButton.OnClick += () => InspectorManager.Inspect(boneTree.obj);
 
             ButtonRef restoreBoneStateButton = UIFactory.CreateButton(headerButtons, "RestoreBoneState", "Restore State");
             UIFactory.SetLayoutElement(restoreBoneStateButton.GameObject, minWidth: 125, minHeight: 25);
