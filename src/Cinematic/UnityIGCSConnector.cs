@@ -22,8 +22,13 @@ namespace CinematicUnityExplorer.Cinematic
     public class UnityIGCSConnector
     {
         // UnityIGCSConnector.dll definitions.
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void MoveCameraCallback(float step_left, float step_up, float fov, int from_start);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void SessionCallback();
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate IntPtr U_IGCS_Initialize(MoveCameraCallback callback, SessionCallback start_cb, SessionCallback end_cb);
 
         // Store the initial position when a session start in IGCSDof.
@@ -118,10 +123,11 @@ namespace CinematicUnityExplorer.Cinematic
 
         public UnityIGCSConnector()
         {
-            var lib = NativeMethods.LoadLibrary(@"UnityIGCSConnector.dll");
+            var libraryName = IntPtr.Size == 8 ? @"UnityIGCSConnector.dll" : @"UnityIGCSConnector.32.dll";
+            var lib = NativeMethods.LoadLibrary(libraryName);
             if (lib == IntPtr.Zero) 
             {
-                ExplorerCore.LogWarning("UnityIGCSConnector.dll was not found so IGCSDof will not be available");
+                ExplorerCore.LogWarning($"{libraryName} was not found so IGCSDof will not be available");
                 return;
             }
 
