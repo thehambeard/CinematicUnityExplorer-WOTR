@@ -1,6 +1,4 @@
-﻿using HarmonyLib;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -19,7 +17,7 @@ namespace UniverseLib.Input
 {
     public class InputSystem : IHandleInput
     {
-#region Reflection cache
+        #region Reflection cache
 
         // typeof(InputSystem.Keyboard)
         public static Type TKeyboard => t_Keyboard ??= ReflectionUtility.GetTypeByName("UnityEngine.InputSystem.Keyboard");
@@ -96,7 +94,7 @@ namespace UniverseLib.Input
         MethodInfo m_UI_Enable;
         PropertyInfo p_actionsAsset;
 
-#endregion
+        #endregion
 
         public InputSystem()
         {
@@ -234,7 +232,7 @@ namespace UniverseLib.Input
             }
         }
 
-#region KeyCode <-> Key Helpers
+        #region KeyCode <-> Key Helpers
 
         public static Dictionary<KeyCode, object> KeyCodeToKeyDict = new();
         public static Dictionary<KeyCode, object> KeyCodeToKeyEnumDict = new();
@@ -296,7 +294,7 @@ namespace UniverseLib.Input
             return KeyCodeToKeyEnumDict[key];
         }
 
-#endregion
+        #endregion
 
         public bool GetKeyDown(KeyCode key)
         {

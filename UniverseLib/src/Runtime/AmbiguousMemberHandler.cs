@@ -1,9 +1,6 @@
 ﻿using HarmonyLib;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace UniverseLib.Runtime
 {
@@ -21,7 +18,7 @@ namespace UniverseLib.Runtime
         {
             foreach (string name in possibleNames)
             {
-                if (typeof(TClass).GetProperty(name, AccessTools.all) is PropertyInfo pi 
+                if (typeof(TClass).GetProperty(name, AccessTools.all) is PropertyInfo pi
                     && typeof(TValue).IsAssignableFrom(pi.PropertyType)
                     && (!canWrite || pi.CanWrite)
                     && (!canRead || pi.CanRead))
@@ -30,7 +27,7 @@ namespace UniverseLib.Runtime
                     memberType = MemberTypes.Property;
                     break;
                 }
-                if (typeof(TClass).GetField(name, AccessTools.all) is FieldInfo fi 
+                if (typeof(TClass).GetField(name, AccessTools.all) is FieldInfo fi
                     && typeof(TValue).IsAssignableFrom(fi.FieldType)
                     && (!canWrite || !(fi.IsLiteral && !fi.IsInitOnly))) // (don't need to write or is not constant)
                 {
@@ -52,14 +49,14 @@ namespace UniverseLib.Runtime
         /// </summary>
         /// <param name="instance">The instance to get from.</param>
         /// <returns>The value from the member, if successful.</returns>
-        public TValue GetValue(object instance) 
+        public TValue GetValue(object instance)
             => DoGetValue(instance);
 
         /// <summary>
         /// Gets the value of a static member.
         /// </summary>
         /// <returns>The value from the member, if successful.</returns>
-        public TValue GetValue() 
+        public TValue GetValue()
             => DoGetValue(null);
 
         private TValue DoGetValue(object instance)

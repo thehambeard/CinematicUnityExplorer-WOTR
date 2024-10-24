@@ -52,7 +52,7 @@ namespace UnityExplorer
                     if (inspector.TargetType.FullName == targetAsType.FullName)
                         shouldFocus = true;
                 }
-                else if(inspector.Target.ReferenceEqual(target))
+                else if (inspector.Target.ReferenceEqual(target))
                 {
                     shouldFocus = true;
                 }

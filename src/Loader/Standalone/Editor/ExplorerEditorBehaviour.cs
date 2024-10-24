@@ -1,14 +1,6 @@
 ﻿#if STANDALONE
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using UnityEngine;
 using UnityExplorer.Config;
 using UnityExplorer.UI;
-using UniverseLib;
 
 namespace UnityExplorer.Loader.Standalone
 {
@@ -67,7 +59,7 @@ namespace UnityExplorer.Loader.Standalone
         {
             Destroy(this.gameObject);
         }
-    
+
         internal void LoadConfigs()
         {
             ConfigManager.Hide_On_Startup.Value = this.Hide_On_Startup;

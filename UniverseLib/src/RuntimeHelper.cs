@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -34,7 +32,7 @@ namespace UniverseLib
         /// </summary>
         public static Coroutine StartCoroutine(IEnumerator routine)
             => Instance.Internal_StartCoroutine(routine);
-        
+
         protected internal abstract Coroutine Internal_StartCoroutine(IEnumerator routine);
 
         /// <summary>
@@ -43,7 +41,7 @@ namespace UniverseLib
         /// <param name="coroutine"></param>
         public static void StopCoroutine(Coroutine coroutine)
             => Instance.Internal_StopCoroutine(coroutine);
-        
+
         protected internal abstract void Internal_StopCoroutine(Coroutine coroutine);
 
         /// <summary>
@@ -59,7 +57,7 @@ namespace UniverseLib
         /// </summary>
         public static ScriptableObject CreateScriptable(Type type)
             => Instance.Internal_CreateScriptable(type);
-        
+
         protected internal abstract ScriptableObject Internal_CreateScriptable(Type type);
 
         /// <summary>
@@ -67,7 +65,7 @@ namespace UniverseLib
         /// </summary>
         public static string LayerToName(int layer)
             => Instance.Internal_LayerToName(layer);
-        
+
         protected internal abstract string Internal_LayerToName(int layer);
 
         /// <summary>
@@ -99,7 +97,7 @@ namespace UniverseLib
         /// </summary>
         public static GameObject[] GetRootGameObjects(Scene scene)
             => Instance.Internal_GetRootGameObjects(scene);
-        
+
         protected internal abstract GameObject[] Internal_GetRootGameObjects(Scene scene);
 
         /// <summary>
@@ -107,14 +105,14 @@ namespace UniverseLib
         /// </summary>
         public static int GetRootCount(Scene scene)
             => Instance.Internal_GetRootCount(scene);
-        
+
         protected internal abstract int Internal_GetRootCount(Scene scene);
 
         /// <summary>
         /// Automatically sets the base, highlighted and pressed values of the <paramref name="selectable"/>'s <see cref="ColorBlock"/>, 
         /// with <paramref name="baseColor"/> * 1.2f for the highlighted color and * 0.8f for the pressed color.
         /// </summary>
-        public static void SetColorBlockAuto(Selectable selectable, Color baseColor) 
+        public static void SetColorBlockAuto(Selectable selectable, Color baseColor)
             => Instance.Internal_SetColorBlock(selectable, baseColor, baseColor * 1.2f, baseColor * 0.8f);
 
         /// <summary>

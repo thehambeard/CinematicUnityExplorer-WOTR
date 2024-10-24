@@ -2,12 +2,8 @@
 using HarmonyLib;
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
-using UniverseLib;
 using UniverseLib.Utility;
 
 namespace UniverseLib.Runtime.Mono
@@ -69,7 +65,7 @@ namespace UniverseLib.Runtime.Mono
                 : (byte[])mi_EncodeToPNG.Invoke(tex, ArgumentUtility.EmptyArgs);
         }
 
-        internal override Texture Internal_CopyTexture(Texture src, int srcElement, int srcMip, int srcX, int srcY, 
+        internal override Texture Internal_CopyTexture(Texture src, int srcElement, int srcMip, int srcX, int srcY,
             int srcWidth, int srcHeight, Texture dst, int dstElement, int dstMip, int dstX, int dstY)
         {
             if (mi_Graphics_CopyTexture == null)

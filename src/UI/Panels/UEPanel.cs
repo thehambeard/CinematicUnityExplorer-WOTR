@@ -85,7 +85,7 @@ namespace UnityExplorer.UI.Panels
             SetSaveDataToConfigValue();
         }
 
-        private void SetSaveDataToConfigValue() 
+        private void SetSaveDataToConfigValue()
             => ConfigManager.GetPanelSaveData(this.PanelType).Value = this.ToSaveData();
 
         public virtual string ToSaveData()

@@ -56,7 +56,7 @@ namespace UnityExplorer.Hooks
                 pendingGenericDefinition = type;
                 HookManagerPanel.genericArgsHandler.Show(OnGenericClassChosen, OnGenericClassCancel, type);
                 HookManagerPanel.Instance.SetPage(HookManagerPanel.Pages.GenericArgsSelector);
-                return;    
+                return;
             }
 
             ShowMethodsForType(type);

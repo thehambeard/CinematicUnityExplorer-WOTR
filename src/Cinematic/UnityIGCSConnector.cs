@@ -1,9 +1,4 @@
-﻿using MonoMod.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using System.Runtime.InteropServices;
 using UnityExplorer;
 
 namespace CinematicUnityExplorer.Cinematic
@@ -54,7 +49,7 @@ namespace CinematicUnityExplorer.Cinematic
         public void UpdateFreecamStatus(bool enabled)
         {
             if (CameraStatus == IntPtr.Zero) return;
-            
+
             Marshal.WriteByte(CameraStatus, enabled ? (byte)0x1 : (byte)0x0);
         }
 
@@ -123,9 +118,10 @@ namespace CinematicUnityExplorer.Cinematic
 
         public UnityIGCSConnector()
         {
-            var libraryName = IntPtr.Size == 8 ? @"UnityIGCSConnector.dll" : @"UnityIGCSConnector.32.dll";
+            //var libraryName = IntPtr.Size == 8 ? @"UnityIGCSConnector.dll" : @"UnityIGCSConnector.32.dll";
+            var libraryName = UnityEngine.Application.dataPath
             var lib = NativeMethods.LoadLibrary(libraryName);
-            if (lib == IntPtr.Zero) 
+            if (lib == IntPtr.Zero)
             {
                 ExplorerCore.LogWarning($"{libraryName} was not found so IGCSDof will not be available");
                 return;
@@ -144,7 +140,8 @@ namespace CinematicUnityExplorer.Cinematic
             delegates.Add(new SessionCallback(EndSession));
 
             CameraStatus = initFunc((MoveCameraCallback)delegates[0], (SessionCallback)delegates[1], (SessionCallback)delegates[2]);
-            if (CameraStatus == IntPtr.Zero){
+            if (CameraStatus == IntPtr.Zero)
+            {
                 // This is actually a InvalidDataException, but some games dont allow you to throw that.
                 throw new Exception("IGCSDof returned an invalid pointer which means something went wrong");
             }

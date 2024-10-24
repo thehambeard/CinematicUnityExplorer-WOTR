@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using UniverseLib.Utility;
 
 namespace UniverseLib;
@@ -50,7 +47,7 @@ public static class ReflectionExtensions
         {
             return asm.GetTypes();
         }
-        catch(ReflectionTypeLoadException rtle)
+        catch (ReflectionTypeLoadException rtle)
         {
             return ReflectionUtility.TryExtractTypesFromException(rtle);
         }

@@ -1,9 +1,4 @@
-﻿using UnityEngine;
-using UniverseLib.UI;
-using UniverseLib.UI.Models;
-using UniverseLib.UI.Widgets.ScrollView;
-
-#if CPP
+﻿#if CPP
 #if INTEROP
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using Il2CppInterop.Runtime;
@@ -15,8 +10,9 @@ using UnhollowerBaseLib;
 
 namespace UnityExplorer.UI.Panels
 {
-    public class AnimatorPlayer {
-        public IAnimator animator {get;}
+    public class AnimatorPlayer
+    {
+        public IAnimator animator { get; }
         public List<IAnimationClip> animations = new List<IAnimationClip>();
         public bool shouldIgnoreMasterToggle = false;
 
@@ -30,12 +26,14 @@ namespace UnityExplorer.UI.Panels
         private IRuntimeAnimatorController originalAnimatorController;
         private IAnimatorOverrideController animatorOverrideController = null;
 
-        public List<IAnimationClip> favAnimations {get;}
+        public List<IAnimationClip> favAnimations { get; }
 
-        public AnimatorPlayer(Behaviour animator){
+        public AnimatorPlayer(Behaviour animator)
+        {
             this.animator = new IAnimator(animator);
-            if (this.animator.runtimeAnimatorController != null){
-                this.animations = this.animator.runtimeAnimatorController.animationClips.OrderBy(x=>x.name).Where(c => c.length > 0).Distinct().ToList();
+            if (this.animator.runtimeAnimatorController != null)
+            {
+                this.animations = this.animator.runtimeAnimatorController.animationClips.OrderBy(x => x.name).Where(c => c.length > 0).Distinct().ToList();
                 // Simple heuristic to try and find the player character
                 this.shouldIgnoreMasterToggle = animator.gameObject.name.IndexOf("play", 0, StringComparison.OrdinalIgnoreCase) >= 0;
             }
@@ -51,26 +49,32 @@ namespace UnityExplorer.UI.Panels
             SearchMeshes();
         }
 
-        public void SearchMeshes(){
+        public void SearchMeshes()
+        {
             skinnedMeshes = new List<SkinnedMeshRenderer>(animator.wrappedObject.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>(false));
             extraMeshes = new List<MeshRenderer>(animator.wrappedObject.gameObject.GetComponentsInChildren<MeshRenderer>(false));
         }
 
         // Include the animations being played in other layers
-        private List<IAnimationClip> GetAllCurrentlyPlayingAnimations(){
+        private List<IAnimationClip> GetAllCurrentlyPlayingAnimations()
+        {
             List<IAnimationClip> allAnimations = new List<IAnimationClip>();
-            for (int layer = 0; layer < animator.layerCount; layer++){
+            for (int layer = 0; layer < animator.layerCount; layer++)
+            {
                 allAnimations.AddRange(animator.GetCurrentAnimatorClipInfo(layer).Select(ainfo => ainfo.clip).ToList());
             }
             return allAnimations;
         }
 
-        public void ResetAnimation(){
+        public void ResetAnimation()
+        {
             if (bonesManager != null) bonesManager.turnOffAnimatorToggle.isOn = true;
             // Let the game change animations again
             animator.StopPlayback();
-            if (originalAnimatorController != null && animator.wrappedObject != null){
-                if (animator.runtimeAnimatorController != null && originalAnimatorController != null){
+            if (originalAnimatorController != null && animator.wrappedObject != null)
+            {
+                if (animator.runtimeAnimatorController != null && originalAnimatorController != null)
+                {
                     animator.runtimeAnimatorController = originalAnimatorController;
 
                     animatorOverrideController = null;
@@ -78,9 +82,11 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        public void PlayOverridingAnimation(float normalizedTime){
+        public void PlayOverridingAnimation(float normalizedTime)
+        {
             ResetAnimation();
-            if (animatorOverrideController == null){
+            if (animatorOverrideController == null)
+            {
                 animatorOverrideController = new IAnimatorOverrideController();
                 animatorOverrideController.runtimeAnimatorController = originalAnimatorController;
                 // Actually uses runtimeAnimatorController on the original object, should make the wrapper class a child of the runtimeAnimatorController instead
@@ -91,7 +97,8 @@ namespace UnityExplorer.UI.Panels
             }
 
             // Restore previous animation
-            if (lastCurrentAnimation != null){
+            if (lastCurrentAnimation != null)
+            {
                 animatorOverrideController[lastCurrentAnimation] = lastCurrentAnimation;
             }
 
@@ -102,37 +109,45 @@ namespace UnityExplorer.UI.Panels
             lastCurrentAnimation = currentAnimation;
         }
 
-        public void FavAnimation(IAnimationClip animation){
+        public void FavAnimation(IAnimationClip animation)
+        {
             favAnimations.Add(animation);
             favAnimations.OrderBy(x => x.name);
         }
 
-        public void UnfavAnimation(IAnimationClip animation){
+        public void UnfavAnimation(IAnimationClip animation)
+        {
             favAnimations.Remove(animation);
         }
 
-        public bool IsAnimationFaved(IAnimationClip animation){
+        public bool IsAnimationFaved(IAnimationClip animation)
+        {
             return favAnimations.Contains(animation);
         }
 
-        public override string ToString(){
+        public override string ToString()
+        {
             return animator.name;
         }
 
         public bool enabled
         {
-            get {
+            get
+            {
                 return animator.enabled;
             }
-            set {
+            set
+            {
                 animator.enabled = value;
             }
         }
 
-        private List<Transform> GetMeshesTransforms(){
+        private List<Transform> GetMeshesTransforms()
+        {
             List<Transform> meshes = new List<Transform>();
 
-            foreach (SkinnedMeshRenderer skinnedMesh in skinnedMeshes) {
+            foreach (SkinnedMeshRenderer skinnedMesh in skinnedMeshes)
+            {
                 meshes.AddRange(skinnedMesh.bones);
             }
             meshes.AddRange(extraMeshes.Select(m => m.transform));
@@ -140,32 +155,39 @@ namespace UnityExplorer.UI.Panels
             return meshes.GroupBy(b => b.name).Select(b => b.First()).ToList().OrderBy(b => b.name).ToList();
         }
 
-        public void OpenBonesPanel(){
+        public void OpenBonesPanel()
+        {
             if (skinnedMeshes.Count == 0 && extraMeshes.Count == 0) return;
-            if (bonesManager == null){
+            if (bonesManager == null)
+            {
                 bonesManager = new BonesManager(UIManager.GetPanel<UnityExplorer.UI.Panels.AnimatorPanel>(UIManager.Panels.AnimatorPanel).Owner, GetMeshesTransforms(), animator);
             }
             bonesManager.SetActive(true);
         }
 
-        public void MaybeResetBonesPanel(){
+        public void MaybeResetBonesPanel()
+        {
             if (bonesManager == null) return;
             bonesManager.RefreshBones(GetMeshesTransforms());
         }
 
-        public void SetMeshesEnabled(bool value){
-            foreach (SkinnedMeshRenderer skinnedMesh in skinnedMeshes) {
+        public void SetMeshesEnabled(bool value)
+        {
+            foreach (SkinnedMeshRenderer skinnedMesh in skinnedMeshes)
+            {
                 skinnedMesh.TryCast<Renderer>().enabled = value;
             }
 
-            foreach (MeshRenderer meshRenderer in extraMeshes) {
+            foreach (MeshRenderer meshRenderer in extraMeshes)
+            {
                 meshRenderer.gameObject.SetActive(value);
             }
         }
 
-        public bool IsMeshHidden(){
+        public bool IsMeshHidden()
+        {
             // Could maybe save a variable to set on SetMeshesEnabled instead
-            return skinnedMeshes.Any( m => m.TryCast<Renderer>().enabled) || extraMeshes.Any( m => m.gameObject.activeSelf);
+            return skinnedMeshes.Any(m => m.TryCast<Renderer>().enabled) || extraMeshes.Any(m => m.gameObject.activeSelf);
         }
     }
 
@@ -175,21 +197,24 @@ namespace UnityExplorer.UI.Panels
         Type realType;
         public Behaviour wrappedObject => _animator;
 
-        public IAnimator(Behaviour animator){
+        public IAnimator(Behaviour animator)
+        {
             _animator = animator;
             realType = ReflectionUtility.GetTypeByName("UnityEngine.Animator");
         }
 
         public IRuntimeAnimatorController runtimeAnimatorController
         {
-            get {
+            get
+            {
                 PropertyInfo animatorRuntimeAnimatorController = realType.GetProperty("runtimeAnimatorController");
                 object runtimeAnimatorControllerObject = animatorRuntimeAnimatorController.GetValue(_animator.TryCast(), null);
                 if (runtimeAnimatorControllerObject == null)
                     return null;
                 return new IRuntimeAnimatorController(runtimeAnimatorControllerObject);
             }
-            set {
+            set
+            {
                 PropertyInfo animatorRuntimeAnimatorController = realType.GetProperty("runtimeAnimatorController");
                 animatorRuntimeAnimatorController.SetValue(_animator.TryCast(), value.wrappedObject.TryCast(), null);
             }
@@ -197,17 +222,20 @@ namespace UnityExplorer.UI.Panels
 
         public IAnimatorOverrideController runtimeAnimatorControllerOverride
         {
-            set {
+            set
+            {
                 PropertyInfo animatorRuntimeAnimatorController = realType.GetProperty("runtimeAnimatorController");
                 animatorRuntimeAnimatorController.SetValue(_animator.TryCast(), value.wrappedObject.TryCast(), null);
             }
         }
 
-        public IAnimatorClipInfo[] GetCurrentAnimatorClipInfo(int layer){
-            MethodInfo getCurrentAnimatorClipInfo = realType.GetMethod("GetCurrentAnimatorClipInfo", new Type[] {typeof(int)});
-            object resultArray = getCurrentAnimatorClipInfo.Invoke(_animator.TryCast(), new object[] {layer});
+        public IAnimatorClipInfo[] GetCurrentAnimatorClipInfo(int layer)
+        {
+            MethodInfo getCurrentAnimatorClipInfo = realType.GetMethod("GetCurrentAnimatorClipInfo", new Type[] { typeof(int) });
+            object resultArray = getCurrentAnimatorClipInfo.Invoke(_animator.TryCast(), new object[] { layer });
 
-            if (resultArray is Array sourceArray){
+            if (resultArray is Array sourceArray)
+            {
                 List<IAnimatorClipInfo> convertedList = new List<IAnimatorClipInfo>();
 
                 foreach (var item in sourceArray)
@@ -242,12 +270,13 @@ namespace UnityExplorer.UI.Panels
                 return convertedIL2CPPList.ToArray(); 
             }
 #endif
-            return new IAnimatorClipInfo[] {};
+            return new IAnimatorClipInfo[] { };
         }
 
         public string name
         {
-            get {
+            get
+            {
                 PropertyInfo animatorName = realType.GetProperty("name");
                 return animatorName.GetValue(_animator.TryCast(), null).ToString();
             }
@@ -255,24 +284,28 @@ namespace UnityExplorer.UI.Panels
 
         public int layerCount
         {
-            get {
+            get
+            {
                 PropertyInfo animatorLayerCount = realType.GetProperty("layerCount");
-                return (int) animatorLayerCount.GetValue(_animator.TryCast(), null);
+                return (int)animatorLayerCount.GetValue(_animator.TryCast(), null);
             }
         }
 
-        public void Play(string animatorClip, float normalizedTime){
-            MethodInfo play = realType.GetMethod("Play", new Type[] {typeof(string), typeof(int), typeof(float)});
-            play.Invoke(_animator.TryCast(), new object[] {animatorClip, -1, normalizedTime});
+        public void Play(string animatorClip, float normalizedTime)
+        {
+            MethodInfo play = realType.GetMethod("Play", new Type[] { typeof(string), typeof(int), typeof(float) });
+            play.Invoke(_animator.TryCast(), new object[] { animatorClip, -1, normalizedTime });
         }
 
         public float speed
         {
-            get {
+            get
+            {
                 PropertyInfo animatorSpeed = realType.GetProperty("speed");
-                return (float) animatorSpeed.GetValue(_animator.TryCast(), null);
+                return (float)animatorSpeed.GetValue(_animator.TryCast(), null);
             }
-            set {
+            set
+            {
                 PropertyInfo animatorSpeed = realType.GetProperty("speed");
                 animatorSpeed.SetValue(_animator.TryCast(), value, null);
             }
@@ -280,11 +313,13 @@ namespace UnityExplorer.UI.Panels
 
         public bool enabled
         {
-            get {
+            get
+            {
                 PropertyInfo animatorEnabled = realType.GetProperty("enabled");
-                return (bool) animatorEnabled.GetValue(_animator.TryCast(), null);
+                return (bool)animatorEnabled.GetValue(_animator.TryCast(), null);
             }
-            set {
+            set
+            {
                 PropertyInfo animatorEnabled = realType.GetProperty("enabled");
                 animatorEnabled.SetValue(_animator.TryCast(), value, null);
             }
@@ -292,18 +327,21 @@ namespace UnityExplorer.UI.Panels
 
         public GameObject gameObject
         {
-            get {
+            get
+            {
                 PropertyInfo animatorGameObject = realType.GetProperty("gameObject");
-                return (GameObject) animatorGameObject.GetValue(_animator.TryCast(), null);
+                return (GameObject)animatorGameObject.GetValue(_animator.TryCast(), null);
             }
         }
 
-        public void StopPlayback(){
+        public void StopPlayback()
+        {
             MethodInfo StopPlayBackMethod = realType.GetMethod("StopPlayback", Type.EmptyTypes);
             StopPlayBackMethod.Invoke(_animator.TryCast(), null);
         }
 
-        public void StartPlayback(){
+        public void StartPlayback()
+        {
             MethodInfo StartPlaybackMethod = realType.GetMethod("StartPlayback", Type.EmptyTypes);
             StartPlaybackMethod.Invoke(_animator.TryCast(), null);
         }
@@ -315,14 +353,16 @@ namespace UnityExplorer.UI.Panels
         public Type realType;
         public object wrappedObject => _animationClip;
 
-        public IAnimationClip(object animationClip){
+        public IAnimationClip(object animationClip)
+        {
             _animationClip = animationClip;
             realType = ReflectionUtility.GetTypeByName("UnityEngine.AnimationClip");
         }
 
         public string name
         {
-            get {
+            get
+            {
                 PropertyInfo animatorName = realType.GetProperty("name");
                 return animatorName.GetValue(_animationClip.TryCast(), null).ToString();
             }
@@ -330,9 +370,10 @@ namespace UnityExplorer.UI.Panels
 
         public float length
         {
-            get {
+            get
+            {
                 PropertyInfo animatorName = realType.GetProperty("length");
-                return (float) animatorName.GetValue(_animationClip.TryCast(), null);
+                return (float)animatorName.GetValue(_animationClip.TryCast(), null);
             }
         }
 
@@ -372,14 +413,16 @@ namespace UnityExplorer.UI.Panels
         object _animationClipInfo;
         Type realType;
 
-        public IAnimatorClipInfo(object animationClipInfo){
+        public IAnimatorClipInfo(object animationClipInfo)
+        {
             _animationClipInfo = animationClipInfo;
             realType = ReflectionUtility.GetTypeByName("UnityEngine.AnimatorClipInfo");
         }
 
         public IAnimationClip clip
         {
-            get {
+            get
+            {
                 PropertyInfo animationClipInfoClip = realType.GetProperty("clip");
                 return new IAnimationClip(animationClipInfoClip.GetValue(_animationClipInfo.TryCast(), null));
             }
@@ -392,7 +435,8 @@ namespace UnityExplorer.UI.Panels
         Type realType;
         public object wrappedObject => _runtimeAnimatorController;
 
-        public IRuntimeAnimatorController(object runtimeAnimatorController){
+        public IRuntimeAnimatorController(object runtimeAnimatorController)
+        {
             _runtimeAnimatorController = runtimeAnimatorController;
             realType = ReflectionUtility.GetTypeByName("UnityEngine.RuntimeAnimatorController");
         }
@@ -410,14 +454,16 @@ namespace UnityExplorer.UI.Panels
                 indexerProperty.SetValue(_runtimeAnimatorController.TryCast(), value, new object[] { key });
             }
         }
-        
+
         public IAnimationClip[] animationClips
         {
-            get {
+            get
+            {
                 PropertyInfo runtimeAnimatorControllerAnimationClips = realType.GetProperty("animationClips");
                 object resultArray = runtimeAnimatorControllerAnimationClips.GetValue(_runtimeAnimatorController.TryCast(), null);
 
-                if (resultArray is Array sourceArray){
+                if (resultArray is Array sourceArray)
+                {
                     List<IAnimationClip> convertedList = new List<IAnimationClip>();
 
                     foreach (var item in sourceArray)
@@ -452,7 +498,7 @@ namespace UnityExplorer.UI.Panels
                     return convertedIL2CPPList.ToArray(); 
                 }
 #endif
-                return new IAnimationClip[] {};
+                return new IAnimationClip[] { };
             }
         }
     }
@@ -463,7 +509,8 @@ namespace UnityExplorer.UI.Panels
         Type realType;
         public object wrappedObject => _animatorOverrideController;
 
-        public IAnimatorOverrideController(){
+        public IAnimatorOverrideController()
+        {
             realType = ReflectionUtility.GetTypeByName("UnityEngine.AnimatorOverrideController");
             ConstructorInfo constructor = realType.GetConstructor(Type.EmptyTypes);
             _animatorOverrideController = constructor.Invoke(null);
@@ -471,12 +518,14 @@ namespace UnityExplorer.UI.Panels
 
         public IRuntimeAnimatorController runtimeAnimatorController
         {
-            get {
+            get
+            {
                 PropertyInfo animatorOverrideControllerRuntimeAnimatorController = realType.GetProperty("runtimeAnimatorController");
                 return new IRuntimeAnimatorController(animatorOverrideControllerRuntimeAnimatorController.GetValue(_animatorOverrideController.TryCast(), null));
             }
 
-            set {
+            set
+            {
                 PropertyInfo animatorOverrideControllerRuntimeAnimatorController = realType.GetProperty("runtimeAnimatorController");
                 animatorOverrideControllerRuntimeAnimatorController.SetValue(_animatorOverrideController.TryCast(), value.wrappedObject.TryCast(), null);
             }
@@ -487,12 +536,14 @@ namespace UnityExplorer.UI.Panels
             get
             {
                 PropertyInfo indexerProperty = realType.GetProperty("Item", new[] { typeof(string) });
-                if (indexerProperty != null){
+                if (indexerProperty != null)
+                {
                     return new IAnimationClip(indexerProperty.GetValue(_animatorOverrideController.TryCast(), new object[] { clip.name }));
                 }
 
                 indexerProperty = realType.GetProperty("Item", new[] { clip.realType });
-                if (indexerProperty != null){
+                if (indexerProperty != null)
+                {
                     return new IAnimationClip(indexerProperty.GetValue(_animatorOverrideController.TryCast(), new object[] { clip.wrappedObject }));
                 }
 
@@ -501,13 +552,15 @@ namespace UnityExplorer.UI.Panels
             set
             {
                 PropertyInfo indexerProperty = realType.GetProperty("Item", new[] { typeof(string) });
-                if (indexerProperty != null){
+                if (indexerProperty != null)
+                {
                     indexerProperty.SetValue(_animatorOverrideController.TryCast(), value.wrappedObject.TryCast(), new object[] { clip.name });
                     return;
                 }
 
                 indexerProperty = realType.GetProperty("Item", new[] { clip.realType });
-                if (indexerProperty != null){
+                if (indexerProperty != null)
+                {
                     indexerProperty.SetValue(_animatorOverrideController.TryCast(), value.wrappedObject.TryCast(), new object[] { clip.wrappedObject });
                     return;
                 }

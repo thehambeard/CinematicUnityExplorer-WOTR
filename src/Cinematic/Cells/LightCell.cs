@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using UniverseLib.UI;
+﻿using UniverseLib.UI;
 using UniverseLib.UI.Models;
 using UniverseLib.UI.Widgets.ScrollView;
 
@@ -67,12 +66,14 @@ namespace UnityExplorer.UI.Panels
             return UIRoot;
         }
 
-        private void ToggleVisualizer(){
+        private void ToggleVisualizer()
+        {
             GameObject visualizer = light.transform.GetChild(0).gameObject;
             visualizer.SetActive(!visualizer.activeSelf);
         }
 
-        private void CopyLight(){
+        private void CopyLight()
+        {
             GameObject newLight = UnityEngine.Object.Instantiate(light);
             CopyFreeCamTransform(newLight);
             newLight.name = $"CUE - Light {GetLightsManagerPanel().lightCounter}";
@@ -83,16 +84,19 @@ namespace UnityExplorer.UI.Panels
             GetLightsManagerPanel().lightCounter++;
         }
 
-        private void DestroyLight(){
+        private void DestroyLight()
+        {
             GetLightsManagerPanel().CreatedLights.Remove(light);
             UnityEngine.Object.Destroy(light);
             GetLightsManagerPanel().lightsScrollPool.Refresh(true, false);
         }
 
-        public static void CopyFreeCamTransform(GameObject obj){
+        public static void CopyFreeCamTransform(GameObject obj)
+        {
             Camera freeCam = FreeCamPanel.ourCamera;
-            
-            if (freeCam != null) {
+
+            if (freeCam != null)
+            {
                 obj.transform.position = freeCam.transform.position;
                 obj.transform.rotation = freeCam.transform.rotation;
 
@@ -100,7 +104,8 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        public UnityExplorer.UI.Panels.LightsManager GetLightsManagerPanel(){
+        public UnityExplorer.UI.Panels.LightsManager GetLightsManagerPanel()
+        {
             return UIManager.GetPanel<UnityExplorer.UI.Panels.LightsManager>(UIManager.Panels.LightsManager);
         }
     }

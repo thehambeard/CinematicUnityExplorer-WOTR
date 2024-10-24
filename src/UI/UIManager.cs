@@ -171,7 +171,7 @@ namespace UnityExplorer.UI
             panel.SetActive(active);
         }
 
-        public static TimeScaleWidget GetTimeScaleWidget() { return timeScaleWidget;}
+        public static TimeScaleWidget GetTimeScaleWidget() { return timeScaleWidget; }
 
         // navbar
 
@@ -221,7 +221,7 @@ namespace UnityExplorer.UI
             closeBtn.ButtonText.text = val.ToString();
         }
 
-        
+
 
         // UI Construction
 

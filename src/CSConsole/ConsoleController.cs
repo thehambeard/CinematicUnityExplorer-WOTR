@@ -432,7 +432,7 @@ namespace UnityExplorer.CSConsole
                 // depending on which one we are not at.
                 if (LastCaretPosition == indentedStart)
                     SetCaretPosition(thisline.startCharIdx);
-                else 
+                else
                     SetCaretPosition(indentedStart);
             }
             else

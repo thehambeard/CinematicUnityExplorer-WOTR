@@ -33,14 +33,18 @@ namespace UnityExplorer.UI.Panels
         public void Enable() => UIRoot.SetActive(true);
         public void Disable() => UIRoot.SetActive(false);
 
-        public void SetBoneTree(BoneTree boneTree, BonesManager bonesManager){
+        public void SetBoneTree(BoneTree boneTree, BonesManager bonesManager)
+        {
             this.boneTree = boneTree;
             boneName.text = boneTree.obj.name;
             Owner = bonesManager;
 
-            if (boneTree.childTrees.Count == 0){
+            if (boneTree.childTrees.Count == 0)
+            {
                 expandBonesRow.SetActive(false);
-            } else {
+            }
+            else
+            {
                 expandBonesRow.SetActive(true);
                 bool isTreeExpanded = IsTreeExpanded();
                 expandBonesButton.ButtonText.text = isTreeExpanded ? "▼" : "▶";
@@ -50,15 +54,18 @@ namespace UnityExplorer.UI.Panels
             spaceLayout.minWidth = TREE_LEVEL_IDENTATION * boneTree.level;
         }
 
-        private void ExpandOrCollapseBoneTree(){
-            if (IsTreeExpanded()){
+        private void ExpandOrCollapseBoneTree()
+        {
+            if (IsTreeExpanded())
+            {
                 // Collapse
                 List<BoneTree> treesToRemove = boneTree.childTrees.Select(t => t.flatten()).SelectMany(l => l).ToList();
                 Owner.boneTrees = Owner.boneTrees.Except(treesToRemove).ToList();
                 expandBonesButton.ButtonText.text = "▶";
                 expandBonesText.text = "Expand bones";
             }
-            else {
+            else
+            {
                 // Expand
                 int index = Owner.boneTrees.FindIndex(t => t == boneTree);
                 if (index == -1) return;
@@ -71,7 +78,8 @@ namespace UnityExplorer.UI.Panels
             Owner.boneScrollPool.Refresh(true, false);
         }
 
-        private bool IsTreeExpanded(){
+        private bool IsTreeExpanded()
+        {
             if (boneTree == null) return true;
             return boneTree.childTrees.Any(t1 => Owner.boneTrees.Any(t2 => t2 == t1));
         }
@@ -128,7 +136,7 @@ namespace UnityExplorer.UI.Panels
 
             expandBonesButton = UIFactory.CreateButton(expandBonesRow, "ExpandBonesButton", IsTreeExpanded() ? "⯆" : "▶", new Color(0.05f, 0.05f, 0.05f));
             UIFactory.SetLayoutElement(expandBonesButton.Component.gameObject, minHeight: 25, minWidth: 25);
-            expandBonesButton.OnClick += ExpandOrCollapseBoneTree; 
+            expandBonesButton.OnClick += ExpandOrCollapseBoneTree;
 
             expandBonesText = UIFactory.CreateLabel(expandBonesRow, $"ExpandBonesText", IsTreeExpanded() ? "Collapse bones" : "Expand bones");
             UIFactory.SetLayoutElement(expandBonesText.gameObject, minWidth: 100, minHeight: 25);
@@ -136,16 +144,19 @@ namespace UnityExplorer.UI.Panels
             return UIRoot;
         }
 
-        private void RestoreBoneState(){
+        private void RestoreBoneState()
+        {
             Owner.RestoreBoneState(boneTree.obj.name);
         }
 
-        private void SetBoneEnabled(bool value){
+        private void SetBoneEnabled(bool value)
+        {
             boneTree.obj.SetActive(value);
         }
 
         // TransformControls-like functions
-        public void UpdateTransformControlValues(bool force){
+        public void UpdateTransformControlValues(bool force)
+        {
             positionControl.Update(force);
             rotationControl.Update(force);
             scaleControl.Update(force);
@@ -331,7 +342,8 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(control.IncrementInput.GameObject, minWidth: 30, flexibleWidth: 0, minHeight: 25);
             control.IncrementInput.Component.GetOnEndEdit().AddListener(control.IncrementInput_OnEndEdit);
 
-            if (type == TransformType.Scale){
+            if (type == TransformType.Scale)
+            {
                 GameObject extraRowObj = UIFactory.CreateUIObject("Row_UniformScale", transformGroup);
                 UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(extraRowObj, false, false, true, true, 5, 0, 0, 0, 0, default);
                 UIFactory.SetLayoutElement(extraRowObj, minHeight: 25, flexibleWidth: 9999);
@@ -350,7 +362,7 @@ namespace UnityExplorer.UI.Panels
             return control;
         }
     }
-    
+
     // // Duplication of AxisControl class
     public class AxisComponentControl
     {

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 
 namespace UnityExplorer.Serializers
 {
@@ -79,7 +76,8 @@ namespace UnityExplorer.Serializers
         public readonly Vector3 angles;
         public readonly Vector3 scale;
 
-        public void CopyToTransform(Transform transform){
+        public void CopyToTransform(Transform transform)
+        {
             transform.localPosition = position;
             transform.localEulerAngles = angles;
             transform.localScale = scale;

@@ -222,7 +222,7 @@ namespace UnityExplorer.UI.Widgets
                 ExplorerCore.LogWarning($"Exception setting tag! {ex.ReflectionExToString()}");
             }
         }
-        
+
         void OnSceneButtonClicked()
         {
             InspectorManager.Inspect(Target.scene);
@@ -448,6 +448,6 @@ namespace UnityExplorer.UI.Widgets
         }
 
         #endregion
-   
+
     }
 }

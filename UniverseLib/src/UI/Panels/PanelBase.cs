@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
 using UnityEngine;
 using UnityEngine.UI;
-using UniverseLib.Input;
 using UniverseLib.UI.Models;
 
 namespace UniverseLib.UI.Panels
@@ -68,7 +65,7 @@ namespace UniverseLib.UI.Panels
                 this.Owner.Panels.InvokeOnPanelsReordered();
             }
         }
-        
+
         protected virtual void OnClosePanelClicked()
         {
             this.SetActive(false);

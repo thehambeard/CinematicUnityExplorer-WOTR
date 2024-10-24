@@ -1,13 +1,7 @@
 ﻿#if STANDALONE
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityExplorer.Config;
-using System.IO;
-using UnityEngine;
 using Tomlet;
 using Tomlet.Models;
+using UnityExplorer.Config;
 
 namespace UnityExplorer.Loader.Standalone
 {

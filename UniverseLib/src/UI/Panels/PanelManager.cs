@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using UniverseLib.Input;
@@ -248,7 +246,7 @@ namespace UniverseLib.UI.Panels
             {
                 if (!instance.Rect.gameObject.activeSelf)
                     continue;
-        
+
                 instance.Update(state, mousePos);
 
                 if (draggerHandledThisFrame)

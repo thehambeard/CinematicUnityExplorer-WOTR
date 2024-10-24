@@ -164,7 +164,7 @@ namespace UnityExplorer.Config
                 "Optional keybind to begin a UI-mode Mouse Inspect.",
                 KeyCode.None);
 
-            CSConsole_Assembly_Blacklist = new("CSharp Console Assembly Blacklist", 
+            CSConsole_Assembly_Blacklist = new("CSharp Console Assembly Blacklist",
                 "Use this to blacklist Assembly names from being referenced by the C# Console. Requires a Reset of the C# Console.\n" +
                 "Separate each Assembly with a semicolon ';'." +
                 "For example, to blacklist Assembly-CSharp, you would add 'Assembly-CSharp;'",
@@ -175,7 +175,7 @@ namespace UnityExplorer.Config
                 "Seperate signatures with a semicolon ';'.\r\n" +
                 "For example, to blacklist Camera.main, you would add 'UnityEngine.Camera.main;'",
                 "");
-            
+
             Reflection_Hide_NativeInfoPtrs = new("Hide NativeMethodInfoPtr_s and NativeFieldInfoPtr_s",
                 "Use this to blacklist NativeMethodPtr_s and NativeFieldInfoPtrs_s from the class inspector, mainly to reduce clutter.\r\n" +
                 "For example, this will hide 'Class.NativeFieldInfoPtr_value' for the field 'Class.value'.",
@@ -192,7 +192,7 @@ namespace UnityExplorer.Config
             Pause = new("Pause",
                 "Toggle the pause of the game.",
                 KeyCode.PageUp);
-            
+
             Frameskip = new("Frameskip",
                 "Skip a frame when the game is paused.",
                 KeyCode.PageDown);
@@ -246,7 +246,7 @@ namespace UnityExplorer.Config
             Left_1 = new("Left 1",
                 "Move the freecam to the left.",
                 KeyCode.A);
-            
+
             Left_2 = new("Left 2",
                 "Move the freecam to the left, alt key.",
                 KeyCode.LeftArrow);

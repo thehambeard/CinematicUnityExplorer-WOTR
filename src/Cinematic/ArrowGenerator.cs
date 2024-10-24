@@ -1,6 +1,4 @@
 using HarmonyLib;
-using System.Collections.Generic;
-using UnityEngine;
 #if UNHOLLOWER
 using IL2CPPUtils = UnhollowerBaseLib.UnhollowerUtils;
 #endif
@@ -12,13 +10,15 @@ namespace UnityExplorer
 {
     public class ArrowGenerator
     {
-        public static GameObject CreateArrow(Vector3 arrowPosition, Quaternion arrowRotation, Color color){
-            try {
+        public static GameObject CreateArrow(Vector3 arrowPosition, Quaternion arrowRotation, Color color)
+        {
+            try
+            {
                 GameObject cylinder = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 cylinder.GetComponent<Collider>().enabled = false;
                 cylinder.GetComponent<MeshFilter>().mesh = CreateCylinderMesh(0.01f, 20, 2);
                 cylinder.transform.rotation = Quaternion.LookRotation(Vector3.down, Vector3.up);
-                Renderer rendCylinder = cylinder.GetComponent<Renderer> ();
+                Renderer rendCylinder = cylinder.GetComponent<Renderer>();
                 rendCylinder.material = new Material(Shader.Find("Sprites/Default"));
                 rendCylinder.material.color = color;
 
@@ -40,22 +40,24 @@ namespace UnityExplorer
 
                 return arrow;
             }
-            catch {
+            catch
+            {
                 return FallbackArrow(arrowPosition, arrowRotation, color);
             }
         }
 
-        private static GameObject FallbackArrow(Vector3 arrowPosition, Quaternion arrowRotation, Color color){
+        private static GameObject FallbackArrow(Vector3 arrowPosition, Quaternion arrowRotation, Color color)
+        {
             GameObject cylinder = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             cylinder.GetComponent<Collider>().enabled = false;
-            Renderer rendCylinder = cylinder.GetComponent<Renderer> ();
+            Renderer rendCylinder = cylinder.GetComponent<Renderer>();
             rendCylinder.material = new Material(Shader.Find("Sprites/Default"));
             rendCylinder.material.color = color;
             cylinder.transform.localScale = new Vector3(0.025f, 0.15f, 0.025f);
 
             GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             sphere.GetComponent<Collider>().enabled = false;
-            
+
             sphere.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
             sphere.transform.position = new Vector3(0, 0.15f, 0);
             sphere.transform.SetParent(cylinder.transform, true);
@@ -75,9 +77,10 @@ namespace UnityExplorer
 
             return arrow;
         }
-      
+
         // Patch the light class so we can color the meshes we use to visualize them the same color.
-        public static void PatchLights(){
+        public static void PatchLights()
+        {
             try
             {
                 PropertyInfo lightColorProperty = typeof(Light).GetProperty("color");
@@ -92,7 +95,8 @@ namespace UnityExplorer
             catch { }
         }
 
-        private static void ChangeArrowColor(Light __instance, Color __0){
+        private static void ChangeArrowColor(Light __instance, Color __0)
+        {
             if (!__instance.name.Contains("CUE - Light"))
                 return;
 
@@ -103,7 +107,8 @@ namespace UnityExplorer
             }
         }
 
-        static Mesh CreateConeMesh(int subdivisions, float radius, float height){
+        static Mesh CreateConeMesh(int subdivisions, float radius, float height)
+        {
             Mesh mesh = new Mesh();
 
             Vector3[] vertices = new Vector3[subdivisions + 2];
@@ -112,7 +117,8 @@ namespace UnityExplorer
 
             vertices[0] = Vector3.zero;
             uv[0] = new Vector2(0.5f, 0f);
-            for(int i = 0, n = subdivisions - 1; i < subdivisions; i++) {
+            for (int i = 0, n = subdivisions - 1; i < subdivisions; i++)
+            {
                 float ratio = (float)i / n;
                 float r = ratio * (Mathf.PI * 2f);
                 float x = Mathf.Cos(r) * radius;
@@ -126,21 +132,23 @@ namespace UnityExplorer
 
             // construct bottom
 
-            for(int i = 0, n = subdivisions - 1; i < n; i++) {
+            for (int i = 0, n = subdivisions - 1; i < n; i++)
+            {
                 int offset = i * 3;
-                triangles[offset] = 0; 
-                triangles[offset + 1] = i + 1; 
-                triangles[offset + 2] = i + 2; 
+                triangles[offset] = 0;
+                triangles[offset + 1] = i + 1;
+                triangles[offset + 2] = i + 2;
             }
 
             // construct sides
 
             int bottomOffset = subdivisions * 3;
-            for(int i = 0, n = subdivisions - 1; i < n; i++) {
+            for (int i = 0, n = subdivisions - 1; i < n; i++)
+            {
                 int offset = i * 3 + bottomOffset;
-                triangles[offset] = i + 1; 
-                triangles[offset + 1] = subdivisions + 1; 
-                triangles[offset + 2] = i + 2; 
+                triangles[offset] = i + 1;
+                triangles[offset + 1] = subdivisions + 1;
+                triangles[offset + 2] = i + 2;
             }
 
             mesh.vertices = vertices;
@@ -153,7 +161,8 @@ namespace UnityExplorer
         }
 
 
-        static Mesh CreateCylinderMesh(float radius = 1, int iterations = 50, int lenggth = 10, float gap = 0.5f){
+        static Mesh CreateCylinderMesh(float radius = 1, int iterations = 50, int lenggth = 10, float gap = 0.5f)
+        {
             // Making vertices
             int num = 0;
             Vector3[] vertices;
@@ -167,11 +176,11 @@ namespace UnityExplorer
             int i;
             int p = 0;
             float angle;
-    
+
             vertices = new Vector3[(iterations * lenggth) + 2];
             int tempo = 0;
             vertices[vertices.Length - 2] = Vector3.zero;
-    
+
             while (p < lenggth)
             {
                 i = 0;
@@ -190,7 +199,7 @@ namespace UnityExplorer
                 z += gap;
                 p++;
             }
-    
+
             vertices[vertices.Length - 1] = new Vector3(0, 0, vertices[vertices.Length - 3].z);
 
             Mesh mesh = new Mesh();
@@ -208,7 +217,7 @@ namespace UnityExplorer
             mesh.normals = normals;
 
             // Making triangles
-    
+
             j = 0;
             tris = new int[((3 * (lenggth - 1) * iterations) * 2) + 3];
             while (j < (lenggth - 1) * iterations)
@@ -226,7 +235,7 @@ namespace UnityExplorer
                 j++;
             }
             int IndexofNewTriangles = -1;
-    
+
             for (int u = (tris.Length - 3) / 2; u < tris.Length - 6; u += 3)
             {
                 //mesh.RecalculateTangents();
@@ -236,7 +245,7 @@ namespace UnityExplorer
                 }
                 else
                     tris[u] = IndexofNewTriangles + iterations + 1;
-    
+
                 tris[u + 1] = IndexofNewTriangles + 2;
                 tris[u + 2] = IndexofNewTriangles + iterations + 2;
                 IndexofNewTriangles += 1;
@@ -244,14 +253,14 @@ namespace UnityExplorer
             tris[tris.Length - 3] = 0;
             tris[tris.Length - 2] = (iterations * 2) - 1;
             tris[tris.Length - 1] = iterations;
-    
+
             firstplane = new int[(iterations * 3) * 2];
             int felmnt = 0;
             for (int h = 0; h < firstplane.Length / 2; h += 3)
             {
-    
+
                 firstplane[h] = felmnt;
-    
+
                 if (felmnt + 1 != iterations)
                     firstplane[h + 1] = felmnt + 1;
                 else
@@ -259,13 +268,13 @@ namespace UnityExplorer
                 firstplane[h + 2] = vertices.Length - 2;
                 felmnt += 1;
             }
-    
+
             felmnt = iterations * (lenggth - 1);
             for (int h = firstplane.Length / 2; h < firstplane.Length; h += 3)
             {
-    
+
                 firstplane[h] = felmnt;
-    
+
                 if (felmnt + 1 != iterations * (lenggth - 1))
                     firstplane[h + 1] = felmnt + 1;
                 else
@@ -273,13 +282,13 @@ namespace UnityExplorer
                 firstplane[h + 2] = vertices.Length - 1;
                 felmnt += 1;
             }
-    
+
             firstplane[firstplane.Length - 3] = iterations * (lenggth - 1);
             firstplane[firstplane.Length - 2] = vertices.Length - 3;
             firstplane[firstplane.Length - 1] = vertices.Length - 1;
-    
+
             FinalTri = new int[tris.Length + firstplane.Length];
-    
+
             int k = 0, l = 0;
             for (k = 0, l = 0; k < tris.Length; k++)
             {
@@ -289,7 +298,7 @@ namespace UnityExplorer
             {
                 FinalTri[l++] = firstplane[k];
             }
-    
+
             mesh.triangles = FinalTri;
             mesh.Optimize();
             mesh.RecalculateNormals();

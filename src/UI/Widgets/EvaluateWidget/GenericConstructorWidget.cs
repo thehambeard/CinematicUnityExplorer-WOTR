@@ -102,7 +102,7 @@ namespace UnityExplorer.UI.Widgets
 
         internal void ConstructUI(GameObject parent)
         {
-            UIRoot = UIFactory.CreateVerticalGroup(parent, "GenericArgsHandler", false, false, true, true, 5, new Vector4(5, 5, 5, 5), 
+            UIRoot = UIFactory.CreateVerticalGroup(parent, "GenericArgsHandler", false, false, true, true, 5, new Vector4(5, 5, 5, 5),
                 childAlignment: TextAnchor.MiddleCenter);
             UIFactory.SetLayoutElement(UIRoot, flexibleWidth: 9999, flexibleHeight: 9999);
 

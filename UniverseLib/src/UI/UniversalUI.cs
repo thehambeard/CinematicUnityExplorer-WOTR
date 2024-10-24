@@ -1,15 +1,12 @@
 ﻿using HarmonyLib;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using UniverseLib.Config;
 using UniverseLib.Input;
 using UniverseLib.UI.Models;
 using UniverseLib.UI.Panels;
@@ -238,7 +235,7 @@ namespace UniverseLib.UI
             UnityEngine.Object.DontDestroyOnLoad(BackupShader);
             // Fix for games which don't ship with 'UI/Default' shader.
             if (Graphic.defaultGraphicMaterial.shader != null &&
-                Graphic.defaultGraphicMaterial.shader.name != "UI/Default")
+                Graphic.defaultGraphicMaterial.shader.name != "Owlcat/UI/Default")
             {
                 Universe.Log("This game does not ship with the 'UI/Default' shader, using manual Default Shader...");
                 Graphic.defaultGraphicMaterial.shader = BackupShader;

@@ -1,9 +1,5 @@
-﻿using UnityExplorer.CacheObject;
-using UnityExplorer.Inspectors;
-using UnityExplorer.ObjectExplorer;
-using UniverseLib.UI;
+﻿using UniverseLib.UI;
 using UniverseLib.UI.Models;
-using UniverseLib.UI.ObjectPool;
 #if UNHOLLOWER
 using UnhollowerRuntimeLib;
 #endif
@@ -58,8 +54,10 @@ namespace UnityExplorer.UI.Panels
         int shadowsResolution = 5000;
 
         // Based on https://github.com/TollyH/Unity-FreeCam
-        private void SetValueHUDElements(bool value){
-            if (value){
+        private void SetValueHUDElements(bool value)
+        {
+            if (value)
+            {
                 foreach (Canvas canvas in disabledCanvases)
                 {
                     if (canvas == null)
@@ -69,7 +67,8 @@ namespace UnityExplorer.UI.Panels
                     canvas.enabled = true;
                 }
             }
-            else {
+            else
+            {
                 disabledCanvases = RuntimeHelper.FindObjectsOfTypeAll(typeof(Canvas))
                 .Select(obj => obj.TryCast<Canvas>())
                 .Where(c => !c.name.Contains("unityexplorer") && c.isActiveAndEnabled)
@@ -86,40 +85,48 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        public void ToggleHUDElements(){
+        public void ToggleHUDElements()
+        {
             // SetValueHUDElements will be triggered automatically
             HUDToggle.isOn = !HUDToggle.isOn;
         }
 
-        private void TakeScreenshot(){
+        private void TakeScreenshot()
+        {
             string filename = DateTime.Now.ToString("yyyy-M-d HH-mm-ss");
 
             string screenshotsPath = Path.Combine(ExplorerCore.ExplorerFolder, "Screenshots");
             System.IO.Directory.CreateDirectory(screenshotsPath);
-            
-            object[] args = {$"{screenshotsPath}\\{filename}.png", superSizeValue};
-            try {
+
+            object[] args = { $"{screenshotsPath}\\{filename}.png", superSizeValue };
+            try
+            {
                 captureScreenshotFunction.Invoke(qualitySettings, args);
             }
             catch { ExplorerCore.LogWarning("Failed to take a screenshot. Chances are the method has been stripped."); }
         }
 
-        private void FindCaptureScreenshotFunction(){
-            try {
+        private void FindCaptureScreenshotFunction()
+        {
+            try
+            {
                 object screenCaptureClass = ReflectionUtility.GetTypeByName("UnityEngine.ScreenCapture");
                 Type screenCaptureType = screenCaptureClass is Type type ? type : screenCaptureClass.GetActualType();
-                captureScreenshotFunction = screenCaptureType.GetMethod("CaptureScreenshot", new Type[] {typeof(string), typeof(int)});
+                captureScreenshotFunction = screenCaptureType.GetMethod("CaptureScreenshot", new Type[] { typeof(string), typeof(int) });
             }
             catch { ExplorerCore.Log("Couldn't find the ScreenCapture class."); }
         }
 
-        private void FindQualitySettings(){
+        private void FindQualitySettings()
+        {
             qualitySettings = ReflectionUtility.GetTypeByName("UnityEngine.QualitySettings");
         }
 
-        private void ToogleHighLods(bool areHighLodsOn){
+        private void ToogleHighLods(bool areHighLodsOn)
+        {
             if (qualitySettings == null) FindQualitySettings();
-            if (lodBias == null){
+            if (lodBias == null)
+            {
                 Type qualitySettingsType = qualitySettings is Type type ? type : qualitySettings.GetActualType();
                 lodBias = qualitySettingsType.GetProperty("lodBias");
             }
@@ -127,8 +134,10 @@ namespace UnityExplorer.UI.Panels
             lodBias.SetValue(null, areHighLodsOn ? 10000 : 1, null);
         }
 
-        private void ToggleAllMeshesCastAndRecieveShadows(bool enable){
-            if (enable){
+        private void ToggleAllMeshesCastAndRecieveShadows(bool enable)
+        {
+            if (enable)
+            {
                 renderersReceiveShadows.Clear();
                 renderersCastShadows.Clear();
 
@@ -137,25 +146,31 @@ namespace UnityExplorer.UI.Panels
                 .Where(r => r.isVisible && r.enabled)
                 .ToList();
 
-                foreach (Renderer renderer in renderers){
+                foreach (Renderer renderer in renderers)
+                {
                     renderersReceiveShadows[renderer] = renderer.receiveShadows;
                     renderersCastShadows[renderer] = renderer.shadowCastingMode;
 
                     renderer.receiveShadows = true;
                     renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
                 }
-            } else {
-                foreach (Renderer renderer in renderersReceiveShadows.Keys){
+            }
+            else
+            {
+                foreach (Renderer renderer in renderersReceiveShadows.Keys)
+                {
                     renderer.receiveShadows = renderersReceiveShadows[renderer];
                     renderer.shadowCastingMode = renderersCastShadows[renderer];
                 }
             }
         }
 
-        private void ToggleHighResShadows(bool enable){
+        private void ToggleHighResShadows(bool enable)
+        {
             PropertyInfo shadowResolution = typeof(Light).GetProperty("shadowCustomResolution");
 
-            if (enable){
+            if (enable)
+            {
                 vanillaLightsResolution.Clear();
                 vanillaLightsShadowBias.Clear();
 
@@ -164,15 +179,19 @@ namespace UnityExplorer.UI.Panels
                 .Where(l => !l.name.Contains("CUE - Light") && l.isActiveAndEnabled)
                 .ToList();
 
-                foreach (Light light in vanillaLights){
-                    vanillaLightsResolution[light] = (int) shadowResolution.GetValue(light, null);
+                foreach (Light light in vanillaLights)
+                {
+                    vanillaLightsResolution[light] = (int)shadowResolution.GetValue(light, null);
                     shadowResolution.SetValue(light, shadowsResolution, null);
 
                     vanillaLightsShadowBias[light] = light.shadowBias;
                     light.shadowBias = 0;
                 }
-            } else {
-                foreach (Light light in vanillaLightsResolution.Keys){
+            }
+            else
+            {
+                foreach (Light light in vanillaLightsResolution.Keys)
+                {
                     shadowResolution.SetValue(light, vanillaLightsResolution[light], null);
 
                     light.shadowBias = vanillaLightsShadowBias[light];
@@ -180,8 +199,10 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        private void ToggleShadowsOnAllLights(bool enable){
-            if (enable){
+        private void ToggleShadowsOnAllLights(bool enable)
+        {
+            if (enable)
+            {
                 vanillaLightsShadowType.Clear();
 
                 List<Light> vanillaLights = RuntimeHelper.FindObjectsOfTypeAll(typeof(Light))
@@ -189,21 +210,28 @@ namespace UnityExplorer.UI.Panels
                 .Where(l => !l.name.Contains("CUE - Light") && l.isActiveAndEnabled)
                 .ToList();
 
-                foreach (Light light in vanillaLights){
+                foreach (Light light in vanillaLights)
+                {
                     vanillaLightsShadowType[light] = light.shadows;
                     light.shadows = LightShadows.Soft;
                 }
-            } else {
-                foreach (Light light in vanillaLightsShadowType.Keys){
+            }
+            else
+            {
+                foreach (Light light in vanillaLightsShadowType.Keys)
+                {
                     light.shadows = vanillaLightsShadowType[light];
                 }
             }
         }
 
         // We use an enum to walk a series of steps in each frame, so we can take the screenshot without CinematicUnityExplorer UI.
-        public void MaybeTakeScreenshot(){
-            if (captureScreenshotFunction != null){
-                switch (screenshotStatus){
+        public void MaybeTakeScreenshot()
+        {
+            if (captureScreenshotFunction != null)
+            {
+                switch (screenshotStatus)
+                {
                     case ScreenshotState.TurnOffUI:
                         screenshotStatus = ScreenshotState.TakeScreenshot;
                         UIManager.ShowMenu = false;
@@ -248,7 +276,8 @@ namespace UnityExplorer.UI.Panels
 
             // Screenshot function
             FindCaptureScreenshotFunction();
-            if (captureScreenshotFunction != null){
+            if (captureScreenshotFunction != null)
+            {
                 GameObject TakeScreenshotHoriGroup = UIFactory.CreateHorizontalGroup(ContentRoot, "Take screenshot", false, false, true, true, 3,
                 default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
                 UIFactory.SetLayoutElement(TakeScreenshotHoriGroup, minHeight: 25, flexibleWidth: 9999);

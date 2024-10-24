@@ -236,7 +236,7 @@ namespace UnityExplorer.UI.Panels
 
             if (input.Component.caretPosition == lastCaretPosition && input.UIRoot.transform.position == lastInputPosition)
                 return;
-            
+
             if (CurrentHandler.AnchorToCaretPosition)
             {
                 if (!input.Component.isFocused)

@@ -10,7 +10,6 @@ using UnhollowerRuntimeLib;
 using Il2CppInterop.Runtime.Injection;
 #endif
 #endif
-using System;
 
 
 namespace UnityExplorer
@@ -113,7 +112,8 @@ namespace UnityExplorer
             // FrameSkip
             if (IInputManager.GetKeyDown(ConfigManager.Frameskip.Value))
             {
-                if (UIManager.GetTimeScaleWidget().IsPaused()) {
+                if (UIManager.GetTimeScaleWidget().IsPaused())
+                {
                     UIManager.GetTimeScaleWidget().PauseToggle();
                     frameSkip = true;
                 }
@@ -150,24 +150,30 @@ namespace UnityExplorer
             }
         }
 
-        void stopFrameSkip(){
-            if (frameSkip && !UIManager.GetTimeScaleWidget().IsPaused()){
+        void stopFrameSkip()
+        {
+            if (frameSkip && !UIManager.GetTimeScaleWidget().IsPaused())
+            {
                 frameSkip = false;
                 UIManager.GetTimeScaleWidget().PauseToggle();
             }
         }
 
-        void maybeForcePause(){
+        void maybeForcePause()
+        {
             // Force pause no matter the game timescale changes
             TimeScaleWidget timescale = UIManager.GetTimeScaleWidget();
-            if (timescale != null && timescale.IsPaused() && Time.timeScale != 0) {
+            if (timescale != null && timescale.IsPaused() && Time.timeScale != 0)
+            {
                 timescale.SetTimeScale(0f);
             }
         }
 
-        void maybeTakeScreenshot(){
+        void maybeTakeScreenshot()
+        {
             UnityExplorer.UI.Panels.Misc miscPanel = UIManager.GetPanel<UnityExplorer.UI.Panels.Misc>(UIManager.Panels.Misc);
-            if (miscPanel != null){
+            if (miscPanel != null)
+            {
                 miscPanel.MaybeTakeScreenshot();
             }
         }

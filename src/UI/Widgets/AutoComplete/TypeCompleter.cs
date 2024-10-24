@@ -14,7 +14,7 @@ namespace UnityExplorer.UI.Widgets.AutoComplete
             {
                 enabled = value;
                 if (!enabled)
-                { 
+                {
                     AutoCompleteModal.Instance.ReleaseOwnership(this);
                     if (getSuggestionsCoroutine != null)
                         RuntimeHelper.StopCoroutine(getSuggestionsCoroutine);

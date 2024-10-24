@@ -1,11 +1,4 @@
 ﻿#if STANDALONE
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-
 namespace UnityExplorer.Loader.Standalone
 {
     public class ExplorerEditorLoader : ExplorerStandalone
@@ -25,11 +18,11 @@ namespace UnityExplorer.Loader.Standalone
         {
             switch (logType)
             {
-                case LogType.Assert:    Debug.LogError(message); break;
-                case LogType.Error:     Debug.LogError(message); break;
+                case LogType.Assert: Debug.LogError(message); break;
+                case LogType.Error: Debug.LogError(message); break;
                 case LogType.Exception: Debug.LogError(message); break;
-                case LogType.Log:       Debug.Log(message); break;
-                case LogType.Warning:   Debug.LogWarning(message); break;
+                case LogType.Log: Debug.Log(message); break;
+                case LogType.Warning: Debug.LogWarning(message); break;
             }
         }
 

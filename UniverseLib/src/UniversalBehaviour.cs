@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
+﻿using UnityEngine;
 #if INTEROP
 using Il2CppInterop.Runtime.Injection;
 #endif

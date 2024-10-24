@@ -1,11 +1,6 @@
-﻿using UnityExplorer.CacheObject;
-using UnityExplorer.ObjectExplorer;
-using UnityExplorer.Inspectors;
-using UniverseLib.UI;
+﻿using UniverseLib.UI;
 using UniverseLib.UI.Models;
-using UniverseLib.UI.ObjectPool;
 using UniverseLib.UI.Widgets.ScrollView;
-using UnityEngine;
 #if UNHOLLOWER
 using UnhollowerRuntimeLib;
 #endif
@@ -50,7 +45,8 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        private void FindAllAnimators(){
+        private void FindAllAnimators()
+        {
             // Enable all animators on refresh
             masterAnimatorPlayer.isOn = true; // Will also trigger "MasterToggleAnimators(true)"
 
@@ -58,19 +54,22 @@ namespace UnityExplorer.UI.Panels
             searchType = searchType is Type type ? type : searchType.GetActualType();
             List<AnimatorPlayer> newAnimators = RuntimeHelper.FindObjectsOfTypeAll(searchType).Select(obj => obj.TryCast<Behaviour>())
             .Where(a => a.isActiveAndEnabled && (a.GetComponentsInChildren<Rigidbody>(false).Length != 0 || a.GetComponentsInChildren<SkinnedMeshRenderer>(false).Length != 0))
-            .OrderBy(x=>x.name)
+            .OrderBy(x => x.name)
             .Select(a => new AnimatorPlayer(a))
             .ToList();
 
             // If there are old animators in the new list keep the old object with its properties.
-            for(int i = 0; i < animators.Count; i++)
+            for (int i = 0; i < animators.Count; i++)
             {
-                if (animators[i].animator.wrappedObject != null){
+                if (animators[i].animator.wrappedObject != null)
+                {
                     int newAnimatorsIndex = newAnimators.FindIndex(a => a.animator.wrappedObject == animators[i].animator.wrappedObject);
-                    if (newAnimatorsIndex != -1) {
+                    if (newAnimatorsIndex != -1)
+                    {
                         // If refreshing the animator gives us new animations, add them to the already existing ones.
                         // Might break stuff.
-                        foreach (IAnimationClip animationClip in newAnimators[newAnimatorsIndex].animations) {
+                        foreach (IAnimationClip animationClip in newAnimators[newAnimatorsIndex].animations)
+                        {
                             // TODO: Refactor AnimatorPlayer.animations from List<IAnimationClip> to HashSet<IAnimationClip> to avoid checking this
                             if (!animators[i].animations.Contains(animationClip))
                                 animators[i].animations.Add(animationClip);
@@ -88,22 +87,26 @@ namespace UnityExplorer.UI.Panels
             animatorScrollPool.Refresh(true, false);
         }
 
-        
-        private void ResetAllAnimators(){
+
+        private void ResetAllAnimators()
+        {
             foreach (AnimatorPlayer animatorPlayer in animators)
             {
                 animatorPlayer.ResetAnimation();
             }
         }
 
-        public void MasterToggleAnimators(){
+        public void MasterToggleAnimators()
+        {
             bool enable = masterAnimatorPlayer.isOn;
 
             // Load animators for the first time if there are not any
             if (animators.Count == 0) FindAllAnimators();
 
-            foreach (AnimatorPlayer animatorPlayer in animators){
-                if (!animatorPlayer.shouldIgnoreMasterToggle){
+            foreach (AnimatorPlayer animatorPlayer in animators)
+            {
+                if (!animatorPlayer.shouldIgnoreMasterToggle)
+                {
                     if (animatorPlayer.animator.wrappedObject != null)
                         animatorPlayer.animator.speed = enable ? 1 : 0;
                 }
@@ -112,12 +115,15 @@ namespace UnityExplorer.UI.Panels
             animatorScrollPool.Refresh(true, false);
         }
 
-        public void MasterToggleMeshes(bool enable){
+        public void MasterToggleMeshes(bool enable)
+        {
             // Load animators for the first time if there are not any
             if (animators.Count == 0) FindAllAnimators();
 
-            foreach (AnimatorPlayer animatorPlayer in animators){
-                if (!animatorPlayer.shouldIgnoreMasterToggle){
+            foreach (AnimatorPlayer animatorPlayer in animators)
+            {
+                if (!animatorPlayer.shouldIgnoreMasterToggle)
+                {
                     animatorPlayer.SetMeshesEnabled(enable);
                 }
             }
@@ -125,7 +131,8 @@ namespace UnityExplorer.UI.Panels
             animatorScrollPool.Refresh(true, false);
         }
 
-        public void HotkeyToggleAnimators(){
+        public void HotkeyToggleAnimators()
+        {
             masterAnimatorPlayer.isOn = !masterAnimatorPlayer.isOn;
         }
 
@@ -187,10 +194,12 @@ namespace UnityExplorer.UI.Panels
             if (animatorPlayer.animator.wrappedObject == null)
                 return;
             // Check if the animator wrapped object was deleted by trying to access one of its properties
-            try {
+            try
+            {
                 string check = animatorPlayer.animator.name;
             }
-            catch {
+            catch
+            {
                 FindAllAnimators();
                 return;
             }
@@ -218,17 +227,20 @@ namespace UnityExplorer.UI.Panels
             UpdateButton();
         }
 
-        void OnPlay(){
+        void OnPlay()
+        {
             innerButton.ButtonText.text = "❚❚";
             RuntimeHelper.SetColorBlockAuto(innerButton.Component, new(0.4f, 0.2f, 0.2f));
         }
 
-        void OnPause(){
+        void OnPause()
+        {
             innerButton.ButtonText.text = "►";
             RuntimeHelper.SetColorBlockAuto(innerButton.Component, new(0.2f, 0.4f, 0.2f));
         }
 
-        void UpdateButton(){
+        void UpdateButton()
+        {
             if (isPlaying)
             {
                 OnPlay();
@@ -247,11 +259,14 @@ namespace UnityExplorer.UI.Panels
 
         public bool isOn
         {
-            get {
+            get
+            {
                 return isPlaying;
             }
-            set {
-                if (value != isPlaying){
+            set
+            {
+                if (value != isPlaying)
+                {
                     SetToggleButtonState();
                 }
             }
@@ -259,10 +274,12 @@ namespace UnityExplorer.UI.Panels
 
         public Action OnClick
         {
-            get {
+            get
+            {
                 return innerButton.OnClick;
             }
-            set {
+            set
+            {
                 innerButton.OnClick = value;
             }
         }

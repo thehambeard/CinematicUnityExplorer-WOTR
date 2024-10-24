@@ -1,8 +1,5 @@
 ﻿using UnityExplorer.UI.Panels;
 
-using System;
-using System.Threading;
-
 #if UNHOLLOWER
 using UnhollowerRuntimeLib;
 #endif
@@ -41,11 +38,13 @@ namespace UnityExplorer.CatmullRom
             this.fov = fov;
         }
 
-        public static Vector4 QuaternionToVector4(Quaternion q){
+        public static Vector4 QuaternionToVector4(Quaternion q)
+        {
             return new Vector4(q.x, q.y, q.z, q.w);
         }
 
-        public static Quaternion Vector4ToQuaternion(Vector4 v){
+        public static Quaternion Vector4ToQuaternion(Vector4 v)
+        {
             return new Quaternion(v.x, v.y, v.z, v.w);
         }
 
@@ -68,14 +67,14 @@ namespace UnityExplorer.CatmullRom
         {
             //Vector4 newRot = QuaternionToVector4(a.rotation)/b;
             //return new CatmullRomPoint(a.position/b, Vector4ToQuaternion(newRot), a.fov / b); // what to do with the fov??
-            return new CatmullRomPoint(a.position/b, a.rotation, a.fov);
+            return new CatmullRomPoint(a.position / b, a.rotation, a.fov);
         }
 
         public static CatmullRomPoint operator *(CatmullRomPoint a, float b)
         {
             //Vector4 newRot = QuaternionToVector4(a.rotation)*b;
             //return new CatmullRomPoint(a.position*b, Vector4ToQuaternion(newRot), a.fov * b); // what to do with the fov??
-            return new CatmullRomPoint(a.position*b, a.rotation, a.fov); // what to do with the fov??
+            return new CatmullRomPoint(a.position * b, a.rotation, a.fov); // what to do with the fov??
         }
 
         public CatmullRomPoint Normalize()
@@ -114,18 +113,21 @@ namespace UnityExplorer.CatmullRom
 
         private CatmullRomPoint pauseCamCache;
 
-        public CatmullRomMover(){
+        public CatmullRomMover()
+        {
             splinePoints = new CatmullRomPoint[] { };
             lookaheadPoints = new List<CatmullRomPoint>();
         }
 
-        public void StartPath(){
-            if(splinePoints == null || splinePoints.Length <= 2)
+        public void StartPath()
+        {
+            if (splinePoints == null || splinePoints.Length <= 2)
             {
                 ExplorerCore.Log(splinePoints);
                 throw new ArgumentException("Catmull Rom Error: Too few spline points!");
             }
-            else {
+            else
+            {
                 playingPath = true;
                 delta = lookaheadDelta;
                 MoveCameraToPoint(splinePoints[0]);
@@ -133,21 +135,27 @@ namespace UnityExplorer.CatmullRom
             }
         }
 
-        public void TogglePause(){
+        public void TogglePause()
+        {
             playingPath = !playingPath;
-            if (!playingPath){
+            if (!playingPath)
+            {
                 pauseCamCache = GetCurrentPoint();
-            } else {
+            }
+            else
+            {
                 MoveCameraToPoint(pauseCamCache);
             }
-            
+
         }
 
-        public bool IsPaused(){
+        public bool IsPaused()
+        {
             return playingPath;
         }
 
-        public void Stop(){
+        public void Stop()
+        {
             playingPath = false;
             delta = lookaheadDelta;
             lookahead = GetPointFromPath(delta);
@@ -155,45 +163,53 @@ namespace UnityExplorer.CatmullRom
             pauseCamCache = GetCurrentPoint();
         }
 
-        public void setClosedLoop(bool newClosedLoop){
+        public void setClosedLoop(bool newClosedLoop)
+        {
             closedLoop = newClosedLoop;
         }
 
 #if CPP
         [HideFromIl2Cpp]
 #endif
-        public void setSplinePoints(CatmullRomPoint[] newSplinePoints){
+        public void setSplinePoints(CatmullRomPoint[] newSplinePoints)
+        {
             splinePoints = newSplinePoints;
         }
 
-        public void setTime(float newTime){
+        public void setTime(float newTime)
+        {
             time = newTime;
         }
 
-        public void setCatmullRomVariables(float newAlpha, float newTension){
+        public void setCatmullRomVariables(float newAlpha, float newTension)
+        {
             alpha = newAlpha;
             tension = newTension;
         }
 
-        void Update(){
+        void Update()
+        {
             if (playingPath) AdvanceMover(Time.fixedDeltaTime);
         }
 
-        private CatmullRomPoint GetCurrentPoint(){
+        private CatmullRomPoint GetCurrentPoint()
+        {
             Vector3 camPos = FreeCamPanel.GetCameraPosition();
             Quaternion camRot = FreeCamPanel.GetCameraRotation();
 
             return new CatmullRomPoint(camPos, camRot, FreeCamPanel.ourCamera.fieldOfView);
         }
 
-        private void AdvanceMover(float dt){
+        private void AdvanceMover(float dt)
+        {
             // We use 0.01665f (60fps) in place of Time.DeltaTime so the camera moves at fullspeed even in slow motion.
             // Units to move
             float move = 0.01666666666f * speed;
-            while (move > 0.0) {
+            while (move > 0.0)
+            {
                 CatmullRomPoint currentPoint = GetCurrentPoint();
                 // Distance between target and current position
-                float room = Vector3.Distance(lookahead.position, currentPoint.position); 
+                float room = Vector3.Distance(lookahead.position, currentPoint.position);
 
                 // How much we're actually moving this iteration
                 // Move the whole distance to the lookahead, or would the move variable cut us short
@@ -207,13 +223,15 @@ namespace UnityExplorer.CatmullRom
                 currentPoint = GetCurrentPoint();
 
                 // Update room to check if we need a new lookahead
-                room = Vector3.Distance(lookahead.position, currentPoint.position); 
+                room = Vector3.Distance(lookahead.position, currentPoint.position);
                 // While ends, need another lookaheadDelta for the next Update
                 // It will do, at most, 2 iterations
                 // We check a very small number instead of zero because if not it can get stuck in an infinite loop
-                while (room <= 0.0002f) {
+                while (room <= 0.0002f)
+                {
                     // If the camera reached the last lookAhead we stop it
-                    if (delta >= 1){
+                    if (delta >= 1)
+                    {
                         PathFinished();
                     }
                     delta = Math.Min(delta + lookaheadDelta, 1);
@@ -222,12 +240,13 @@ namespace UnityExplorer.CatmullRom
                     // the movement will still be smooth.
                     int lookaheadIndex = (int)((lookaheadPoints.Count - 1) * delta);
                     lookahead = lookaheadPoints[lookaheadIndex];
-                    room = Vector3.Distance(lookahead.position, currentPoint.position); 
+                    room = Vector3.Distance(lookahead.position, currentPoint.position);
                 }
             }
         }
 
-        public void MoveCameraStep(CatmullRomPoint currentPoint, float actual, float room){
+        public void MoveCameraStep(CatmullRomPoint currentPoint, float actual, float room)
+        {
             CatmullRomPoint direction = (lookahead - currentPoint).Normalize() * actual;
             Vector4 ra = CatmullRomPoint.QuaternionToVector4(currentPoint.rotation);
             Vector4 rb = CatmullRomPoint.QuaternionToVector4(direction.rotation);
@@ -241,7 +260,8 @@ namespace UnityExplorer.CatmullRom
             FreeCamPanel.ourCamera.fieldOfView += direction.fov * actual / room;
         }
 
-        public void MoveCameraToPoint(CatmullRomPoint newPoint){
+        public void MoveCameraToPoint(CatmullRomPoint newPoint)
+        {
             FreeCamPanel.SetCameraRotation(newPoint.rotation);
             FreeCamPanel.SetCameraPosition(newPoint.position);
 
@@ -258,13 +278,13 @@ namespace UnityExplorer.CatmullRom
             int closedAdjustment = closedLoop ? 0 : 1;
 
             int currentPoint = (int)((splinePoints.Length - closedAdjustment) * d);
-            
+
             bool closedLoopFinalPoint = (closedLoop && currentPoint == splinePoints.Length - 1);
 
             // Had tu add "splinePoints.Length" because C# mod doesnt work well with negative values
-            int previousPoint = closedLoop ? (currentPoint + splinePoints.Length - 1)%(splinePoints.Length) : System.Math.Max(currentPoint - 1, 0);
-            int endSegmentPoint = closedLoop ? (currentPoint + 1)%(splinePoints.Length) : System.Math.Min(currentPoint + 1, splinePoints.Length - 1);
-            int nextPoint = closedLoop ? (currentPoint + 2)%(splinePoints.Length) : System.Math.Min(currentPoint + 2, splinePoints.Length - 1);
+            int previousPoint = closedLoop ? (currentPoint + splinePoints.Length - 1) % (splinePoints.Length) : System.Math.Max(currentPoint - 1, 0);
+            int endSegmentPoint = closedLoop ? (currentPoint + 1) % (splinePoints.Length) : System.Math.Min(currentPoint + 1, splinePoints.Length - 1);
+            int nextPoint = closedLoop ? (currentPoint + 2) % (splinePoints.Length) : System.Math.Min(currentPoint + 2, splinePoints.Length - 1);
 
             // Ideally we should really loop over tho.
             if (d >= 1) return closedLoop ? splinePoints[0] : splinePoints[splinePoints.Length - 1];
@@ -283,13 +303,13 @@ namespace UnityExplorer.CatmullRom
 
             // Check if we are using the shortest path on the rotation. If not, change each rotation to represent that shortest path.
             if (Vector4.Dot(r0, r1) < 0)
-                r1 = - r1;
+                r1 = -r1;
 
             if (Vector4.Dot(r1, r2) < 0)
-                r2 = - r2;
+                r2 = -r2;
 
             if (Vector4.Dot(r2, r3) < 0)
-                r3 = - r3;
+                r3 = -r3;
 
             fov0 = splinePoints[currentPoint].fov;
             fov1 = splinePoints[endSegmentPoint].fov;
@@ -312,16 +332,17 @@ namespace UnityExplorer.CatmullRom
         }
 
         // Implementation from: https://qroph.github.io/2018/07/30/smooth-paths-using-catmull-rom-splines.html
-        private Vector3 CatmullRomInterpolation(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t){
-            float t01 = (float) System.Math.Pow((double) Vector3.Distance(p0, p1), (double) alpha);
-            float t12 = (float) System.Math.Pow((double) Vector3.Distance(p1, p2), (double) alpha);
-            float t23 = (float) System.Math.Pow((double) Vector3.Distance(p2, p3), (double) alpha);
+        private Vector3 CatmullRomInterpolation(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t)
+        {
+            float t01 = (float)System.Math.Pow((double)Vector3.Distance(p0, p1), (double)alpha);
+            float t12 = (float)System.Math.Pow((double)Vector3.Distance(p1, p2), (double)alpha);
+            float t23 = (float)System.Math.Pow((double)Vector3.Distance(p2, p3), (double)alpha);
 
             Vector3 v1 = t01 != 0 ? (p1 - p0) / t01 : new Vector3(0, 0, 0);
             Vector3 v2 = t23 != 0 ? (p3 - p2) / t23 : new Vector3(0, 0, 0);
-            
-            Vector3 m1 = (1.0f - tension) * (p2 - p1 + t12 * (v1 - (p2 -p0) / (t01 + t12)));
-            Vector3 m2 = (1.0f - tension) * (p2 - p1 + t12 * (v2 - (p3 -p1) / (t12 + t23)));
+
+            Vector3 m1 = (1.0f - tension) * (p2 - p1 + t12 * (v1 - (p2 - p0) / (t01 + t12)));
+            Vector3 m2 = (1.0f - tension) * (p2 - p1 + t12 * (v2 - (p3 - p1) / (t12 + t23)));
 
             Vector3 a = 2.0f * (p1 - p2) + m1 + m2;
             Vector3 b = -3.0f * (p1 - p2) - m1 - m1 - m2;
@@ -331,16 +352,17 @@ namespace UnityExplorer.CatmullRom
             return a * t * t * t + b * t * t + c * t + d;
         }
 
-        private Vector4 CatmullRomInterpolation(Vector4 r0, Vector4 r1, Vector4 r2, Vector4 r3, float t){
-            float t01 = (float) System.Math.Pow((double) Vector4.Distance(r0, r1), (double) alpha);
-            float t12 = (float) System.Math.Pow((double) Vector4.Distance(r1, r2), (double) alpha);
-            float t23 = (float) System.Math.Pow((double) Vector4.Distance(r2, r3), (double) alpha);
+        private Vector4 CatmullRomInterpolation(Vector4 r0, Vector4 r1, Vector4 r2, Vector4 r3, float t)
+        {
+            float t01 = (float)System.Math.Pow((double)Vector4.Distance(r0, r1), (double)alpha);
+            float t12 = (float)System.Math.Pow((double)Vector4.Distance(r1, r2), (double)alpha);
+            float t23 = (float)System.Math.Pow((double)Vector4.Distance(r2, r3), (double)alpha);
 
             Vector4 v1 = t01 != 0 ? (r1 - r0) / t01 : new Vector4(0, 0, 0, 0);
             Vector4 v2 = t23 != 0 ? (r3 - r2) / t23 : new Vector4(0, 0, 0, 0);
-            
-            Vector4 m1 = (1.0f - tension) * (r2 - r1 + t12 * (v1 - (r2 -r0) / (t01 + t12)));
-            Vector4 m2 = (1.0f - tension) * (r2 - r1 + t12 * (v2 - (r3 -r1) / (t12 + t23)));
+
+            Vector4 m1 = (1.0f - tension) * (r2 - r1 + t12 * (v1 - (r2 - r0) / (t01 + t12)));
+            Vector4 m2 = (1.0f - tension) * (r2 - r1 + t12 * (v2 - (r3 - r1) / (t12 + t23)));
 
             Vector4 a = 2.0f * (r1 - r2) + m1 + m2;
             Vector4 b = -3.0f * (r1 - r2) - m1 - m1 - m2;
@@ -350,20 +372,24 @@ namespace UnityExplorer.CatmullRom
             return a * t * t * t + b * t * t + c * t + d;
         }
 
-        public void CalculateLookahead() {
+        public void CalculateLookahead()
+        {
             // We assume 60 locked fps.
             float frames = time * 60;
             float pathLength = 0;
             if (lookaheadPoints.Count > 0) lookaheadPoints.Clear();
 
-            for (int i = 0; i <= frames; i++){
+            for (int i = 0; i <= frames; i++)
+            {
                 CatmullRomPoint newPoint = GetPointFromPath(i / frames);
-                if (i != 0 && Vector4.Dot(CatmullRomPoint.QuaternionToVector4(lookaheadPoints[i - 1].rotation), CatmullRomPoint.QuaternionToVector4(newPoint.rotation)) < 0){
-                    newPoint.rotation = CatmullRomPoint.Vector4ToQuaternion(- CatmullRomPoint.QuaternionToVector4(newPoint.rotation));
+                if (i != 0 && Vector4.Dot(CatmullRomPoint.QuaternionToVector4(lookaheadPoints[i - 1].rotation), CatmullRomPoint.QuaternionToVector4(newPoint.rotation)) < 0)
+                {
+                    newPoint.rotation = CatmullRomPoint.Vector4ToQuaternion(-CatmullRomPoint.QuaternionToVector4(newPoint.rotation));
                 }
                 lookaheadPoints.Add(newPoint);
 
-                if (i != 0){
+                if (i != 0)
+                {
                     pathLength += Vector3.Distance(lookaheadPoints[i - 1].position, lookaheadPoints[i].position);
                 }
             }
@@ -380,18 +406,21 @@ namespace UnityExplorer.CatmullRom
 #if CPP
         [HideFromIl2Cpp]
 #endif
-        public List<CatmullRomPoint> GetLookaheadPoints(){
+        public List<CatmullRomPoint> GetLookaheadPoints()
+        {
             return lookaheadPoints;
         }
 
-        void PathFinished(){
+        void PathFinished()
+        {
             playingPath = false;
             delta = 0;
             pauseCamCache = GetCurrentPoint();
 
-            if (UIManager.GetPanel<CamPaths>(UIManager.Panels.CamPaths).pauseOnFinish && !UIManager.GetTimeScaleWidget().IsPaused()){
+            if (UIManager.GetPanel<CamPaths>(UIManager.Panels.CamPaths).pauseOnFinish && !UIManager.GetTimeScaleWidget().IsPaused())
+            {
                 UIManager.GetTimeScaleWidget().PauseToggle();
             }
         }
-    } 
+    }
 }

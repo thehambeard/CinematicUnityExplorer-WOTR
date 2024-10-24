@@ -14,7 +14,7 @@ namespace UnityExplorer.UI.Panels
         public override Vector2 DefaultAnchorMin => Vector2.zero;
         public override Vector2 DefaultAnchorMax => Vector2.zero;
         public Toggle turnOffAnimatorToggle;
-        
+
         private IAnimator animator;
         private Text skeletonName;
         private InputFieldRef saveLoadinputField;
@@ -35,39 +35,48 @@ namespace UnityExplorer.UI.Panels
             BuildBoneTrees();
         }
 
-        public void RefreshBones(List<Transform> bones) {
+        public void RefreshBones(List<Transform> bones)
+        {
             this.bones = bones;
             boneTrees.Clear();
             BuildBoneTrees();
             boneScrollPool.Refresh(true, true);
         }
 
-        private void BuildBoneTrees(){
+        private void BuildBoneTrees()
+        {
             BoneTree root = new BoneTree(animator.wrappedObject.gameObject, bones);
-            if (root.obj != null){
+            if (root.obj != null)
+            {
                 root.AssignLevels();
                 boneTrees.Add(root);
-            } else {
-                foreach(BoneTree childTree in root.childTrees){
+            }
+            else
+            {
+                foreach (BoneTree childTree in root.childTrees)
+                {
                     childTree.AssignLevels();
                     boneTrees.Add(childTree);
                 }
             }
         }
 
-        private void CollapseBoneTrees(){
+        private void CollapseBoneTrees()
+        {
             boneTrees.Clear();
             BuildBoneTrees();
             boneScrollPool.Refresh(true, true);
         }
 
-        private void ExpandBoneTrees(){
+        private void ExpandBoneTrees()
+        {
             // We collapse before expanding to start from scratch and dont duplicate nodes
             CollapseBoneTrees();
 
             List<BoneTree> newBoneTrees = new();
 
-            foreach(BoneTree childTree in boneTrees){
+            foreach (BoneTree childTree in boneTrees)
+            {
                 newBoneTrees.AddRange(childTree.flatten());
             }
 
@@ -75,7 +84,8 @@ namespace UnityExplorer.UI.Panels
             boneScrollPool.Refresh(true, false);
         }
 
-        private void SearchBones(){
+        private void SearchBones()
+        {
             ExpandBoneTrees();
             boneTrees = boneTrees.Where(tree => tree.obj.name.IndexOf(searchBoneNameInput.Component.text, 0, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
             boneScrollPool.Refresh(true, true);
@@ -155,17 +165,22 @@ namespace UnityExplorer.UI.Panels
 
         private void OnTurnOffAnimatorToggle(bool value)
         {
-            if (value){
+            if (value)
+            {
                 // Restore meshes manually in case some are not part of a skeleton and won't get restored automatically.
                 // Besides, this restores the scale, which the animator doesn't.
-                foreach (Transform bone in bones){
+                foreach (Transform bone in bones)
+                {
                     bonesOriginalState[bone.name].CopyToTransform(bone);
                     // We assume these were on before. If not we should save its state beforehand.
                     bone.gameObject.SetActive(true);
                 }
-            } else {
+            }
+            else
+            {
                 bonesOriginalState.Clear();
-                foreach (Transform bone in bones){
+                foreach (Transform bone in bones)
+                {
                     bonesOriginalState[bone.name] = new CachedBonesTransform(bone.localPosition, bone.localEulerAngles, bone.localScale);
                 }
             }
@@ -174,24 +189,30 @@ namespace UnityExplorer.UI.Panels
 
         public void RestoreBoneState(string boneName)
         {
-            foreach (Transform bone in bones){
-                if (bone.name == boneName){
+            foreach (Transform bone in bones)
+            {
+                if (bone.name == boneName)
+                {
                     bonesOriginalState[boneName].CopyToTransform(bone);
                     return;
                 }
             }
         }
 
-        private void SaveBones(){
+        private void SaveBones()
+        {
             Dictionary<string, List<CachedBonesTransform>> bonesTreeCache = new();
             // Get the list of bones based on the hierarchy order so we can deserialize it in the same order, instead of just using the bones list.
             List<BoneTree> allBoneTrees = new();
-            foreach(BoneTree tree in boneTrees) {
+            foreach (BoneTree tree in boneTrees)
+            {
                 allBoneTrees.AddRange(tree.flatten());
             }
 
-            foreach(BoneTree tree in allBoneTrees){
-                if (!bonesTreeCache.ContainsKey(tree.obj.name)){
+            foreach (BoneTree tree in allBoneTrees)
+            {
+                if (!bonesTreeCache.ContainsKey(tree.obj.name))
+                {
                     bonesTreeCache.Add(tree.obj.name, new List<CachedBonesTransform>());
                 }
                 CachedBonesTransform entry = new CachedBonesTransform(tree.obj.transform.localPosition, tree.obj.transform.localEulerAngles, tree.obj.transform.localScale);
@@ -199,7 +220,7 @@ namespace UnityExplorer.UI.Panels
             }
 
             string filename = saveLoadinputField.Component.text;
-            if (filename.EndsWith(".xml") || filename.EndsWith(".XML")) filename = filename.Substring(filename.Length-4);
+            if (filename.EndsWith(".xml") || filename.EndsWith(".XML")) filename = filename.Substring(filename.Length - 4);
             if (string.IsNullOrEmpty(filename)) filename = $"{animator?.name}-{DateTime.Now.ToString("yyyy-M-d HH-mm-ss")}";
             string posesPath = Path.Combine(ExplorerCore.ExplorerFolder, "Poses");
             System.IO.Directory.CreateDirectory(posesPath);
@@ -209,50 +230,62 @@ namespace UnityExplorer.UI.Panels
             File.WriteAllText($"{posesPath}\\{filename}.xml", serializedData);
         }
 
-        private void LoadBones(){
+        private void LoadBones()
+        {
             string filename = saveLoadinputField.Component.text;
-            if (filename.EndsWith(".xml") || filename.EndsWith(".XML")) filename = filename.Substring(filename.Length-4);
-            if (string.IsNullOrEmpty(filename)){
+            if (filename.EndsWith(".xml") || filename.EndsWith(".XML")) filename = filename.Substring(filename.Length - 4);
+            if (string.IsNullOrEmpty(filename))
+            {
                 ExplorerCore.LogWarning("Empty file name. Please write the name of the file to load.");
                 return;
             }
 
             string posesPath = Path.Combine(ExplorerCore.ExplorerFolder, "Poses");
             string xml;
-            try {
+            try
+            {
                 xml = File.ReadAllText($"{posesPath}\\{filename}.xml");
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 ExplorerCore.LogWarning(ex);
                 return;
             }
             Dictionary<string, List<CachedBonesTransform>> deserializedDict;
-            try {
+            try
+            {
                 deserializedDict = BonesSerializer.Deserialize(xml);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 ExplorerCore.LogWarning(ex);
                 return;
             }
 
             turnOffAnimatorToggle.isOn = false;
-            foreach(Transform boneTransform in bones) {
+            foreach (Transform boneTransform in bones)
+            {
                 List<CachedBonesTransform> cachedTransformList;
                 deserializedDict.TryGetValue(boneTransform.name, out cachedTransformList);
-                if (cachedTransformList != null && cachedTransformList.Count > 0){
+                if (cachedTransformList != null && cachedTransformList.Count > 0)
+                {
                     CachedBonesTransform cachedTransform = cachedTransformList[0];
                     cachedTransform.CopyToTransform(boneTransform);
 
                     cachedTransformList.RemoveAt(0);
-                    if (cachedTransformList.Count == 0) {
+                    if (cachedTransformList.Count == 0)
+                    {
                         deserializedDict.Remove(boneTransform.name);
-                    } else {
+                    }
+                    else
+                    {
                         deserializedDict[boneTransform.name] = cachedTransformList;
                     }
                 }
             }
 
-            if (deserializedDict.Count > 0) {
+            if (deserializedDict.Count > 0)
+            {
                 ExplorerCore.LogWarning($"Couldn't apply every bone in the pose. Wrong entity?");
             }
         }
@@ -270,7 +303,8 @@ namespace UnityExplorer.UI.Panels
             cell.UpdateTransformControlValues(true);
         }
 
-        public void OnCellBorrowed(BonesCell cell) {
+        public void OnCellBorrowed(BonesCell cell)
+        {
             cell.UpdateVectorSlider();
         }
 
@@ -278,7 +312,8 @@ namespace UnityExplorer.UI.Panels
         {
             base.Update();
 
-            foreach(BonesCell boneCell in boneScrollPool.CellPool) {
+            foreach (BonesCell boneCell in boneScrollPool.CellPool)
+            {
                 boneCell.UpdateVectorSlider();
             }
         }
@@ -290,21 +325,24 @@ namespace UnityExplorer.UI.Panels
         public int level;
         public List<BoneTree> childTrees = new();
 
-        public BoneTree(GameObject obj, List<Transform> bones){
+        public BoneTree(GameObject obj, List<Transform> bones)
+        {
             // For some reason comparing GameObjects isn't working as intended in IL2CPP games, therefore we use their instance hash.
 #if CPP
             if (bones.Any(bone => bone.gameObject.GetInstanceID() == obj.GetInstanceID())) {
                 this.obj = obj;
             }
 #else
-            if (bones.Contains(obj.transform)) {
+            if (bones.Contains(obj.transform))
+            {
                 this.obj = obj;
             }
 #endif
             for (int i = 0; i < obj.transform.childCount; i++)
             {
                 Transform child = obj.transform.GetChild(i);
-                if (child.gameObject.activeSelf){
+                if (child.gameObject.activeSelf)
+                {
                     childTrees.Add(new BoneTree(child.gameObject, bones));
                 }
             }
@@ -313,13 +351,17 @@ namespace UnityExplorer.UI.Panels
             childTrees = childTrees.OrderBy(b => b.obj.name).ToList();
         }
 
-        private void Trim(){
+        private void Trim()
+        {
             List<BoneTree> newList = new();
             foreach (BoneTree childTree in childTrees)
             {
-                if (childTree.obj == null){
+                if (childTree.obj == null)
+                {
                     newList.AddRange(childTree.childTrees);
-                } else {
+                }
+                else
+                {
                     newList.Add(childTree);
                 }
             }
@@ -328,11 +370,13 @@ namespace UnityExplorer.UI.Panels
         }
 
         // TODO: refactor BoneTree so we don't need to call this after creating an instance.
-        public void AssignLevels(){
+        public void AssignLevels()
+        {
             AssignLevel(0);
         }
 
-        private void AssignLevel(int distanceFromRoot){
+        private void AssignLevel(int distanceFromRoot)
+        {
             level = distanceFromRoot;
             foreach (BoneTree childTree in childTrees)
             {
@@ -340,9 +384,11 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        public override string ToString(){
+        public override string ToString()
+        {
             string return_string = "";
-            if (obj != null){
+            if (obj != null)
+            {
                 return_string = $"{obj.name} lvl: {level} - ";
             }
 
@@ -354,9 +400,11 @@ namespace UnityExplorer.UI.Panels
             return return_string;
         }
 
-        public List<GameObject> getGameObjects(){
+        public List<GameObject> getGameObjects()
+        {
             List<GameObject> return_list = new();
-            if (obj != null){
+            if (obj != null)
+            {
                 return_list.Add(obj);
             }
 
@@ -368,9 +416,11 @@ namespace UnityExplorer.UI.Panels
             return return_list;
         }
 
-        public List<BoneTree> flatten(){
+        public List<BoneTree> flatten()
+        {
             List<BoneTree> return_list = new();
-            if (obj != null){
+            if (obj != null)
+            {
                 return_list.Add(this);
             }
 

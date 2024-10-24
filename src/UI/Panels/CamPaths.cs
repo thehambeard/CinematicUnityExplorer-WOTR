@@ -9,11 +9,6 @@ using Il2CppInterop.Runtime.Injection;
 #endif
 using UniverseLib.UI.Widgets.ScrollView;
 
-using System.Collections.Generic;
-using UnityEngine;
-using System;
-using System.Collections;
-
 namespace UnityExplorer.UI.Panels
 {
     public class CamPaths : UEPanel, ICellPoolDataSource<CamPathNodeCell>
@@ -43,7 +38,7 @@ namespace UnityExplorer.UI.Panels
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
         public override bool NavButtonWanted => true;
         public override bool ShouldSaveActiveState => true;
-		public List<CatmullRom.CatmullRomPoint> controlPoints = new List<CatmullRom.CatmullRomPoint>();
+        public List<CatmullRom.CatmullRomPoint> controlPoints = new List<CatmullRom.CatmullRomPoint>();
         bool closedLoop;
         float time = 10;
 
@@ -86,7 +81,8 @@ namespace UnityExplorer.UI.Panels
 
         public void OnCellBorrowed(CamPathNodeCell cell) { }
 
-        public void SetCell(CamPathNodeCell cell, int index){
+        public void SetCell(CamPathNodeCell cell, int index)
+        {
             if (index >= controlPoints.Count)
             {
                 cell.Disable();
@@ -102,7 +98,7 @@ namespace UnityExplorer.UI.Panels
         // ~~~~~~~~ UI construction / callbacks ~~~~~~~~
 
         protected override void ConstructPanelContent()
-        {   
+        {
             GameObject horiGroup = UIFactory.CreateHorizontalGroup(ContentRoot, "MainOptions", false, false, true, true, 3,
                 default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
             UIFactory.SetLayoutElement(horiGroup, minHeight: 25, flexibleWidth: 9999);
@@ -127,7 +123,8 @@ namespace UnityExplorer.UI.Panels
 
             ButtonRef DeletePath = UIFactory.CreateButton(horiGroup, "DeletePath", "Clear");
             UIFactory.SetLayoutElement(DeletePath.GameObject, minWidth: 70, minHeight: 25);
-            DeletePath.OnClick += () => {
+            DeletePath.OnClick += () =>
+            {
                 controlPoints.Clear();
                 nodesScrollPool.Refresh(true, false);
                 MaybeRedrawPath();
@@ -137,14 +134,14 @@ namespace UnityExplorer.UI.Panels
             GameObject toggleClosedLoopObj = UIFactory.CreateToggle(horiGroup, "Close path in a loop", out closedLoopToggle, out Text toggleClosedLoopText);
             UIFactory.SetLayoutElement(toggleClosedLoopObj, minHeight: 25, flexibleWidth: 9999);
             closedLoopToggle.isOn = false;
-            closedLoopToggle.onValueChanged.AddListener((isClosedLoop) => {closedLoop = isClosedLoop; MaybeRedrawPath(); EventSystemHelper.SetSelectedGameObject(null);});
+            closedLoopToggle.onValueChanged.AddListener((isClosedLoop) => { closedLoop = isClosedLoop; MaybeRedrawPath(); EventSystemHelper.SetSelectedGameObject(null); });
             toggleClosedLoopText.text = "Close path in a loop";
 
             InputFieldRef TimeInput = null;
             AddInputField("Time", "Path time (in seconds at 60fps):", $"Default: {time}", out TimeInput, Time_OnEndEdit, 50, horiGroup);
             TimeInput.Text = time.ToString();
 
-            
+
             GameObject secondRow = UIFactory.CreateHorizontalGroup(ContentRoot, "ExtraOptions", false, false, true, true, 3,
                 default, new Color(1, 1, 1, 0), TextAnchor.MiddleLeft);
             UIFactory.SetLayoutElement(secondRow, minHeight: 25, flexibleWidth: 9999);
@@ -184,7 +181,8 @@ namespace UnityExplorer.UI.Panels
             alphaCatmullRomSlider.minValue = 0;
             alphaCatmullRomSlider.maxValue = 1;
             alphaCatmullRomSlider.value = alphaCatmullRomValue;
-            alphaCatmullRomSlider.onValueChanged.AddListener((newAlpha) => {
+            alphaCatmullRomSlider.onValueChanged.AddListener((newAlpha) =>
+            {
                 alphaCatmullRomValue = newAlpha;
                 alphaCatmullRomInput.Text = alphaCatmullRomValue.ToString("0.00");
 
@@ -201,7 +199,8 @@ namespace UnityExplorer.UI.Panels
             tensionCatmullRomSlider.minValue = 0;
             tensionCatmullRomSlider.maxValue = 1;
             tensionCatmullRomSlider.value = tensionCatmullRomValue;
-            tensionCatmullRomSlider.onValueChanged.AddListener((newTension) => {
+            tensionCatmullRomSlider.onValueChanged.AddListener((newTension) =>
+            {
                 tensionCatmullRomValue = newTension;
                 tensionCatmullRomInput.Text = tensionCatmullRomValue.ToString("0.00");
 
@@ -247,26 +246,33 @@ namespace UnityExplorer.UI.Panels
             MaybeRedrawPath();
         }
 
-        private void ToggleVisualizePath(bool enable){
+        private void ToggleVisualizePath(bool enable)
+        {
             // Had to include this check because the pathVisualizer was null for some reason
-            if (enable){
-                if (controlPoints.Count > 2){
+            if (enable)
+            {
+                if (controlPoints.Count > 2)
+                {
                     CreateAndMovePathVisualizer();
 
                     UpdateCatmullRomMoverData();
                     List<CatmullRom.CatmullRomPoint> lookaheadPoints = GetCameraPathsManager().GetLookaheadPoints();
                     int skip_points = 5; // How many points do we have to skip before drawing another arrow (otherwise they look very cluttered)
                     int n = 0;
-                    for (int i=0; i < lookaheadPoints.Count; i++){
+                    for (int i = 0; i < lookaheadPoints.Count; i++)
+                    {
                         // We also want to draw an arrow on the last point in case its skipped.
-                        if (n < skip_points && i != lookaheadPoints.Count - 1){ 
+                        if (n < skip_points && i != lookaheadPoints.Count - 1)
+                        {
                             n++;
                             continue;
                         }
 
                         Vector3 arrowPos = lookaheadPoints[i].position;
-                        if (followObject != null){
-                            if (!FreeCamPanel.followRotationToggle.isOn){
+                        if (followObject != null)
+                        {
+                            if (!FreeCamPanel.followRotationToggle.isOn)
+                            {
                                 arrowPos = Quaternion.Inverse(FreeCamPanel.followObject.transform.rotation) * arrowPos;
                             }
                             // TODO: Avoid using TransformPoint
@@ -282,8 +288,10 @@ namespace UnityExplorer.UI.Panels
                     }
                 }
             }
-            else {
-                if (pathVisualizer) {
+            else
+            {
+                if (pathVisualizer)
+                {
                     UnityEngine.Object.Destroy(pathVisualizer);
                     pathVisualizer = null;
                     CreateAndMovePathVisualizer();
@@ -291,8 +299,10 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        public void MaybeRedrawPath(){
-            if (visualizePathToggle.isOn){
+        public void MaybeRedrawPath()
+        {
+            if (visualizePathToggle.isOn)
+            {
                 ToggleVisualizePath(false);
                 ToggleVisualizePath(true);
             }
@@ -315,34 +325,43 @@ namespace UnityExplorer.UI.Panels
 
         void StartButton_OnClick()
         {
-            if (waitBeforePlay) {
-                if (startTimer.Enabled){
+            if (waitBeforePlay)
+            {
+                if (startTimer.Enabled)
+                {
                     startTimer.Stop();
                 }
 
                 startTimer.Enabled = true;
-            } else {
+            }
+            else
+            {
                 StartPath();
             }
 
             EventSystemHelper.SetSelectedGameObject(null);
         }
 
-        void StartPath(){
-            if (GetCameraPathsManager()){
+        void StartPath()
+        {
+            if (GetCameraPathsManager())
+            {
                 UpdateCatmullRomMoverData();
                 GetCameraPathsManager().StartPath();
                 UIManager.ShowMenu = false;
                 visualizePathToggle.isOn = false;
             }
 
-            if (unpauseOnPlay && UIManager.GetTimeScaleWidget().IsPaused()){
-                    UIManager.GetTimeScaleWidget().PauseToggle();
+            if (unpauseOnPlay && UIManager.GetTimeScaleWidget().IsPaused())
+            {
+                UIManager.GetTimeScaleWidget().PauseToggle();
             }
         }
 
-        void TogglePause_OnClick(){
-            if(GetCameraPathsManager()){
+        void TogglePause_OnClick()
+        {
+            if (GetCameraPathsManager())
+            {
                 GetCameraPathsManager().TogglePause();
                 if (visualizePathToggle.isOn && GetCameraPathsManager().IsPaused()) visualizePathToggle.isOn = false;
             }
@@ -350,15 +369,18 @@ namespace UnityExplorer.UI.Panels
             EventSystemHelper.SetSelectedGameObject(null);
         }
 
-        void Stop_OnClick(){
-            if (GetCameraPathsManager()){
+        void Stop_OnClick()
+        {
+            if (GetCameraPathsManager())
+            {
                 GetCameraPathsManager().Stop();
             }
 
             EventSystemHelper.SetSelectedGameObject(null);
         }
 
-        void AddNode_OnClick(){
+        void AddNode_OnClick()
+        {
             EventSystemHelper.SetSelectedGameObject(null);
 
             CatmullRom.CatmullRomPoint point = new CatmullRom.CatmullRomPoint(
@@ -383,24 +405,29 @@ namespace UnityExplorer.UI.Panels
             }
 
             time = parsed;
-            if(GetCameraPathsManager()){
+            if (GetCameraPathsManager())
+            {
                 GetCameraPathsManager().setTime(time);
             }
         }
 
-        private CatmullRom.CatmullRomMover GetCameraPathsManager(){
+        private CatmullRom.CatmullRomMover GetCameraPathsManager()
+        {
             return FreeCamPanel.cameraPathMover;
         }
 
-        public void UpdatedFollowObject(GameObject obj){
+        public void UpdatedFollowObject(GameObject obj)
+        {
             // Had to include this check because the pathVisualizer was null for some reason
-            if (followObject != null){
+            if (followObject != null)
+            {
                 // destroy the obhject from the parent
                 GameObject.Destroy(camPointsUpdater);
                 camPointsUpdater = null;
             }
             followObject = obj;
-            if (obj != null){
+            if (obj != null)
+            {
                 // create the component on the object itself
                 camPointsUpdater = RuntimeHelper.AddComponent<CamPointsUpdater>(obj, typeof(CamPointsUpdater));
 
@@ -409,13 +436,16 @@ namespace UnityExplorer.UI.Panels
             //nodesScrollPool.Refresh(true, false);
         }
 
-        public void CreateAndMovePathVisualizer(){
+        public void CreateAndMovePathVisualizer()
+        {
             if (pathVisualizer == null)
                 pathVisualizer = new GameObject("PathVisualizer");
 
-            if (followObject != null){
+            if (followObject != null)
+            {
                 pathVisualizer.transform.position = followObject.transform.position;
-                if (FreeCamPanel.followRotationToggle.isOn){
+                if (FreeCamPanel.followRotationToggle.isOn)
+                {
                     Vector3 offset = pathVisualizer.transform.position - followObject.transform.position;
                     pathVisualizer.transform.position = pathVisualizer.transform.position - offset + followObject.transform.rotation * offset;
                     pathVisualizer.transform.rotation = followObject.transform.rotation;
@@ -423,19 +453,23 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        public void TranslatePointsToGlobal(bool isFollowingRotation){
+        public void TranslatePointsToGlobal(bool isFollowingRotation)
+        {
             if (isFollowingRotation) TranslatePointsRotationToGlobal();
             TranslatePointsPositionToGlobal();
         }
 
-        public void TranslatePointsToLocal(bool isFollowingRotation){
+        public void TranslatePointsToLocal(bool isFollowingRotation)
+        {
             TranslatePointsPositionToLocal();
             if (isFollowingRotation) TranslatePointsRotationToLocal();
         }
 
-        private void TranslatePointsPositionToGlobal(){
+        private void TranslatePointsPositionToGlobal()
+        {
             List<CatmullRom.CatmullRomPoint> newControlPoints = new List<CatmullRom.CatmullRomPoint>();
-            foreach(CatmullRom.CatmullRomPoint point in controlPoints){
+            foreach (CatmullRom.CatmullRomPoint point in controlPoints)
+            {
                 Vector3 newPos = point.position + followObject.transform.position;
 
                 CatmullRom.CatmullRomPoint newPoint = new CatmullRom.CatmullRomPoint(newPos, point.rotation, point.fov);
@@ -446,9 +480,11 @@ namespace UnityExplorer.UI.Panels
         }
 
         // Also changes position based on rotation
-        public void TranslatePointsRotationToGlobal(){
+        public void TranslatePointsRotationToGlobal()
+        {
             List<CatmullRom.CatmullRomPoint> newControlPoints = new List<CatmullRom.CatmullRomPoint>();
-            foreach(CatmullRom.CatmullRomPoint point in controlPoints){
+            foreach (CatmullRom.CatmullRomPoint point in controlPoints)
+            {
                 Quaternion newRot = followObject.transform.rotation * point.rotation;
                 Vector3 newPos = followObject.transform.rotation * point.position;
 
@@ -459,9 +495,11 @@ namespace UnityExplorer.UI.Panels
             controlPoints = newControlPoints;
         }
 
-        private void TranslatePointsPositionToLocal(){
+        private void TranslatePointsPositionToLocal()
+        {
             List<CatmullRom.CatmullRomPoint> newControlPoints = new List<CatmullRom.CatmullRomPoint>();
-            foreach(CatmullRom.CatmullRomPoint point in controlPoints){
+            foreach (CatmullRom.CatmullRomPoint point in controlPoints)
+            {
                 Vector3 newPos = point.position - followObject.transform.position;
                 CatmullRom.CatmullRomPoint newPoint = new CatmullRom.CatmullRomPoint(newPos, point.rotation, point.fov);
 
@@ -472,9 +510,11 @@ namespace UnityExplorer.UI.Panels
         }
 
         // Also changes position based on rotation
-        public void TranslatePointsRotationToLocal(){
+        public void TranslatePointsRotationToLocal()
+        {
             List<CatmullRom.CatmullRomPoint> newControlPoints = new List<CatmullRom.CatmullRomPoint>();
-            foreach(CatmullRom.CatmullRomPoint point in controlPoints){
+            foreach (CatmullRom.CatmullRomPoint point in controlPoints)
+            {
                 Quaternion newRot = Quaternion.Inverse(followObject.transform.rotation) * point.rotation;
                 Vector3 newPos = Quaternion.Inverse(followObject.transform.rotation) * point.position;
 
@@ -485,7 +525,8 @@ namespace UnityExplorer.UI.Panels
             controlPoints = newControlPoints;
         }
 
-        void UpdateCatmullRomMoverData() {
+        void UpdateCatmullRomMoverData()
+        {
             GetCameraPathsManager().setClosedLoop(closedLoop);
             GetCameraPathsManager().setSplinePoints(controlPoints.ToArray());
             GetCameraPathsManager().setTime(time);
@@ -508,7 +549,8 @@ namespace UnityExplorer.UI.Panels
         public CamPointsUpdater(IntPtr ptr) : base(ptr) { }
 #endif
 
-        internal void SetFollowObject(GameObject obj){
+        internal void SetFollowObject(GameObject obj)
+        {
             followObject = obj;
         }
 
@@ -521,9 +563,11 @@ namespace UnityExplorer.UI.Panels
 
             CamPaths CamPathsPanel = UIManager.GetPanel<CamPaths>(UIManager.Panels.CamPaths);
 
-            if (CamPathsPanel.pathVisualizer){
+            if (CamPathsPanel.pathVisualizer)
+            {
                 CamPathsPanel.pathVisualizer.transform.position = followObject.transform.position;
-                if (FreeCamPanel.followRotationToggle.isOn){
+                if (FreeCamPanel.followRotationToggle.isOn)
+                {
                     Vector3 offset = CamPathsPanel.pathVisualizer.transform.position - FreeCamPanel.followObject.transform.position;
                     CamPathsPanel.pathVisualizer.transform.position = CamPathsPanel.pathVisualizer.transform.position - offset + FreeCamPanel.followObject.transform.rotation * offset;
                     CamPathsPanel.pathVisualizer.transform.rotation = followObject.transform.rotation;

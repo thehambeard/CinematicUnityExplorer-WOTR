@@ -7,7 +7,6 @@ global using UnityEngine;
 global using UnityEngine.UI;
 global using UniverseLib;
 global using UniverseLib.Utility;
-using UnityExplorer.CatmullRom;
 using UnityExplorer.Config;
 using UnityExplorer.ObjectExplorer;
 using UnityExplorer.Runtime;
@@ -196,7 +195,8 @@ namespace UnityExplorer
 
         #endregion
 
-        private static void MakeUEUIScale(){
+        private static void MakeUEUIScale()
+        {
             List<CanvasScaler> canvasScalers = RuntimeHelper.FindObjectsOfTypeAll(typeof(CanvasScaler))
             .Select(obj => obj.TryCast<CanvasScaler>())
             .Where(c => c.name.Contains("unityexplorer"))

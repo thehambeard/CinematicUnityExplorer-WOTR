@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Kingmaker;
+using Kingmaker.Blueprints.Root;
+using Kingmaker.UI;
+using Kingmaker.UI.AbilityTarget;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using UniverseLib.Input;
-using UniverseLib.UI;
-using UniverseLib.Utility;
+using static Kingmaker.Blueprints.Root.CursorRoot;
 
 namespace UniverseLib.UI.Panels
 {
@@ -18,19 +19,19 @@ namespace UniverseLib.UI.Panels
 
         public PanelBase UIPanel { get; private set; }
         public bool AllowDragAndResize => UIPanel.CanDragAndResize;
-        
+
         public RectTransform Rect { get; set; }
         public event Action OnFinishResize;
         public event Action OnFinishDrag;
-        
+
         // Dragging
         public RectTransform DragableArea { get; set; }
         public bool WasDragging { get; set; }
         private Vector2 lastDragPosition;
-        
+
         // Resizing
         public bool WasResizing { get; internal set; }
-        private bool WasHoveringResize => PanelManager.resizeCursor.activeInHierarchy;
+        private bool WasHoveringResize => CursorController.IsResizeCursor;
 
         private ResizeTypes currentResizeType = ResizeTypes.NONE;
         private Vector2 lastResizePos;
@@ -42,28 +43,28 @@ namespace UniverseLib.UI.Panels
             this.UIPanel = uiPanel;
             this.DragableArea = uiPanel.TitleBar.GetComponent<RectTransform>();
             this.Rect = uiPanel.Rect;
-        
+
             UpdateResizeCache();
         }
-        
+
         protected internal virtual void Update(MouseState state, Vector3 rawMousePos)
         {
             ResizeTypes type;
             Vector3 resizePos = Rect.InverseTransformPoint(rawMousePos);
             bool inResizePos = MouseInResizeArea(resizePos);
-        
+
             Vector3 dragPos = DragableArea.InverseTransformPoint(rawMousePos);
             bool inDragPos = DragableArea.rect.Contains(dragPos);
-        
-            if (WasHoveringResize && PanelManager.resizeCursor)
-                UpdateHoverImagePos();
-        
+
+            //if (WasHoveringResize && PanelManager.resizeCursor)
+            //    UpdateHoverImagePos();
+
             switch (state)
             {
                 case MouseState.Down:
                     if (inDragPos || inResizePos)
                         UIPanel.SetActive(true);
-        
+
                     if (inDragPos)
                     {
                         if (AllowDragAndResize)
@@ -80,7 +81,7 @@ namespace UniverseLib.UI.Panels
                         PanelManager.draggerHandledThisFrame = true;
                     }
                     break;
-        
+
                 case MouseState.Held:
                     if (WasDragging)
                     {
@@ -93,13 +94,13 @@ namespace UniverseLib.UI.Panels
                         PanelManager.draggerHandledThisFrame = true;
                     }
                     break;
-        
+
                 case MouseState.NotPressed:
                     if (AllowDragAndResize && inDragPos)
                     {
                         if (WasDragging)
                             OnEndDrag();
-        
+
                         if (WasHoveringResize)
                             OnHoverResizeEnd();
 
@@ -109,7 +110,7 @@ namespace UniverseLib.UI.Panels
                     {
                         if (WasResizing)
                             OnEndResize();
-        
+
                         type = GetResizeType(resizePos);
                         if (type != ResizeTypes.NONE)
                             OnHoverResize(type);
@@ -122,10 +123,10 @@ namespace UniverseLib.UI.Panels
                         OnHoverResizeEnd();
                     break;
             }
-        
+
             return;
         }
-        
+
         #region DRAGGING
 
         public virtual void OnBeginDrag()
@@ -134,30 +135,30 @@ namespace UniverseLib.UI.Panels
             WasDragging = true;
             lastDragPosition = UIPanel.Owner.Panels.MousePosition;
         }
-        
+
         public virtual void OnDrag()
         {
             Vector3 mousePos = UIPanel.Owner.Panels.MousePosition;
-        
+
             Vector2 diff = (Vector2)mousePos - lastDragPosition;
             lastDragPosition = mousePos;
-        
+
             Rect.localPosition = Rect.localPosition + (Vector3)diff;
-        
+
             UIPanel.EnsureValidPosition();
         }
-        
+
         public virtual void OnEndDrag()
         {
             WasDragging = false;
 
             OnFinishDrag?.Invoke();
         }
-        
+
         #endregion
-        
+
         #region RESIZE
-        
+
         private readonly Dictionary<ResizeTypes, Rect> m_resizeMask = new()
         {
             { ResizeTypes.Top, default },
@@ -165,7 +166,7 @@ namespace UniverseLib.UI.Panels
             { ResizeTypes.Right, default },
             { ResizeTypes.Bottom, default },
         };
-        
+
         [Flags]
         public enum ResizeTypes : ulong
         {
@@ -179,17 +180,17 @@ namespace UniverseLib.UI.Panels
             BottomLeft = Bottom | Left,
             BottomRight = Bottom | Right,
         }
-        
+
         // private const int HALF_THICKESS = RESIZE_THICKNESS / 2;
         private const int DBL_THICKESS = RESIZE_THICKNESS * 2;
-        
+
         private void UpdateResizeCache()
         {
             totalResizeRect = new Rect(Rect.rect.x - RESIZE_THICKNESS + 1,
                 Rect.rect.y - RESIZE_THICKNESS + 1,
                 Rect.rect.width + DBL_THICKESS - 2,
                 Rect.rect.height + DBL_THICKESS - 2);
-        
+
             // calculate the four cross sections to use as flags
             if (AllowDragAndResize)
             {
@@ -198,19 +199,19 @@ namespace UniverseLib.UI.Panels
                     totalResizeRect.y,
                     totalResizeRect.width,
                     RESIZE_THICKNESS);
-        
+
                 m_resizeMask[ResizeTypes.Left] = new Rect(
                     totalResizeRect.x,
                     totalResizeRect.y,
                     RESIZE_THICKNESS,
                     totalResizeRect.height);
-        
+
                 m_resizeMask[ResizeTypes.Top] = new Rect(
                     totalResizeRect.x,
                     Rect.rect.y + Rect.rect.height - 2,
                     totalResizeRect.width,
                     RESIZE_THICKNESS);
-        
+
                 m_resizeMask[ResizeTypes.Right] = new Rect(
                     totalResizeRect.x + Rect.rect.width + RESIZE_THICKNESS - 2,
                     totalResizeRect.y,
@@ -218,65 +219,100 @@ namespace UniverseLib.UI.Panels
                     totalResizeRect.height);
             }
         }
-        
+
         protected virtual bool MouseInResizeArea(Vector2 mousePos)
         {
             return totalResizeRect.Contains(mousePos);
         }
-        
+
         private ResizeTypes GetResizeType(Vector2 mousePos)
         {
             // Calculate which part of the resize area we're in, if any.
 
             ResizeTypes mask = 0;
-        
+
             if (m_resizeMask[ResizeTypes.Top].Contains(mousePos))
                 mask |= ResizeTypes.Top;
             else if (m_resizeMask[ResizeTypes.Bottom].Contains(mousePos))
                 mask |= ResizeTypes.Bottom;
-        
+
             if (m_resizeMask[ResizeTypes.Left].Contains(mousePos))
                 mask |= ResizeTypes.Left;
             else if (m_resizeMask[ResizeTypes.Right].Contains(mousePos))
                 mask |= ResizeTypes.Right;
-        
+
             return mask;
         }
-        
+
         public virtual void OnHoverResize(ResizeTypes resizeType)
         {
             if (WasHoveringResize && lastResizeHoverType == resizeType)
                 return;
-        
+
             // we are entering resize, or the resize type has changed.
-        
+
             lastResizeHoverType = resizeType;
 
-            PanelManager.resizeCursorUIBase.Enabled = true;
-            PanelManager.resizeCursor.SetActive(true);
-        
-            // set the rotation for the resize icon
-            float iconRotation = 0f;
+            //PanelManager.resizeCursorUIBase.Enabled = true;
+            //PanelManager.resizeCursor.SetActive(true);
+
+            //// set the rotation for the resize icon
+            //float iconRotation = 0f;
+            //switch (resizeType)
+            //{
+            //    case ResizeTypes.TopRight:
+            //    case ResizeTypes.BottomLeft:
+            //        iconRotation = 45f; break;
+            //    case ResizeTypes.Top:
+            //    case ResizeTypes.Bottom:
+            //        iconRotation = 90f; break;
+            //    case ResizeTypes.TopLeft:
+            //    case ResizeTypes.BottomRight:
+            //        iconRotation = 135f; break;
+            //}
+
+            //Quaternion rot = PanelManager.resizeCursor.transform.rotation;
+            //rot.eulerAngles = new Vector3(0, 0, iconRotation);
+            //PanelManager.resizeCursor.transform.rotation = rot;
+
+            //UpdateHoverImagePos();
+
+            if (!CursorController.IsResizeCursor)
+            {
+                if (PCCursor.Instance == null)
+                {
+                    Texture2D cursorTexture = BlueprintRoot.Instance.Cursors.GetCursorTexture(GetCursor(resizeType));
+                    Cursor.SetCursor(cursorTexture, new Vector2(32f, 32f), CursorMode.Auto);
+                }
+                else
+                {
+                    Game.Instance.CursorController.SetCustomCursor(GetCursor(resizeType), new Vector2(32f, 32f));
+                }
+                CursorController.IsResizeCursor = true;
+            }
+        }
+
+        private CursorRoot.CursorType GetCursor(ResizeTypes resizeType)
+        {
             switch (resizeType)
             {
-                case ResizeTypes.TopRight:
-                case ResizeTypes.BottomLeft:
-                    iconRotation = 45f; break;
                 case ResizeTypes.Top:
                 case ResizeTypes.Bottom:
-                    iconRotation = 90f; break;
+                    return CursorRoot.CursorType.ArrowVerticalCursor;
+                case ResizeTypes.TopRight:
+                case ResizeTypes.BottomLeft:
+                    return CursorRoot.CursorType.ArrowDiagonally01Cursor;
                 case ResizeTypes.TopLeft:
                 case ResizeTypes.BottomRight:
-                    iconRotation = 135f; break;
+                    return CursorRoot.CursorType.ArrowDiagonally02Cursor;
+                case ResizeTypes.Left:
+                case ResizeTypes.Right:
+                    return CursorRoot.CursorType.ArrowHorizontalCursor;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
-        
-            Quaternion rot = PanelManager.resizeCursor.transform.rotation;
-            rot.eulerAngles = new Vector3(0, 0, iconRotation);
-            PanelManager.resizeCursor.transform.rotation = rot;
-        
-            UpdateHoverImagePos();
         }
-        
+
         // update the resize icon position to be above the mouse
         private void UpdateHoverImagePos()
         {
@@ -286,13 +322,29 @@ namespace UniverseLib.UI.Panels
 
             PanelManager.resizeCursor.transform.localPosition = rect.InverseTransformPoint(mousePos);
         }
-        
+
         public virtual void OnHoverResizeEnd()
         {
-            PanelManager.resizeCursorUIBase.Enabled = false;
-            PanelManager.resizeCursor.SetActive(false);
+            //PanelManager.resizeCursorUIBase.Enabled = false;
+            //PanelManager.resizeCursor.SetActive(false);
+
+            if (CursorController.IsResizeCursor)
+            {
+                CursorController.IsResizeCursor = false;
+                Game.Instance.CursorController.ClearCursor();
+
+                if (PCCursor.Instance == null)
+                {
+                    Texture2D cursorTexture = BlueprintRoot.Instance.Cursors.GetCursorTexture(CursorType.DefaultCursor);
+                    Cursor.SetCursor(cursorTexture, new Vector2(32f, 32f), CursorMode.Auto);
+                }
+                else
+                {
+                    Game.Instance.CursorController.SetCustomCursor(CursorRoot.CursorType.None, Vector2.zero);
+                }
+            }
         }
-        
+
         public virtual void OnBeginResize(ResizeTypes resizeType)
         {
             currentResizeType = resizeType;
@@ -300,12 +352,12 @@ namespace UniverseLib.UI.Panels
             WasResizing = true;
             PanelManager.Resizing = true;
         }
-        
+
         public virtual void OnResize()
         {
             Vector3 mousePos = UIPanel.Owner.Panels.MousePosition;
             Vector2 diff = lastResizePos - (Vector2)mousePos;
-        
+
             if ((Vector2)mousePos == lastResizePos)
                 return;
 
@@ -313,28 +365,28 @@ namespace UniverseLib.UI.Panels
 
             if (mousePos.x < 0 || mousePos.y < 0 || mousePos.x > screenDimensions.x || mousePos.y > screenDimensions.y)
                 return;
-        
+
             lastResizePos = mousePos;
-        
+
             float diffX = (float)((decimal)diff.x / (decimal)screenDimensions.x);
             float diffY = (float)((decimal)diff.y / (decimal)screenDimensions.y);
 
             Vector2 anchorMin = Rect.anchorMin;
             Vector2 anchorMax = Rect.anchorMax;
-        
+
             if (currentResizeType.HasFlag(ResizeTypes.Left))
                 anchorMin.x -= diffX;
             else if (currentResizeType.HasFlag(ResizeTypes.Right))
                 anchorMax.x -= diffX;
-        
+
             if (currentResizeType.HasFlag(ResizeTypes.Top))
                 anchorMax.y -= diffY;
             else if (currentResizeType.HasFlag(ResizeTypes.Bottom))
                 anchorMin.y -= diffY;
-        
+
             Vector2 prevMin = Rect.anchorMin;
             Vector2 prevMax = Rect.anchorMax;
-        
+
             Rect.anchorMin = new Vector2(anchorMin.x, anchorMin.y);
             Rect.anchorMax = new Vector2(anchorMax.x, anchorMax.y);
 
@@ -349,7 +401,7 @@ namespace UniverseLib.UI.Panels
                 Rect.anchorMax = new Vector2(Rect.anchorMax.x, prevMax.y);
             }
         }
-        
+
         public virtual void OnEndResize()
         {
             WasResizing = false;
@@ -358,7 +410,7 @@ namespace UniverseLib.UI.Panels
             UpdateResizeCache();
             OnFinishResize?.Invoke();
         }
-        
+
         #endregion
     }
 }

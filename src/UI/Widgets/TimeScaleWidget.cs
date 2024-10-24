@@ -44,7 +44,8 @@ namespace UnityExplorer.UI.Widgets
             //    timeInput.Text = Time.timeScale.ToString("F2");
         }
 
-        public void PauseToggle(){
+        public void PauseToggle()
+        {
             // If not paused but moved the slider to 0, consider that as it being paused
             if (desiredTime == 0 && overrideTimeScaleToggle.isOn && !pause) pause = true;
 
@@ -57,7 +58,8 @@ namespace UnityExplorer.UI.Widgets
             pressedPauseHotkey = false;
         }
 
-        public bool IsPaused(){
+        public bool IsPaused()
+        {
             return pause;
         }
 
@@ -74,14 +76,16 @@ namespace UnityExplorer.UI.Widgets
         {
             if (float.TryParse(val, out float f))
             {
-                if (f < slider.minValue){
+                if (f < slider.minValue)
+                {
                     ExplorerCore.LogWarning("Error, new time scale value outside of margins.");
                     timeInput.Text = desiredTime.ToString("0.00");
                     return;
                 }
 
                 // Allow registering timescale values above the slider max value
-                if (f >= slider.maxValue) {
+                if (f >= slider.maxValue)
+                {
                     // Move the slider to the right
                     slider.value = slider.maxValue;
 
@@ -89,7 +93,8 @@ namespace UnityExplorer.UI.Widgets
                     pause = false;
                     previousDesiredTime = desiredTime;
                 }
-                else {
+                else
+                {
                     slider.value = f; // Will update the desiredTime value and extra things
                 }
 
@@ -99,16 +104,19 @@ namespace UnityExplorer.UI.Widgets
 
         void OnOverrideValueChanged(bool value)
         {
-            if (!pressedPauseHotkey){
+            if (!pressedPauseHotkey)
+            {
                 previousOverride = overrideTimeScaleToggle.isOn;
                 // If the game was paused we consider this an unpause
                 if (pause) pause = false;
             }
 
-            if (value){
+            if (value)
+            {
                 SetTimeScale(desiredTime);
             }
-            else {
+            else
+            {
                 // We assume the vanilla game speed was 1f before editing it
                 SetTimeScale(1f);
             }
@@ -134,11 +142,13 @@ namespace UnityExplorer.UI.Widgets
             desiredTime = 1;
             previousDesiredTime = 1;
 
-            slider.onValueChanged.AddListener((newTimeScale) => {
+            slider.onValueChanged.AddListener((newTimeScale) =>
+            {
                 desiredTime = newTimeScale;
                 timeInput.Text = desiredTime.ToString("0.00");
-                
-                if (!pressedPauseHotkey){
+
+                if (!pressedPauseHotkey)
+                {
                     pause = false;
                     // Don't save 0 as a previous desired time, it might not do anything when unpausing
                     if (desiredTime != 0) previousDesiredTime = desiredTime;

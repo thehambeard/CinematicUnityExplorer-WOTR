@@ -1,10 +1,6 @@
-﻿using HarmonyLib;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using UnityEngine;
 
 namespace UniverseLib.Runtime
@@ -31,7 +27,7 @@ namespace UniverseLib.Runtime
         /// <summary>
         /// Helper for invoking Unity's <c>ImageConversion.EncodeToPNG</c> method.
         /// </summary>
-        public static byte[] EncodeToPNG(Texture2D tex) 
+        public static byte[] EncodeToPNG(Texture2D tex)
             => Instance.Internal_EncodeToPNG(tex);
 
         protected internal abstract byte[] Internal_EncodeToPNG(Texture2D tex);
@@ -47,7 +43,7 @@ namespace UniverseLib.Runtime
         /// </summary>
         public static Texture2D NewTexture2D(int width, int height, TextureFormat textureFormat, bool mipChain)
             => Instance.Internal_NewTexture2D(width, height, textureFormat, mipChain);
-        
+
         protected internal abstract Texture2D Internal_NewTexture2D(int width, int height);
         protected internal abstract Texture2D Internal_NewTexture2D(int width, int height, TextureFormat textureFormat, bool mipChain);
 
@@ -64,7 +60,7 @@ namespace UniverseLib.Runtime
         /// </summary>
         public static Sprite CreateSprite(Texture2D texture)
             => Instance.Internal_CreateSprite(texture);
-        
+
         protected internal abstract Sprite Internal_CreateSprite(Texture2D texture);
 
         /// <summary>
@@ -72,8 +68,8 @@ namespace UniverseLib.Runtime
         /// </summary>
         public static void CreateSprite(Texture2D texture, Rect rect, Vector2 pivot, float pixelsPerUnit, uint extrude, Vector4 border)
             => Instance.Internal_CreateSprite(texture, rect, pivot, pixelsPerUnit, extrude, border);
-        
-        protected internal abstract Sprite Internal_CreateSprite(Texture2D texture, Rect rect, Vector2 pivot, float pixelsPerUnit, 
+
+        protected internal abstract Sprite Internal_CreateSprite(Texture2D texture, Rect rect, Vector2 pivot, float pixelsPerUnit,
             uint extrude, Vector4 border);
 
         /// <summary>
@@ -145,7 +141,7 @@ namespace UniverseLib.Runtime
         /// <param name="dstX">Optional destination starting X value.</param>
         /// <param name="dstY">Optional destination starting Y value.</param>
         /// <returns>The <paramref name="destination"/> Texture, copied from the <paramref name="source"/>.</returns>
-        public static Texture2D CopyTexture(Texture source, Texture2D destination, 
+        public static Texture2D CopyTexture(Texture source, Texture2D destination,
             Rect dimensions = default, int cubemapFace = 0, int dstX = 0, int dstY = 0)
         {
             try
@@ -173,7 +169,7 @@ namespace UniverseLib.Runtime
             }
         }
 
-        internal abstract Texture Internal_CopyTexture(Texture src, int srcElement, int srcMip, int srcX, int srcY, 
+        internal abstract Texture Internal_CopyTexture(Texture src, int srcElement, int srcMip, int srcX, int srcY,
             int srcWidth, int srcHeight, Texture dst, int dstElement, int dstMip, int dstX, int dstY);
 
         /// <summary>
@@ -279,7 +275,7 @@ namespace UniverseLib.Runtime
             => Copy(origTex, dimensions);
 
         [Obsolete("Use TextureHelper.CopyTexture() instead. This method will be removed in a future version of UniverseLib.")]
-        public static Texture2D Copy(Texture2D orig) 
+        public static Texture2D Copy(Texture2D orig)
             => Copy(orig, new(0, 0, orig.width, orig.height));
 
         [Obsolete("Use TextureHelper.CopyTexture() instead. This method will be removed in a future version of UniverseLib.")]

@@ -1,7 +1,5 @@
-﻿using UniverseLib.Input;
-using UniverseLib.UI;
+﻿using UniverseLib.UI;
 using UniverseLib.UI.Models;
-using UniverseLib.UI.Widgets;
 using UniverseLib.UI.Widgets.ScrollView;
 #if UNHOLLOWER
 using UnhollowerRuntimeLib;
@@ -10,8 +8,6 @@ using UnhollowerRuntimeLib;
 using Il2CppInterop.Runtime.Injection;
 #endif
 
-using UnityEngine.Rendering;
-using UnityEngine;
 
 namespace UnityExplorer.UI.Panels
 {
@@ -58,7 +54,8 @@ namespace UnityExplorer.UI.Panels
 
         public void OnCellBorrowed(LightCell cell) { }
 
-        public void SetCell(LightCell cell, int index){
+        public void SetCell(LightCell cell, int index)
+        {
             if (index >= CreatedLights.Count)
             {
                 cell.Disable();
@@ -68,10 +65,12 @@ namespace UnityExplorer.UI.Panels
             GameObject light = CreatedLights[index];
 
             // Check if the light was deleted because we switched scenes, and delete it from the list if that's the case
-            try {
+            try
+            {
                 string check = light.name;
             }
-            catch {
+            catch
+            {
                 ExplorerCore.LogWarning("Light was deleted by the game!");
                 CreatedLights.RemoveAt(index);
                 lightsScrollPool.Refresh(true, false);
@@ -116,25 +115,29 @@ namespace UnityExplorer.UI.Panels
             UIFactory.SetLayoutElement(scrollObj, flexibleWidth: 9999, flexibleHeight: 9999);
         }
 
-        private void ToggleGameLights(bool areLightsActive){
+        private void ToggleGameLights(bool areLightsActive)
+        {
             //Update the list of game lights
-            if (!areLightsActive){
+            if (!areLightsActive)
+            {
                 var gameLights = RuntimeHelper.FindObjectsOfTypeAll<UnityEngine.Light>().Where(l => l.enabled);
 
                 //ExplorerCore.LogWarning($"Found ligths: {gameLights.Length}");
 
-                foreach(UnityEngine.Light light in gameLights)
-                {   
+                foreach (UnityEngine.Light light in gameLights)
+                {
                     //We want to avoid grabbing our own lights
-                    if(!light.name.Contains("CUE - Light")){
+                    if (!light.name.Contains("CUE - Light"))
+                    {
                         vanillaGameLights.Add(light);
                         light.enabled = false;
                     }
                 }
             }
-            else{
-                foreach(UnityEngine.Light light in vanillaGameLights)
-                {   
+            else
+            {
+                foreach (UnityEngine.Light light in vanillaGameLights)
+                {
                     // In case the light was destroyed
                     if (light != null) light.enabled = true;
                 }
@@ -142,7 +145,8 @@ namespace UnityExplorer.UI.Panels
             }
         }
 
-        private void CreateLight(LightType requestedType){
+        private void CreateLight(LightType requestedType)
+        {
             GameObject obj = new($"CUE - Light {lightCounter}");
             GameObject.DontDestroyOnLoad(obj);
             obj.hideFlags = HideFlags.HideAndDontSave;
@@ -155,7 +159,8 @@ namespace UnityExplorer.UI.Panels
             PropertyInfo shadowResolution = typeof(Light).GetProperty("shadowCustomResolution");
             shadowResolution.SetValue(lightComponent, 5000, null);
 
-            switch(requestedType){
+            switch (requestedType)
+            {
                 case LightType.Spot:
                     lightComponent.range = 10;
                     GameObject arrow = ArrowGenerator.CreateArrow(Vector3.zero, Quaternion.identity, lightComponent.color);

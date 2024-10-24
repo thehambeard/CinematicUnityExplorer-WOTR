@@ -1,5 +1,4 @@
 ﻿using UnityExplorer.CacheObject;
-using UnityExplorer.ObjectExplorer;
 using UnityExplorer.Inspectors;
 using UniverseLib.UI;
 using UniverseLib.UI.Models;
@@ -28,7 +27,7 @@ namespace UnityExplorer.UI.Panels
         public override bool NavButtonWanted => true;
         public override bool ShouldSaveActiveState => true;
 
-        public static Dictionary<string,List<PPEffect>> postProcessingEffects = null;
+        public static Dictionary<string, List<PPEffect>> postProcessingEffects = null;
         static ButtonRef updateEffects;
         List<GameObject> UIElements = new List<GameObject>();
         public bool foundAnyEffect;
@@ -42,17 +41,20 @@ namespace UnityExplorer.UI.Panels
                 ReflectionInspector inspector = Pool<ReflectionInspector>.Borrow();
                 inspector.Target = obj.TryCast();
                 //ReflectionInspector inspector = InspectorManager.CreateInspectorWithoutWindow<ReflectionInspector>(obj.TryCast(), false, null);//Pool<ReflectionInspector>.Borrow();//
-                
+
                 Type objType = obj is Type type ? type : obj.GetActualType();
                 List<CacheMember> members = CacheMemberFactory.GetCacheMembers(objType, inspector);
-                
-                foreach (CacheMember member in members){
-                    if (member.NameForFiltering.EndsWith(".active")){
+
+                foreach (CacheMember member in members)
+                {
+                    if (member.NameForFiltering.EndsWith(".active"))
+                    {
                         member.Evaluate();
                         Active = member;
                     }
 
-                    if (member.NameForFiltering.EndsWith(".name")){
+                    if (member.NameForFiltering.EndsWith(".name"))
+                    {
                         member.Evaluate();
                         Name = member;
                     }
@@ -66,18 +68,21 @@ namespace UnityExplorer.UI.Panels
             public override string ToString() => $"{Object}";
         }
 
-        public void UpdatePPElements(){
+        public void UpdatePPElements()
+        {
             foundAnyEffect = false;
 
-            if(postProcessingEffects != null){
+            if (postProcessingEffects != null)
+            {
                 // We turn the effects we had back on so they get captured again on refresh
-                foreach (List<PPEffect> effects in postProcessingEffects.Values){
+                foreach (List<PPEffect> effects in postProcessingEffects.Values)
+                {
                     SetEffect(true, effects);
                 }
                 postProcessingEffects.Clear();
             }
 
-            postProcessingEffects = new Dictionary<string,List<PPEffect>>();
+            postProcessingEffects = new Dictionary<string, List<PPEffect>>();
 
             string[] universalClassEffects = {
                 "Vignette",
@@ -98,12 +103,14 @@ namespace UnityExplorer.UI.Panels
                 "SplitToning"
             };
 
-            foreach (string effect in universalClassEffects){
-                try {
+            foreach (string effect in universalClassEffects)
+            {
+                try
+                {
                     AddEffect("UnityEngine.Rendering.Universal", effect);
                 }
-                catch {}
-                
+                catch { }
+
             }
 
             string[] postProcessingClassEffects = {
@@ -120,11 +127,13 @@ namespace UnityExplorer.UI.Panels
                 "ScreenSpaceReflections"
             };
 
-            foreach (string effect in postProcessingClassEffects){
-                try {
+            foreach (string effect in postProcessingClassEffects)
+            {
+                try
+                {
                     AddEffect("UnityEngine.Rendering.PostProcessing", effect);
                 }
-                catch {}
+                catch { }
             }
 
             string[] highDefinitionClassEffects = {
@@ -141,11 +150,13 @@ namespace UnityExplorer.UI.Panels
                 "ScreenSpaceReflections"
             };
 
-            foreach (string effect in highDefinitionClassEffects){
-                try {
+            foreach (string effect in highDefinitionClassEffects)
+            {
+                try
+                {
                     AddEffect("UnityEngine.Rendering.HighDefinition", effect);
                 }
-                catch {}
+                catch { }
             }
 
             string[] volumeClassEffects = {
@@ -162,32 +173,40 @@ namespace UnityExplorer.UI.Panels
                 "ScreenSpaceReflections"
             };
 
-            foreach (string effect in volumeClassEffects){
-                try {
+            foreach (string effect in volumeClassEffects)
+            {
+                try
+                {
                     AddEffect("UnityEngine.Rendering.Volume", effect);
                 }
-                catch {}
+                catch { }
             }
 
-            if (!foundAnyEffect){
+            if (!foundAnyEffect)
+            {
                 ExplorerCore.Log("Couldn't find any standard post-processing effect classes.");
             }
 
             BuildEffectTogglers();
         }
 
-        private void AddEffect(string baseClass, string effect){
-            try {
+        private void AddEffect(string baseClass, string effect)
+        {
+            try
+            {
                 Type searchType = ReflectionUtility.GetTypeByName($"{baseClass}.{effect}");
                 searchType = searchType is Type type ? type : searchType.GetActualType();
-                List<object> currentResults = RuntimeHelper.FindObjectsOfTypeAll(searchType).Select(obj => (object) obj).ToList();
+                List<object> currentResults = RuntimeHelper.FindObjectsOfTypeAll(searchType).Select(obj => (object)obj).ToList();
 
-                foreach (object obj in currentResults){
+                foreach (object obj in currentResults)
+                {
                     PPEffect entry = new PPEffect(obj);
-                    
+
                     // Ignore non-active objects and objects without a name, since those tend to be irrelevant
-                    if ((bool) entry.Active.Value && entry.Name.Value.ToString() != ""){
-                        if (!postProcessingEffects.ContainsKey(effect)){
+                    if ((bool)entry.Active.Value && entry.Name.Value.ToString() != "")
+                    {
+                        if (!postProcessingEffects.ContainsKey(effect))
+                        {
                             postProcessingEffects.Add(effect, new List<PPEffect>());
                         }
 
@@ -197,19 +216,24 @@ namespace UnityExplorer.UI.Panels
 
                 foundAnyEffect = true;
             }
-            catch {
+            catch
+            {
                 // ExplorerCore.Log($"Couldn't find {baseClass}.{effect}");
             }
         }
 
-        private void SetEffect(bool value, List<PPEffect> effects){
-            foreach (PPEffect obj in effects){
+        private void SetEffect(bool value, List<PPEffect> effects)
+        {
+            foreach (PPEffect obj in effects)
+            {
                 obj.Active.TrySetUserValue(value);
             }
         }
 
-        private void BuildEffectTogglers(){
-            foreach (var comp in UIElements){
+        private void BuildEffectTogglers()
+        {
+            foreach (var comp in UIElements)
+            {
                 UnityEngine.Object.Destroy(comp);
                 //UIElements.Remove(comp);
             }
@@ -234,7 +258,8 @@ namespace UnityExplorer.UI.Panels
                 UIFactory.SetLayoutElement(buttonsGroup, minHeight: 25, flexibleWidth: 9999);
                 UIElements.Add(buttonsGroup);
 
-                for (int i = 0; i < postProcessingEffects[effect].Count; i++){
+                for (int i = 0; i < postProcessingEffects[effect].Count; i++)
+                {
                     PPEffect obj = postProcessingEffects[effect][i];
 
                     ButtonRef openEffect = UIFactory.CreateButton(buttonsGroup, $"Inspect {obj.Object}", $"Obj{i}");

@@ -82,7 +82,7 @@ namespace UnityExplorer.UI.Widgets
             if (this.unityObject)
             {
                 nameInput.Text = unityObject.name;
-                
+
                 owner.Tab.TabText.text = $"{owner.TabButtonText} \"{unityObject.name}\"";
             }
         }

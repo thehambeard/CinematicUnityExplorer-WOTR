@@ -120,7 +120,8 @@ namespace UnityExplorer.UI.Widgets
             UIFactory.SetLayoutElement(control.IncrementInput.GameObject, minWidth: 30, flexibleWidth: 0, minHeight: 25);
             control.IncrementInput.Component.GetOnEndEdit().AddListener(control.IncrementInput_OnEndEdit);
 
-            if (type == TransformType.Scale){
+            if (type == TransformType.Scale)
+            {
                 GameObject extraRowObj = UIFactory.CreateUIObject($"Row_UniformScale", transformGroup);
                 UIFactory.SetLayoutGroup<HorizontalLayoutGroup>(extraRowObj, false, false, true, true, 5, 0, 0, 0, 0, default);
                 UIFactory.SetLayoutElement(extraRowObj, minHeight: 25, flexibleWidth: 9999);

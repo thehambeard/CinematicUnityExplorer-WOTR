@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using UniverseLib.UI;
+﻿using UniverseLib.UI;
 using UniverseLib.UI.Models;
 using UniverseLib.UI.Widgets.ScrollView;
 
@@ -32,7 +31,8 @@ namespace UnityExplorer.UI.Panels
 
             ButtonRef moveToCameraButton = UIFactory.CreateButton(UIRoot, "Copy Camera pos and rot", "Copy Camera pos and rot");
             UIFactory.SetLayoutElement(moveToCameraButton.GameObject, minWidth: 130, minHeight: 25, flexibleWidth: 9999);
-            moveToCameraButton.OnClick += () => {
+            moveToCameraButton.OnClick += () =>
+            {
                 point.rotation = FreeCamPanel.GetCameraRotation();
                 point.position = FreeCamPanel.GetCameraPosition();
                 GetCamPathsPanel().controlPoints[index] = point;
@@ -42,14 +42,16 @@ namespace UnityExplorer.UI.Panels
 
             ButtonRef copyFovButton = UIFactory.CreateButton(UIRoot, "Copy Camera FoV", "Copy Camera FoV");
             UIFactory.SetLayoutElement(copyFovButton.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
-            copyFovButton.OnClick += () => {
+            copyFovButton.OnClick += () =>
+            {
                 point.fov = FreeCamPanel.ourCamera.fieldOfView;
                 GetCamPathsPanel().controlPoints[index] = point;
             };
 
             ButtonRef moveToPointButton = UIFactory.CreateButton(UIRoot, "Move Cam to Node", "Move Cam to Node");
             UIFactory.SetLayoutElement(moveToPointButton.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 9999);
-            moveToPointButton.OnClick += () => {
+            moveToPointButton.OnClick += () =>
+            {
                 FreeCamPanel.SetCameraRotation(point.rotation);
                 FreeCamPanel.SetCameraPosition(point.position);
                 FreeCamPanel.ourCamera.fieldOfView = point.fov;
@@ -57,9 +59,11 @@ namespace UnityExplorer.UI.Panels
 
             ButtonRef moveUpButton = UIFactory.CreateButton(UIRoot, "MoveUp", "▲");
             UIFactory.SetLayoutElement(moveUpButton.GameObject, minWidth: 25, minHeight: 25, flexibleWidth: 0);
-            moveUpButton.OnClick += () => {
+            moveUpButton.OnClick += () =>
+            {
                 int pointIndex = GetCamPathsPanel().controlPoints.IndexOf(point);
-                if (pointIndex != 0){
+                if (pointIndex != 0)
+                {
                     CatmullRom.CatmullRomPoint temporalPoint = GetCamPathsPanel().controlPoints[pointIndex - 1];
                     GetCamPathsPanel().controlPoints[pointIndex - 1] = point;
                     GetCamPathsPanel().controlPoints[pointIndex] = temporalPoint;
@@ -70,9 +74,11 @@ namespace UnityExplorer.UI.Panels
 
             ButtonRef moveDownButton = UIFactory.CreateButton(UIRoot, "MoveDown", "▼");
             UIFactory.SetLayoutElement(moveDownButton.GameObject, minWidth: 25, minHeight: 25, flexibleWidth: 0);
-            moveDownButton.OnClick += () => {
+            moveDownButton.OnClick += () =>
+            {
                 int pointIndex = GetCamPathsPanel().controlPoints.IndexOf(point);
-                if (pointIndex != GetCamPathsPanel().controlPoints.Count - 1){
+                if (pointIndex != GetCamPathsPanel().controlPoints.Count - 1)
+                {
                     CatmullRom.CatmullRomPoint temporalPoint = GetCamPathsPanel().controlPoints[pointIndex + 1];
                     GetCamPathsPanel().controlPoints[pointIndex + 1] = point;
                     GetCamPathsPanel().controlPoints[pointIndex] = temporalPoint;
@@ -83,7 +89,8 @@ namespace UnityExplorer.UI.Panels
 
             ButtonRef destroyButton = UIFactory.CreateButton(UIRoot, "Delete", "Delete");
             UIFactory.SetLayoutElement(destroyButton.GameObject, minWidth: 30, minHeight: 25, flexibleWidth: 9999);
-            destroyButton.OnClick += () => {
+            destroyButton.OnClick += () =>
+            {
                 GetCamPathsPanel().controlPoints.Remove(point);
                 GetCamPathsPanel().nodesScrollPool.Refresh(true, false);
                 GetCamPathsPanel().MaybeRedrawPath();
@@ -92,7 +99,8 @@ namespace UnityExplorer.UI.Panels
             return UIRoot;
         }
 
-        public UnityExplorer.UI.Panels.CamPaths GetCamPathsPanel(){
+        public UnityExplorer.UI.Panels.CamPaths GetCamPathsPanel()
+        {
             return UIManager.GetPanel<UnityExplorer.UI.Panels.CamPaths>(UIManager.Panels.CamPaths);
         }
     }

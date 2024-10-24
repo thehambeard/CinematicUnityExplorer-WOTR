@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -73,7 +72,7 @@ namespace UniverseLib.UI.Models
         /// A reference to the InputField's cachedInputTextGenerator.
         /// </summary>
         public TextGenerator TextGenerator => Component.cachedInputTextGenerator;
-        
+
         /// <summary>
         /// Returns true if the InputField's vertex count has reached the <see cref="UniversalUI.MAX_TEXT_VERTS"/> limit.
         /// </summary>

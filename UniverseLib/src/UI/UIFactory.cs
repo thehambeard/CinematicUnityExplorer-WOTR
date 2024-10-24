@@ -1,8 +1,6 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
-using UniverseLib.Runtime;
 using UniverseLib.UI.Models;
 using UniverseLib.UI.Panels;
 using UniverseLib.UI.Widgets;
@@ -146,7 +144,7 @@ namespace UniverseLib.UI
 
             return group;
         }
-        
+
         #endregion
 
 
@@ -336,7 +334,7 @@ namespace UniverseLib.UI
 
             return new ButtonRef(button);
         }
-        
+
         // Automatically deselect buttons when clicked.
         internal static void SetButtonDeselectListener(Button button)
         {
@@ -456,12 +454,12 @@ namespace UniverseLib.UI
         /// <param name="checkWidth">The width of your checkbox</param>
         /// <param name="checkHeight">The height of your checkbox</param>
         /// <returns>The root GameObject for your Toggle control</returns>
-        public static GameObject CreateToggle(GameObject parent, string name, out Toggle toggle, out Text text, Color bgColor = default, 
+        public static GameObject CreateToggle(GameObject parent, string name, out Toggle toggle, out Text text, Color bgColor = default,
             int checkWidth = 20, int checkHeight = 20)
         {
             // Main obj
             GameObject toggleObj = CreateUIObject(name, parent, smallElementSize);
-            SetLayoutGroup<HorizontalLayoutGroup>(toggleObj, false, false, true, true, 5, 0,0,0,0, childAlignment: TextAnchor.MiddleLeft);
+            SetLayoutGroup<HorizontalLayoutGroup>(toggleObj, false, false, true, true, 5, 0, 0, 0, 0, childAlignment: TextAnchor.MiddleLeft);
             toggle = toggleObj.AddComponent<Toggle>();
             toggle.isOn = true;
             SetDefaultSelectableValues(toggle);

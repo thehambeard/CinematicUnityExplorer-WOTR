@@ -3,7 +3,6 @@ using HarmonyLib;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
@@ -11,7 +10,6 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using UniverseLib;
 
 namespace UniverseLib.Runtime.Mono
 {
@@ -23,7 +21,7 @@ namespace UniverseLib.Runtime.Mono
         }
 
         /// <inheritdoc/>
-        protected internal override Coroutine Internal_StartCoroutine(IEnumerator routine) 
+        protected internal override Coroutine Internal_StartCoroutine(IEnumerator routine)
             => UniversalBehaviour.Instance.StartCoroutine(routine);
 
         /// <inheritdoc/>
@@ -31,11 +29,11 @@ namespace UniverseLib.Runtime.Mono
             => UniversalBehaviour.Instance.StopCoroutine(coroutine);
 
         /// <inheritdoc/>
-        protected internal override T Internal_AddComponent<T>(GameObject obj, Type type) 
+        protected internal override T Internal_AddComponent<T>(GameObject obj, Type type)
             => (T)obj.AddComponent(type);
 
         /// <inheritdoc/>
-        protected internal override ScriptableObject Internal_CreateScriptable(Type type) 
+        protected internal override ScriptableObject Internal_CreateScriptable(Type type)
             => ScriptableObject.CreateInstance(type);
 
         /// <inheritdoc/>
@@ -43,22 +41,22 @@ namespace UniverseLib.Runtime.Mono
             => raycaster.Raycast(data, list);
 
         /// <inheritdoc/>
-        protected internal override string Internal_LayerToName(int layer) 
+        protected internal override string Internal_LayerToName(int layer)
             => LayerMask.LayerToName(layer);
 
         /// <inheritdoc/>
-        protected internal override UnityEngine.Object[] Internal_FindObjectsOfTypeAll(Type type) 
+        protected internal override UnityEngine.Object[] Internal_FindObjectsOfTypeAll(Type type)
             => Resources.FindObjectsOfTypeAll(type);
 
         protected internal override T[] Internal_FindObjectsOfTypeAll<T>()
             => Resources.FindObjectsOfTypeAll<T>();
 
         /// <inheritdoc/>
-        protected internal override GameObject[] Internal_GetRootGameObjects(Scene scene) 
+        protected internal override GameObject[] Internal_GetRootGameObjects(Scene scene)
             => scene.isLoaded ? scene.GetRootGameObjects() : new GameObject[0];
 
         /// <inheritdoc/>
-        protected internal override int Internal_GetRootCount(Scene scene) 
+        protected internal override int Internal_GetRootCount(Scene scene)
             => scene.rootCount;
 
         /// <inheritdoc/>
@@ -106,7 +104,7 @@ public static class MonoExtensions
 
     // Doesn't exist in NET 3.5
 
-    public static void Clear(this StringBuilder sb) 
+    public static void Clear(this StringBuilder sb)
         => sb.Remove(0, sb.Length);
 
     // These properties don't exist in some earlier games, so null check before trying to set them.

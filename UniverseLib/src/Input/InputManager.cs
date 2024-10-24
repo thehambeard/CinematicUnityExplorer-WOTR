@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UniverseLib.UI;
 
 namespace UniverseLib.Input
@@ -46,7 +44,7 @@ namespace UniverseLib.Input
                         ReflectionUtility.CacheTypes(asm);
                         break;
                     }
-                } 
+                }
             }
 
             if (LegacyInput.TInput != null)
@@ -62,7 +60,7 @@ namespace UniverseLib.Input
                     Universe.Log("Initialized Legacy Input support");
                     return;
                 }
-                catch 
+                catch
                 {
                     // It's not working, we'll fall back to InputSystem.
                 }
@@ -229,7 +227,7 @@ namespace UniverseLib.Input
         /// <summary>
         /// Whether anything is currently using the Rebinding feature. If no UI is showing, this will return false.
         /// </summary>
-        public static bool Rebinding 
+        public static bool Rebinding
         {
             get => isRebinding && UniversalUI.AnyUIShowing;
             set => isRebinding = value;

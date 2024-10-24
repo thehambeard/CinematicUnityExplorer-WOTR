@@ -75,8 +75,8 @@ namespace UnityExplorer.UI.Panels
             // Config entries
 
             ScrollPool<ConfigEntryCell> scrollPool = UIFactory.CreateScrollPool<ConfigEntryCell>(
-                this.ContentRoot, 
-                "ConfigEntries", 
+                this.ContentRoot,
+                "ConfigEntries",
                 out GameObject scrollObj,
                 out GameObject scrollContent);
 

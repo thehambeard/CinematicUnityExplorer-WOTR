@@ -410,7 +410,7 @@ namespace UnityExplorer.Inspectors
 
             // Class name, assembly
 
-            GameObject topRow = UIFactory.CreateHorizontalGroup(UIRoot, "TopRow", false, false, true, true, 4, default, 
+            GameObject topRow = UIFactory.CreateHorizontalGroup(UIRoot, "TopRow", false, false, true, true, 4, default,
                 new(0.1f, 0.1f, 0.1f), TextAnchor.MiddleLeft);
             UIFactory.SetLayoutElement(topRow, minHeight: 25, flexibleWidth: 9999);
 

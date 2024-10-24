@@ -186,7 +186,7 @@ namespace UnityExplorer.Inspectors
             compInstanceIDs.Clear();
             foreach (Component comp in comps)
             {
-                if (!comp) 
+                if (!comp)
                     continue;
                 componentEntries.Add(comp);
                 compInstanceIDs.Add(comp.GetInstanceID());
@@ -196,7 +196,7 @@ namespace UnityExplorer.Inspectors
             behaviourEnabledStates.Clear();
             foreach (Behaviour behaviour in behaviours)
             {
-                if (!behaviour) 
+                if (!behaviour)
                     continue;
 
                 // Don't ask me how, but in some games this can be true for certain components.

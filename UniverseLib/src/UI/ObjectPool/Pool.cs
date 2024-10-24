@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace UniverseLib.UI.ObjectPool
@@ -113,7 +112,7 @@ namespace UniverseLib.UI.ObjectPool
             DefaultHeight = obj.DefaultHeight;
         }
 
-        protected override IPooledObject DoBorrow() 
+        protected override IPooledObject DoBorrow()
             => BorrowObject();
 
         /// <summary>

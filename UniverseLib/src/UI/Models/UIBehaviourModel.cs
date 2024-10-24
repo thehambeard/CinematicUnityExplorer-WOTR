@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using UnityEngine;
 
 namespace UniverseLib.UI.Models
 {
@@ -38,7 +36,7 @@ namespace UniverseLib.UI.Models
                 Universe.Log(ex);
             }
         }
-        
+
         // Instance
 
         public UIBehaviourModel()

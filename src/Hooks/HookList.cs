@@ -9,7 +9,7 @@ namespace UnityExplorer.Hooks
     public class HookList : ICellPoolDataSource<HookCell>
     {
         public int ItemCount => currentHooks.Count;
-        
+
         internal static readonly HashSet<string> hookedSignatures = new();
         internal static readonly OrderedDictionary currentHooks = new();
 
