@@ -19,7 +19,7 @@ namespace UniverseLib.Input
 
         public static void Setup()
         {
-            currentInputType = InputManager.CurrentType;
+            currentInputType = InputType.InputSystem;
 
             switch (currentInputType)
             {

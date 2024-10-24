@@ -118,8 +118,8 @@ namespace CinematicUnityExplorer.Cinematic
 
         public UnityIGCSConnector()
         {
-            //var libraryName = IntPtr.Size == 8 ? @"UnityIGCSConnector.dll" : @"UnityIGCSConnector.32.dll";
-            var libraryName = UnityEngine.Application.dataPath
+            var libraryName = IntPtr.Size == 8 ? @"UnityIGCSConnector.dll" : @"UnityIGCSConnector.32.dll";
+            //var libraryName = UnityEngine.Application.dataPath
             var lib = NativeMethods.LoadLibrary(libraryName);
             if (lib == IntPtr.Zero)
             {

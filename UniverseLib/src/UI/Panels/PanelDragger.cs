@@ -282,7 +282,7 @@ namespace UniverseLib.UI.Panels
                 if (PCCursor.Instance == null)
                 {
                     Texture2D cursorTexture = BlueprintRoot.Instance.Cursors.GetCursorTexture(GetCursor(resizeType));
-                    Cursor.SetCursor(cursorTexture, new Vector2(32f, 32f), CursorMode.Auto);
+                    Cursor.SetCursor(cursorTexture, new Vector2(0f, 0f), CursorMode.Auto);
                 }
                 else
                 {
@@ -336,7 +336,7 @@ namespace UniverseLib.UI.Panels
                 if (PCCursor.Instance == null)
                 {
                     Texture2D cursorTexture = BlueprintRoot.Instance.Cursors.GetCursorTexture(CursorType.DefaultCursor);
-                    Cursor.SetCursor(cursorTexture, new Vector2(32f, 32f), CursorMode.Auto);
+                    Cursor.SetCursor(cursorTexture, new Vector2(0f, 0f), CursorMode.Auto);
                 }
                 else
                 {
