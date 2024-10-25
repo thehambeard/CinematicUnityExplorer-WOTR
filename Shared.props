@@ -1,0 +1,13 @@
+<Project xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+	<PropertyGroup>
+		<Version>1.0.0</Version>
+		<TargetFramework>net481</TargetFramework>
+		<DefineConstants>MONO,STANDALONE</DefineConstants>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<AnalysisLevel>preview</AnalysisLevel>
+		<OutputType>Library</OutputType>
+		<LangVersion>latest</LangVersion>
+		<WrathData>$(LocalAppData)Low\Owlcat Games\Pathfinder Wrath Of The Righteous</WrathData>
+	</PropertyGroup>
+</Project>
