@@ -16,7 +16,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- Mono CSharp Compiler. Build based on the now legacy Mono; I didn't find any Package for it; The only way to get it would be to manually rebuild Mono... -->
+		<!-- Mono CSharp Compiler. From the now legacy Mono project; I didn't find any Package for it; The only way to get it would be to manually rebuild Mono... -->
 		<Reference Include="$(SolutionDir)lib\mcs.dll" Private="true" />
 		<Reference Include="$(SolutionDir)lib\UniverseLib.dll" Private="false" />
 		<Reference Include="$(WrathInstallDir)\Wrath_Data\Managed\Unity*.dll" Private="false" Publicize="True" />
