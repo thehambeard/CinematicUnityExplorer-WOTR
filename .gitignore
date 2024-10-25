@@ -16,6 +16,8 @@
 # Mono auto generated files
 mono_crash.*
 
+GamePath.props
+[Ll]ib/UniverseLib*
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
