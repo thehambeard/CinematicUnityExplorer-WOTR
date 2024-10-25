@@ -30,9 +30,7 @@ namespace UniverseLib
         }
 
         public const string NAME = "UniverseLib";
-        public const string VERSION = "1.5.5";
-        public const string AUTHOR = "Sinai, yukieiji";
-        public const string GUID = "com.sinai.universelib";
+        public const string GUID = "UniverseLib";
 
         /// <summary>The current runtime context (Mono or IL2CPP).</summary>
         public static RuntimeContext Context { get; } =
@@ -93,7 +91,7 @@ namespace UniverseLib
             if (CurrentGlobalState == GlobalState.WaitingToSetup)
             {
                 CurrentGlobalState = GlobalState.SettingUp;
-                Log($"{NAME} {VERSION} initializing...");
+                Log($"{NAME} initializing...");
 
                 // Run immediate setups which don't require any delay
                 UniversalBehaviour.Setup();
@@ -127,7 +125,7 @@ namespace UniverseLib
             InputManager.Init();
             UniversalUI.Init();
 
-            Log($"{NAME} {VERSION} initialized.");
+            Log($"{NAME} initialized.");
             CurrentGlobalState = GlobalState.SetupCompleted;
 
             InvokeOnInitialized(OnInitialized);
