@@ -3,21 +3,11 @@ using UnityExplorer.Inspectors;
 using UniverseLib.UI;
 using UniverseLib.UI.Models;
 using UniverseLib.UI.ObjectPool;
-#if UNHOLLOWER
-using UnhollowerRuntimeLib;
-#endif
-#if INTEROP
-using Il2CppInterop.Runtime.Injection;
-#endif
 
 namespace UnityExplorer.UI.Panels
 {
-    internal class PostProcessingPanel : UEPanel
+    internal class PostProcessingPanel(UIBase owner) : UEPanel(owner)
     {
-        public PostProcessingPanel(UIBase owner) : base(owner)
-        {
-        }
-
         public override string Name => "Post-processing";
         public override UIManager.Panels PanelType => UIManager.Panels.PostProcessingPanel;
         public override int MinWidth => 500;
@@ -26,11 +16,12 @@ namespace UnityExplorer.UI.Panels
         public override Vector2 DefaultAnchorMax => new(0.6f, 0.6f);
         public override bool NavButtonWanted => true;
         public override bool ShouldSaveActiveState => true;
+        public static bool FoundAnyEffect => postProcessingEffects != null && postProcessingEffects.Count > 0;
 
         public static Dictionary<string, List<PPEffect>> postProcessingEffects = null;
         static ButtonRef updateEffects;
         List<GameObject> UIElements = new List<GameObject>();
-        public bool foundAnyEffect;
+
 
         public class PPEffect
         {
@@ -70,8 +61,6 @@ namespace UnityExplorer.UI.Panels
 
         public void UpdatePPElements()
         {
-            foundAnyEffect = false;
-
             if (postProcessingEffects != null)
             {
                 // We turn the effects we had back on so they get captured again on refresh
@@ -84,105 +73,51 @@ namespace UnityExplorer.UI.Panels
 
             postProcessingEffects = new Dictionary<string, List<PPEffect>>();
 
-            string[] universalClassEffects = {
-                "Vignette",
-                "Bloom",
-                "ColorAdjustments",
-                "DepthOfField",
-                "ChromaticAberration",
-                "Tonemapping",
-                "FilmGrain",
-                "WhiteBalance",
-                "ShadowsMidtonesHighlights",
-                "MotionBlur",
-                "LiftGammaGain",
-                "LensDistortion",
-                "ScreenSpaceAmbientOcclusion",
-                "ChannelMixer",
-                "ColorCurves",
-                "SplitToning"
-            };
 
-            foreach (string effect in universalClassEffects)
+            try
             {
-                try
-                {
-                    AddEffect("UnityEngine.Rendering.Universal", effect);
-                }
-                catch { }
-
+                AddEffect("Owlcat.Runtime.Visual.RenderPipeline.PostProcess.HBAO", "Hbao");
             }
-
-            string[] postProcessingClassEffects = {
-                "Vignette",
-                "Bloom",
-                "Grain",
-                //"Fog",
-                "DepthOfField",
-                //"Tonemapper",
-                "LensDistortion",
-                "ChromaticAberration",
-                "AmbientOcclusion",
-                "AutoExposure",
-                "ScreenSpaceReflections"
-            };
-
-            foreach (string effect in postProcessingClassEffects)
-            {
-                try
-                {
-                    AddEffect("UnityEngine.Rendering.PostProcessing", effect);
-                }
-                catch { }
-            }
-
-            string[] highDefinitionClassEffects = {
-                "Vignette",
-                "Bloom",
-                "Grain",
-                "Fog",
-                "DepthOfField",
-                "Tonemapping",
-                "LensDistortion",
-                "ChromaticAberration",
-                "AmbientOcclusion",
-                "AutoExposure",
-                "ScreenSpaceReflections"
-            };
-
-            foreach (string effect in highDefinitionClassEffects)
-            {
-                try
-                {
-                    AddEffect("UnityEngine.Rendering.HighDefinition", effect);
-                }
-                catch { }
-            }
+            catch { }
 
             string[] volumeClassEffects = {
-                "Vignette",
                 "Bloom",
-                "Grain",
-                "Fog",
-                "DepthOfField",
-                "Tonemapping",
-                "LensDistortion",
+                "BloomEnhanced",
+                "ChannelMixer",
                 "ChromaticAberration",
-                "AmbientOcclusion",
-                "AutoExposure",
-                "ScreenSpaceReflections"
+                "ColorCurves",
+                "ColorLookup",
+                "Daltonization",
+                "DepthOfField",
+                "FilmGrain",
+                "LensDistortion",
+                "LiftGammaGain",
+                "MaskedColorTrqnsform",
+                "MotionBlur",
+                "PaniniProjection",
+                "RadialBlur",
+                "SaturationOverlay",
+                "ScreenSpaceCloudShadows",
+                "ScreenSpaceReflections",
+                "Sepia",
+                "ShadowsMidtonesHighlights",
+                "SlopePowerOffset",
+                "SplitToning",
+                "ToneMapping",
+                "Vignette",
+                "WhiteBalance"
             };
 
             foreach (string effect in volumeClassEffects)
             {
                 try
                 {
-                    AddEffect("UnityEngine.Rendering.Volume", effect);
+                    AddEffect("Owlcat.Runtime.Visual.RenderPipeline.PostProcess", effect);
                 }
                 catch { }
             }
 
-            if (!foundAnyEffect)
+            if (!FoundAnyEffect)
             {
                 ExplorerCore.Log("Couldn't find any standard post-processing effect classes.");
             }
@@ -195,6 +130,9 @@ namespace UnityExplorer.UI.Panels
             try
             {
                 Type searchType = ReflectionUtility.GetTypeByName($"{baseClass}.{effect}");
+
+                if (searchType == null) return;
+
                 searchType = searchType is Type type ? type : searchType.GetActualType();
                 List<object> currentResults = RuntimeHelper.FindObjectsOfTypeAll(searchType).Select(obj => (object)obj).ToList();
 
@@ -213,12 +151,10 @@ namespace UnityExplorer.UI.Panels
                         postProcessingEffects[effect].Add(entry);
                     }
                 }
-
-                foundAnyEffect = true;
             }
             catch
             {
-                // ExplorerCore.Log($"Couldn't find {baseClass}.{effect}");
+                // ExplorerCore.Log(ex.Message);
             }
         }
 
