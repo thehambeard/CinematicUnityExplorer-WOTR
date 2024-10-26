@@ -41,10 +41,13 @@ namespace UnityExplorer.UI
                 return;
             }
 
+            if (ActiveDisplayIndex != 0) SecondaryDisplayHelper.DeactivateAdditionalDisplay();
+
             ActiveDisplayIndex = display;
-            ActiveDisplay.Activate();
+            SecondaryDisplayHelper.ActivateAdditionalDisplay();
 
             UIManager.UICanvas.targetDisplay = display;
+
 
             // ensure a camera is targeting the display
             if (!Camera.main || Camera.main.targetDisplay != display)
