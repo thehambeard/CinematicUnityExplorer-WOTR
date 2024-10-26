@@ -7,7 +7,7 @@ using UnityEngine;
 namespace UnityExplorer.UI {
     public class SecondaryDisplayHelper {
         public static Dictionary<int, int> DisplayTohWnd = new();
-        public static HashSet<int> ActivatedDisplays = [0];
+        public static HashSet<int> PreviouslyActiatedDisplays = new();
         public enum ShowStates {
             Hide = 0,
             Normal = 1,
@@ -32,17 +32,19 @@ namespace UnityExplorer.UI {
         static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
         public static void DeactivateAdditionalDisplay() {
+            PreviouslyActiatedDisplays.Add(DisplayManager.ActiveDisplayIndex);
             var hWnd = FindWindow(null, "Unity Secondary Display").ToInt32();
-            DisplayTohWnd[DisplayManager.ActiveDisplayIndex] = hWnd;
-            ShowWindowAsync(hWnd, SW_HIDE);
+            if (hWnd != 0) {
+                DisplayTohWnd[DisplayManager.ActiveDisplayIndex] = hWnd;
+                ShowWindowAsync(hWnd, SW_HIDE);
+            }
         }
         public static void ActivateAdditionalDisplay() {
-            if (ActivatedDisplays.Contains(DisplayManager.ActiveDisplayIndex)) {
+            if (PreviouslyActiatedDisplays.Contains(DisplayManager.ActiveDisplayIndex)) {
                 if (DisplayTohWnd.TryGetValue(DisplayManager.ActiveDisplayIndex, out var hWnd)) {
                     ShowWindowAsync(hWnd, SW_SHOW);
                 }
             } else {
-                ActivatedDisplays.Add(DisplayManager.ActiveDisplayIndex);
                 DisplayManager.ActiveDisplay.Activate();
             }
         }
