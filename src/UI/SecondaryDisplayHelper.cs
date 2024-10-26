@@ -28,9 +28,6 @@ namespace UnityExplorer.UI {
         [DllImport("User32")]
         private static extern int ShowWindowAsync(int hwnd, int nCmdShow);
 
-        [DllImport("user32.dll", EntryPoint = "FindWindowEx", CharSet = CharSet.Auto)]
-        static extern IntPtr FindWindowEx(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
-
         [DllImport("user32.dll", SetLastError = true)]
         static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
