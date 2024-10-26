@@ -253,36 +253,12 @@ namespace UniverseLib.UI.Panels
 
             lastResizeHoverType = resizeType;
 
-            //PanelManager.resizeCursorUIBase.Enabled = true;
-            //PanelManager.resizeCursor.SetActive(true);
-
-            //// set the rotation for the resize icon
-            //float iconRotation = 0f;
-            //switch (resizeType)
-            //{
-            //    case ResizeTypes.TopRight:
-            //    case ResizeTypes.BottomLeft:
-            //        iconRotation = 45f; break;
-            //    case ResizeTypes.Top:
-            //    case ResizeTypes.Bottom:
-            //        iconRotation = 90f; break;
-            //    case ResizeTypes.TopLeft:
-            //    case ResizeTypes.BottomRight:
-            //        iconRotation = 135f; break;
-            //}
-
-            //Quaternion rot = PanelManager.resizeCursor.transform.rotation;
-            //rot.eulerAngles = new Vector3(0, 0, iconRotation);
-            //PanelManager.resizeCursor.transform.rotation = rot;
-
-            //UpdateHoverImagePos();
-
             if (!CursorController.IsResizeCursor)
             {
                 if (PCCursor.Instance == null)
                 {
                     Texture2D cursorTexture = BlueprintRoot.Instance.Cursors.GetCursorTexture(GetCursor(resizeType));
-                    Cursor.SetCursor(cursorTexture, new Vector2(0f, 0f), CursorMode.Auto);
+                    Cursor.SetCursor(cursorTexture, new Vector2(32f, 32f), CursorMode.Auto);
                 }
                 else
                 {
@@ -292,42 +268,17 @@ namespace UniverseLib.UI.Panels
             }
         }
 
-        private CursorRoot.CursorType GetCursor(ResizeTypes resizeType)
+        private CursorRoot.CursorType GetCursor(ResizeTypes resizeType) => resizeType switch
         {
-            switch (resizeType)
-            {
-                case ResizeTypes.Top:
-                case ResizeTypes.Bottom:
-                    return CursorRoot.CursorType.ArrowVerticalCursor;
-                case ResizeTypes.TopRight:
-                case ResizeTypes.BottomLeft:
-                    return CursorRoot.CursorType.ArrowDiagonally01Cursor;
-                case ResizeTypes.TopLeft:
-                case ResizeTypes.BottomRight:
-                    return CursorRoot.CursorType.ArrowDiagonally02Cursor;
-                case ResizeTypes.Left:
-                case ResizeTypes.Right:
-                    return CursorRoot.CursorType.ArrowHorizontalCursor;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        // update the resize icon position to be above the mouse
-        private void UpdateHoverImagePos()
-        {
-            Vector3 mousePos = UIPanel.Owner.Panels.MousePosition;
-            RectTransform rect = UIPanel.Owner.RootRect;
-            PanelManager.resizeCursorUIBase.SetOnTop();
-
-            PanelManager.resizeCursor.transform.localPosition = rect.InverseTransformPoint(mousePos);
-        }
+            ResizeTypes.Top or ResizeTypes.Bottom => CursorRoot.CursorType.ArrowVerticalCursor,
+            ResizeTypes.TopRight or ResizeTypes.BottomLeft => CursorRoot.CursorType.ArrowDiagonally01Cursor,
+            ResizeTypes.TopLeft or ResizeTypes.BottomRight => CursorRoot.CursorType.ArrowDiagonally02Cursor,
+            ResizeTypes.Left or ResizeTypes.Right => CursorRoot.CursorType.ArrowHorizontalCursor,
+            _ => throw new ArgumentOutOfRangeException(),
+        };
 
         public virtual void OnHoverResizeEnd()
         {
-            //PanelManager.resizeCursorUIBase.Enabled = false;
-            //PanelManager.resizeCursor.SetActive(false);
-
             if (CursorController.IsResizeCursor)
             {
                 CursorController.IsResizeCursor = false;
@@ -336,7 +287,7 @@ namespace UniverseLib.UI.Panels
                 if (PCCursor.Instance == null)
                 {
                     Texture2D cursorTexture = BlueprintRoot.Instance.Cursors.GetCursorTexture(CursorType.DefaultCursor);
-                    Cursor.SetCursor(cursorTexture, new Vector2(0f, 0f), CursorMode.Auto);
+                    Cursor.SetCursor(cursorTexture, Vector2.zero, CursorMode.Auto);
                 }
                 else
                 {
