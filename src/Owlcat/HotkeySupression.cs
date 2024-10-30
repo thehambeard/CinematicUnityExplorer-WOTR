@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using Kingmaker.UI;
+using Kingmaker.UI.InputSystems;
 using System;
 using System.Collections.Generic;
 using System.Linq;
