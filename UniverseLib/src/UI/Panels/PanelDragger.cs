@@ -5,7 +5,6 @@ using Kingmaker.UI.AbilityTarget;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using static Kingmaker.Blueprints.Root.CursorRoot;
 
 namespace UniverseLib.UI.Panels
 {
@@ -31,7 +30,7 @@ namespace UniverseLib.UI.Panels
 
         // Resizing
         public bool WasResizing { get; internal set; }
-        private bool WasHoveringResize => CursorController.IsResizeCursor;
+        private bool WasHoveringResize;
 
         private ResizeTypes currentResizeType = ResizeTypes.NONE;
         private Vector2 lastResizePos;
@@ -253,45 +252,45 @@ namespace UniverseLib.UI.Panels
 
             lastResizeHoverType = resizeType;
 
-            if (!CursorController.IsResizeCursor)
+            if (!WasHoveringResize)
             {
                 if (PCCursor.Instance == null)
                 {
-                    Texture2D cursorTexture = BlueprintRoot.Instance.Cursors.GetCursorTexture(GetCursor(resizeType));
+                    Texture2D cursorTexture = GetCursor(resizeType);
                     Cursor.SetCursor(cursorTexture, new Vector2(32f, 32f), CursorMode.Auto);
                 }
                 else
                 {
                     Game.Instance.CursorController.SetCustomCursor(GetCursor(resizeType), new Vector2(32f, 32f));
                 }
-                CursorController.IsResizeCursor = true;
+                WasHoveringResize = true;
             }
         }
 
-        private CursorRoot.CursorType GetCursor(ResizeTypes resizeType) => resizeType switch
+        private Texture2D GetCursor(ResizeTypes resizeType) => resizeType switch
         {
-            ResizeTypes.Top or ResizeTypes.Bottom => CursorRoot.CursorType.ArrowVerticalCursor,
-            ResizeTypes.TopRight or ResizeTypes.BottomLeft => CursorRoot.CursorType.ArrowDiagonally01Cursor,
-            ResizeTypes.TopLeft or ResizeTypes.BottomRight => CursorRoot.CursorType.ArrowDiagonally02Cursor,
-            ResizeTypes.Left or ResizeTypes.Right => CursorRoot.CursorType.ArrowHorizontalCursor,
+            ResizeTypes.Top or ResizeTypes.Bottom => BlueprintRoot.Instance.Cursors.MoveVerticalCursor,
+            ResizeTypes.TopRight or ResizeTypes.BottomLeft => BlueprintRoot.Instance.Cursors.MoveVerticalCursor,
+            ResizeTypes.TopLeft or ResizeTypes.BottomRight => BlueprintRoot.Instance.Cursors.MoveVerticalCursor,
+            ResizeTypes.Left or ResizeTypes.Right => BlueprintRoot.Instance.Cursors.MoveVerticalCursor,
             _ => throw new ArgumentOutOfRangeException(),
         };
 
         public virtual void OnHoverResizeEnd()
         {
-            if (CursorController.IsResizeCursor)
+            if (WasHoveringResize)
             {
-                CursorController.IsResizeCursor = false;
+                WasHoveringResize = false;
                 Game.Instance.CursorController.ClearCursor();
 
                 if (PCCursor.Instance == null)
                 {
-                    Texture2D cursorTexture = BlueprintRoot.Instance.Cursors.GetCursorTexture(CursorType.DefaultCursor);
+                    Texture2D cursorTexture = BlueprintRoot.Instance.Cursors.DefaultCursor;
                     Cursor.SetCursor(cursorTexture, Vector2.zero, CursorMode.Auto);
                 }
                 else
                 {
-                    Game.Instance.CursorController.SetCustomCursor(CursorRoot.CursorType.None, Vector2.zero);
+                    Game.Instance.CursorController.SetCustomCursor(BlueprintRoot.Instance.Cursors.DefaultCursor, Vector2.zero);
                 }
             }
         }

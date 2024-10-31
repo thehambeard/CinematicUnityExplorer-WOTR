@@ -8,7 +8,7 @@
 		<AnalysisLevel>preview</AnalysisLevel>
 		<OutputType>Library</OutputType>
 		<LangVersion>latest</LangVersion>
-		<KMData>$(LocalAppData)Low\Owlcat Games\Pathfinder Kingmaker</KMData>
+    <KingmakerData>$(LocalAppData)Low\Owlcat Games\Pathfinder Kingmaker</KingmakerData>
 	</PropertyGroup>
 
 	<Target Name="GenerateCustomPropsFile" Condition="$(KingmakerInstallDir) == ''">
