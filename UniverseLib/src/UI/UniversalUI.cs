@@ -118,6 +118,8 @@ namespace UniverseLib.UI
 
         internal static void Update()
         {
+            Debug.developerConsoleVisible = false;
+
             if (!CanvasRoot || Initializing)
                 return;
 
