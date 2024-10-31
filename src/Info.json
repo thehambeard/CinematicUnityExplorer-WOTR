@@ -1,8 +1,8 @@
 ﻿{
   "Id": "CinematicUnityExplorer",
   "DisplayName": "Cinematic Unity Explorer Loader",
-  "Author": "Hambeard",
-  "Version": "1.0.2",
+  "Author": "ADDB & Hambeard",
+  "Version": "1.0.3",
   "ManagerVersion": "0.25.0",
   "Requirements": [],
   "AssemblyName": "CinematicUnityExplorer.dll",
