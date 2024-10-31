@@ -96,15 +96,17 @@ namespace UniverseLib.Input
 
         internal static void InitPatches()
         {
-            Universe.Patch(typeof(Cursor),
-                "lockState",
-                MethodType.Setter,
-                prefix: AccessTools.Method(typeof(CursorUnlocker), nameof(Prefix_set_lockState)));
+            // Can't patch extern
 
-            Universe.Patch(typeof(Cursor),
-                "visible",
-                MethodType.Setter,
-                prefix: AccessTools.Method(typeof(CursorUnlocker), nameof(Prefix_set_visible)));
+            //Universe.Patch(typeof(Cursor),
+            //    nameof(Cursor.lockState),
+            //    MethodType.Setter,
+            //    prefix: AccessTools.Method(typeof(CursorUnlocker), nameof(Prefix_set_lockState)));
+
+            //Universe.Patch(typeof(Cursor),
+            //    nameof(Cursor.visible),
+            //    MethodType.Setter,
+            //    prefix: AccessTools.Method(typeof(CursorUnlocker), nameof(Prefix_set_visible)));
         }
 
         // Force mouse to stay unlocked and visible while UnlockMouse and ShowMenu are true.
