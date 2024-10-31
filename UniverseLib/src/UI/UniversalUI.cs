@@ -112,6 +112,9 @@ namespace UniverseLib.UI
             PoolHolder.SetActive(false);
 
             Initializing = false;
+
+            Debug.developerConsoleVisible = false;
+            Debug.developerConsoleEnabled = false;
         }
 
         // Main UI Update loop

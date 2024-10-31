@@ -1,6 +1,6 @@
 <Project xmlns='http://schemas.microsoft.com/developer/msbuild/2003' InitialTargets="GenerateCustomPropsFile">
 	<PropertyGroup>
-		<Version>1.0.2</Version>
+		<Version>1.0.3</Version>
 		<TargetFramework>net481</TargetFramework>
 		<DefineConstants>MONO,STANDALONE</DefineConstants>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -11,7 +11,7 @@
 		<RogueTraderData>$(LocalAppData)Low\Owlcat Games\Warhammer 40000 Rogue Trader</RogueTraderData>
 	</PropertyGroup>
 
-	<Target Name="GenerateCustomPropsFile" Condition="$(WrathInstallDir) == ''">
+	<Target Name="GenerateCustomPropsFile" Condition="$(RogueTraderInstallDir) == ''">
 		<Exec Command="findstr /C:&quot;Mono path[0]&quot; &quot;$(RogueTraderData)\Player.log&quot;" IgnoreExitCode="true" ConsoleToMSBuild="true">
 			<Output TaskParameter="ExitCode" PropertyName="ExitCode" />
 			<Output TaskParameter="ConsoleOutput" PropertyName="MonoPathLine" />
