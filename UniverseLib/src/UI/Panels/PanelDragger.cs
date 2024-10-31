@@ -4,7 +4,9 @@ using Kingmaker.UI;
 using Kingmaker.UI.AbilityTarget;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
+using UniverseLib.Runtime;
 
 namespace UniverseLib.UI.Panels
 {
@@ -37,13 +39,38 @@ namespace UniverseLib.UI.Panels
         private ResizeTypes lastResizeHoverType;
         private Rect totalResizeRect;
 
+        private enum CursorType
+        {
+            DiagRight, 
+            DiagLeft,
+            Horizontal,
+            Vertical
+        }
+        private Dictionary<CursorType, Texture2D> _cursors = [];
+
         public PanelDragger(PanelBase uiPanel)
         {
             this.UIPanel = uiPanel;
             this.DragableArea = uiPanel.TitleBar.GetComponent<RectTransform>();
             this.Rect = uiPanel.Rect;
 
+            LoadCursors();
             UpdateResizeCache();
+        }
+
+        private void LoadCursors()
+        {
+            _cursors.Add(CursorType.DiagRight, LoadCursor(Properties.Resources.diagRight));
+            _cursors.Add(CursorType.DiagLeft, LoadCursor(Properties.Resources.diagLeft));
+            _cursors.Add(CursorType.Horizontal, LoadCursor(Properties.Resources.horizontal));
+            _cursors.Add(CursorType.Vertical, LoadCursor(Properties.Resources.vertical));
+        }
+
+        private Texture2D LoadCursor(byte[] bytes)
+        {
+            var texture = TextureHelper.NewTexture2D(32, 32, TextureFormat.RGBA32, false);
+            texture.LoadImage(bytes);
+            return texture;
         }
 
         protected internal virtual void Update(MouseState state, Vector3 rawMousePos)
@@ -257,11 +284,11 @@ namespace UniverseLib.UI.Panels
                 if (PCCursor.Instance == null)
                 {
                     Texture2D cursorTexture = GetCursor(resizeType);
-                    Cursor.SetCursor(cursorTexture, new Vector2(32f, 32f), CursorMode.Auto);
+                    Cursor.SetCursor(cursorTexture, new Vector2(10f, 10f), CursorMode.Auto);
                 }
                 else
                 {
-                    Game.Instance.CursorController.SetCustomCursor(GetCursor(resizeType), new Vector2(32f, 32f));
+                    Game.Instance.CursorController.SetCustomCursor(GetCursor(resizeType), new Vector2(10f, 10f));
                 }
                 WasHoveringResize = true;
             }
@@ -269,10 +296,10 @@ namespace UniverseLib.UI.Panels
 
         private Texture2D GetCursor(ResizeTypes resizeType) => resizeType switch
         {
-            ResizeTypes.Top or ResizeTypes.Bottom => BlueprintRoot.Instance.Cursors.MoveVerticalCursor,
-            ResizeTypes.TopRight or ResizeTypes.BottomLeft => BlueprintRoot.Instance.Cursors.MoveVerticalCursor,
-            ResizeTypes.TopLeft or ResizeTypes.BottomRight => BlueprintRoot.Instance.Cursors.MoveVerticalCursor,
-            ResizeTypes.Left or ResizeTypes.Right => BlueprintRoot.Instance.Cursors.MoveVerticalCursor,
+            ResizeTypes.Top or ResizeTypes.Bottom => _cursors[CursorType.Vertical],
+            ResizeTypes.TopRight or ResizeTypes.BottomLeft => _cursors[CursorType.DiagRight],
+            ResizeTypes.TopLeft or ResizeTypes.BottomRight => _cursors[CursorType.DiagLeft],
+            ResizeTypes.Left or ResizeTypes.Right => _cursors[CursorType.Horizontal],
             _ => throw new ArgumentOutOfRangeException(),
         };
 

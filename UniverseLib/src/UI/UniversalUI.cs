@@ -118,6 +118,8 @@ namespace UniverseLib.UI
 
         internal static void Update()
         {
+            Debug.developerConsoleVisible = false;
+
             if (!CanvasRoot || Initializing)
                 return;
 
@@ -268,11 +270,14 @@ namespace UniverseLib.UI
 
         static void SetupAssetBundlePatches()
         {
-            Universe.Patch(
-                ReflectionUtility.GetTypeByName("UnityEngine.AssetBundle"),
-                "UnloadAllAssetBundles",
-                MethodType.Normal,
-                prefix: AccessTools.Method(typeof(UniversalUI), nameof(Prefix_UnloadAllAssetBundles)));
+            // Cannot patch native.
+
+
+            //Universe.Patch(
+            //    ReflectionUtility.GetTypeByName("UnityEngine.AssetBundle"),
+            //    "UnloadAllAssetBundles",
+            //    MethodType.Normal,
+            //    prefix: AccessTools.Method(typeof(UniversalUI), nameof(Prefix_UnloadAllAssetBundles)));
         }
 
         static bool Prefix_UnloadAllAssetBundles(bool unloadAllObjects)
