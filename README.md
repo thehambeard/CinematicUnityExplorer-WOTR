@@ -1,4 +1,4 @@
-# Various fixes to work with WOTR
+# Various fixes to work with RT
 
 
 # Cinematic Unity Explorer
